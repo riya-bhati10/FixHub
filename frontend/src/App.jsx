@@ -1,8 +1,12 @@
-import React from "react";
+import React from 'react'
 
-export default function App() {
+const App = () => {
   return (
-   <> <h1>Hello World</h1>
-   </>
-  );
+    <div className='bg-red-500'>
+      div
+      
+    </div>
+  )
 }
+
+export default App
