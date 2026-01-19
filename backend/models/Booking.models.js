@@ -10,45 +10,51 @@ const bookingSchema = new mongoose.Schema(
 
     technicianId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: "Technician",
       default: null,
     },
 
     deviceType: {
       type: String,
+      enum: ["Mobile", "Laptop", "Desktop", "Tablet"],
       required: true,
-      trim: true,
     },
 
-    issueDescription: {
+    issue: {
       type: String,
       required: true,
-      trim: true,
     },
 
-    serviceAddress: {
-      type: String,
-      required: true,
+    serviceLocation: {
+      type: {
+        type: String,
+        enum: ["Point"],
+        default: "Point",
+      },
+      coordinates: {
+        type: [Number], // [longitude, latitude]
+        required: true,
+      },
     },
 
     preferredTimeSlot: {
-      type: String,
-      required: true,
+      date: Date,
+      time: String,
+      enum: ["9AM-12PM", "12PM-3PM", "3PM-6PM", "6PM-9PM"],
     },
 
-    bookingStatus: {
+    status: {
       type: String,
-      enum: [
-        "pending",
-        "accepted",
-        "in-progress",
-        "completed",
-        "cancelled",
-      ],
+      enum: ["pending", "accepted", "in_progress", "completed", "cancelled"],
       default: "pending",
     },
+
+    serviceCost: Number,
+    acceptedAt: Date,
+    completedAt: Date,
+    cancelledAt: Date,
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 module.exports = mongoose.model("Booking", bookingSchema);
