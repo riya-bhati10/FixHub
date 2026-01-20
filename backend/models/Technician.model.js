@@ -1,41 +1,47 @@
 const mongoose = require("mongoose");
 
-const technicianSchema = new mongoose.Schema(
+const serviceSchema = new mongoose.Schema(
   {
-    userId: {
+    technicianId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
-      unique: true,
     },
 
-    expertise: {
-      type: [String],
+    serviceName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    description: {
+      type: String,
+    },
+
+    image: {
+      type: String,
+    },
+
+    serviceCharge: {
+      type: Number,
       required: true,
     },
 
     experience: {
-      type: Number,
+      type: Number, // years
       default: 0,
     },
 
-    services: [
-      {
-        name: String,
-        description: String,
-        image: String,
-        serviceCharge: Number,
-      },
-    ],
     completedJobs: {
       type: Number,
       default: 0,
     },
-    
+
     averageRating: {
       type: Number,
       default: 0,
     },
+
     reviews: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -46,4 +52,4 @@ const technicianSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-module.exports = mongoose.model("Technician", technicianSchema);
+module.exports = mongoose.model("Service", serviceSchema);
