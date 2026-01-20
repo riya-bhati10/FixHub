@@ -24,32 +24,21 @@ const technicianSchema = new mongoose.Schema(
         name: String,
         description: String,
         image: String,
-        estimatedPrice: Number,
+        serviceCharge: Number,
       },
     ],
     completedJobs: {
       type: Number,
       default: 0,
     },
-    location: {
-      type: {
-        type: String,
-        enum: ["Point"],
-        default: "Point",
-      },
-      coordinates: {
-        type: [Number], // [lng, lat]
-        required: true,
-      },
-    },
-
+    
     averageRating: {
       type: Number,
       default: 0,
     },
     reviews: [
       {
-        type: Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: "Review",
       },
     ],

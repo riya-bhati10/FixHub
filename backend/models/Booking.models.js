@@ -14,27 +14,9 @@ const bookingSchema = new mongoose.Schema(
       default: null,
     },
 
-    deviceType: {
-      type: String,
-      enum: ["Mobile", "Laptop", "Desktop", "Tablet"],
-      required: true,
-    },
-
     issue: {
       type: String,
       required: true,
-    },
-
-    serviceLocation: {
-      type: {
-        type: String,
-        enum: ["Point"],
-        default: "Point",
-      },
-      coordinates: {
-        type: [Number], // [longitude, latitude]
-        required: true,
-      },
     },
 
     preferredTimeSlot: {
@@ -48,8 +30,7 @@ const bookingSchema = new mongoose.Schema(
       enum: ["pending", "accepted", "in_progress", "completed", "cancelled"],
       default: "pending",
     },
-
-    serviceCost: Number,
+    
     acceptedAt: Date,
     completedAt: Date,
     cancelledAt: Date,
