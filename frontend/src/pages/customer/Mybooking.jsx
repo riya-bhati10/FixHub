@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import logo from '../../../public/logo.png';
 import Navbar from '../../components/common/Navbar';
 
-const CustomerDashboard = () => {
+const MyBooking = () => {
   const [activeTab, setActiveTab] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
@@ -470,4 +470,4 @@ const CustomerDashboard = () => {
   );
 };
 
-export default CustomerDashboard;
+export default MyBooking;
