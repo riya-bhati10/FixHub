@@ -1,5 +1,4 @@
 const User = require("../models/User.Model");
-const Technician = require("../models/Technician.model");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken"); 
 
@@ -12,9 +11,6 @@ exports.signup = async (req, res) => {
       password,
       phone,
       role,
-      // technician-only
-      expertise,
-      experience,
       location,
     } = req.body;
 
@@ -43,23 +39,8 @@ exports.signup = async (req, res) => {
       password: hashedPassword,
       phone,
       role, 
+      location: location || {coordinates: []},
     });
-
-    // only for the  technician
-    if (role === "technician") {
-      if (!expertise || !location || !experience) {
-        return res.status(400).json({
-          message: "Technician details are required",
-        });
-      }
-
-      await Technician.create({
-        userId: user._id,
-        expertise,
-        experience,
-        location,
-      });
-    }
 
     return res.status(201).json({
       message: "Registration successful",
