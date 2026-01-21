@@ -1,12 +1,15 @@
-import React from 'react'
+import React from "react";
+import { Routes, Route } from "react-router-dom";
+import FixHubDashboard from "./pages/customer/UserDashaboard";
 
 const App = () => {
   return (
-    <div className='bg-red-500'>
-      div
-      
-    </div>
-  )
-}
+    <Routes>
+    
+      <Route path="/" element={<FixHubDashboard />} />
 
-export default App
+    </Routes>
+  );
+};
+
+export default App;
