@@ -11,7 +11,7 @@ const bookingSchema = new mongoose.Schema(
     technicianId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      default: null,
+      required: true,
     },
 
     serviceId: {
@@ -25,10 +25,15 @@ const bookingSchema = new mongoose.Schema(
       required: true,
     },
 
-    preferredTimeSlot: {
-      date: Date,
-      time: String,
+    serviceDate: {
+      type: Date,
+      required: true,
+    },
+
+    timeSlot: {
+      type: String,
       enum: ["9AM-12PM", "12PM-3PM", "3PM-6PM", "6PM-9PM"],
+      required: true,
     },
 
     status: {
@@ -49,10 +54,12 @@ const bookingSchema = new mongoose.Schema(
         default: [],
       },
     },
-
-    acceptedAt: Date,
-    completedAt: Date,
-    cancelledAt: Date,
+    statusHistory: [
+      {
+        status: String,
+        updatedAt: Date,
+      },
+    ],
   },
   { timestamps: true },
 );
