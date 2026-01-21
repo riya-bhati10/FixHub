@@ -1,23 +1,15 @@
 import React, { useState } from 'react';
 import logo from '../../../public/logo.png';
-import CustomerNaavbar from './CustomerNaavbar';
+import Navbar from '../../components/common/Navbar';
 
 const CustomerDashboard = () => {
   const [activeTab, setActiveTab] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [animatingBookingId, setAnimatingBookingId] = useState(null);
-
-  // Navigation items
-  const navItems = [
-    { id: 'dashboard', label: 'Dashboard' },
-    { id: 'booking', label: 'My Booking', active: true },
-    { id: 'new', label: 'Book Service' },
-    { id: 'profile', label: 'Profile' }
-  ];
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // Tab items with icons
   const tabItems = [
@@ -197,7 +189,8 @@ const CustomerDashboard = () => {
 
       <div className="flex flex-col min-h-screen">
 
-        <CustomerNaavbar navItems={navItems} isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
+        {/* Navbar */}
+        <Navbar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
 
         {/* Sub-header */}
         <div className="bg-white border-b border-slate-200 sticky top-20 z-30">
