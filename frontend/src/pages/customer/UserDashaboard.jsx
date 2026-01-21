@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import logo from '../../../public/logo.png';
+import CustomerNaavbar from './CustomerNaavbar';
 
 const CustomerDashboard = () => {
   const [activeTab, setActiveTab] = useState('all');
@@ -196,6 +197,7 @@ const CustomerDashboard = () => {
 
       <div className="flex flex-col min-h-screen">
 
+        <CustomerNaavbar navItems={navItems} isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
 
         {/* Sub-header */}
         <div className="bg-white border-b border-slate-200 sticky top-20 z-30">
