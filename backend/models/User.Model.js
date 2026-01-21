@@ -26,7 +26,7 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["customer", "technician", "admin"],
+      enum: ["customer", "technician"],
       default: "customer",
     },
     
@@ -38,9 +38,11 @@ const userSchema = new mongoose.Schema(
           },
           coordinates: {
             type: [Number], // [lng, lat]
-            required: true,
+            required: false,
+            default: []
           },
-        },
+    },
+    
   },
   { timestamps: true },
 );
