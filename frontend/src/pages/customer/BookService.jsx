@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/common/Navbar';
-import BookServiceForm from './Bookingform';
 
 const ServicePro = () => {
+  const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeService, setActiveService] = useState('all');
-  const [showForm, setShowForm] = useState(false);
 
   const services = [
     {
@@ -98,80 +98,6 @@ const ServicePro = () => {
     }
   ];
 
-  const professionals = [
-    {
-      id: 1,
-      name: "Alex Chen",
-      rating: 4.9,
-      reviews: 245,
-      specialty: "Mobile Phone Specialist",
-      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
-      verified: true
-    },
-    {
-      id: 2,
-      name: "Sarah Johnson",
-      rating: 5.0,
-      reviews: 189,
-      specialty: "Laptop Repair Expert",
-      image: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face",
-      verified: true
-    },
-    {
-      id: 3,
-      name: "Marcus Rodriguez",
-      rating: 4.8,
-      reviews: 156,
-      specialty: "TV & Display Technician",
-      image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
-      verified: false
-    },
-    {
-      id: 4,
-      name: "Elena Kim",
-      rating: 4.9,
-      reviews: 134,
-      specialty: "PC Building Specialist",
-      image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
-      verified: true
-    },
-    {
-      id: 5,
-      name: "David Park",
-      rating: 4.8,
-      reviews: 98,
-      specialty: "Gaming Console Expert",
-      image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face",
-      verified: true
-    },
-    {
-      id: 6,
-      name: "Lisa Wang",
-      rating: 4.7,
-      reviews: 76,
-      specialty: "Camera Repair Specialist",
-      image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&crop=face",
-      verified: false
-    },
-    {
-      id: 7,
-      name: "James Mitchell",
-      rating: 4.8,
-      reviews: 112,
-      specialty: "Audio Equipment Technician",
-      image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&h=150&fit=crop&crop=face",
-      verified: true
-    },
-    {
-      id: 8,
-      name: "Maria Garcia",
-      rating: 4.9,
-      reviews: 167,
-      specialty: "Smart Device Expert",
-      image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face",
-      verified: false
-    }
-  ];
 
   const featuredServices = services.filter(service => service.featured);
 
@@ -180,43 +106,6 @@ const ServicePro = () => {
       <Navbar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
       {/* Main Content */}
       <main className="max-w-[1440px] mx-auto px-6 py-10 pt-24">
-        {/* Professionals Section */}
-        <div className="mb-16">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">Certified Electronics Technicians</h2>
-              <p className="text-sm text-slate-500 mt-1">Our most trusted and highly-certified repair specialists</p>
-            </div>
-            <button className="flex items-center gap-2 text-[#1F7F85] text-sm font-bold hover:gap-3 transition-all">
-              View All Experts
-              <span className="material-symbols-outlined text-lg">arrow_forward</span>
-            </button>
-          </div>
-
-          <div className="flex gap-8 overflow-x-auto pb-4 custom-scrollbar scroll-smooth">
-            {professionals.map(pro => (
-              <div key={pro.id} onClick={() => setShowForm(true)} className="w-[140px] flex-shrink-0 group cursor-pointer text-center">
-                <div className="relative mx-auto mb-4 p-1 rounded-full border-2 border-transparent group-hover:border-[#1F7F85] transition-all">
-                  <div className="size-24 rounded-full overflow-hidden border-4 border-white shadow-md">
-                    <img alt={pro.name} className="w-full h-full object-cover" src={pro.image} />
-                  </div>
-                  {pro.verified && (
-                    <div className="absolute bottom-0 right-1 bg-white p-1 rounded-full shadow-lg">
-                      <span className="material-symbols-outlined text-[#1F7F85] text-lg">verified</span>
-                    </div>
-                  )}
-                </div>
-                <h4 className="text-sm font-bold text-slate-900 mb-1">{pro.name}</h4>
-                <div className="flex items-center justify-center gap-1">
-                  <span className="material-symbols-outlined text-yellow-500 text-base">star</span>
-                  <span className="text-xs font-extrabold text-[#1F7F85]">{pro.rating}</span>
-                  <span className="text-[10px] text-slate-400">({pro.reviews})</span>
-                </div>
-                <p className="text-[10px] text-slate-500 mt-1 font-medium uppercase tracking-tighter">{pro.specialty}</p>
-              </div>
-            ))}
-          </div>
-        </div>
 
         {/* Featured Services */}
         <div className="mb-12">
@@ -304,10 +193,10 @@ const ServicePro = () => {
                     </p>
                     <div className="pt-6 border-t border-slate-100 flex items-center justify-between">
                       <div>
-                        <p className="text-[10px] uppercase tracking-wider font-bold text-slate-400">Starting from</p>
+                        <p className="text-[10px] uppercase tracking-wider font-bold text-slate-400">Service Charge</p>
                         <p className="text-lg font-extrabold text-[#1F7F85]">${service.price}</p>
                       </div>
-                      <button onClick={() => setShowForm(true)} className="px-5 py-2.5 bg-[#1F7F85] text-white text-sm font-bold rounded-lg hover:brightness-110 transition-all hover:shadow-lg hover:shadow-[#1F7F85]/30">
+                      <button onClick={() => navigate('/booking-from')} className="px-5 py-2.5 bg-[#1F7F85] text-white text-sm font-bold rounded-lg hover:brightness-110 transition-all hover:shadow-lg hover:shadow-[#1F7F85]/30">
                         Book Now
                       </button>
                     </div>
@@ -317,67 +206,7 @@ const ServicePro = () => {
           </div>
         </div>
 
-        {/* CTA Section - FIXED COLOR ISSUE */}
-        <div className="mt-20 bg-gradient-to-r from-[#1F7F85] to-teal-600 rounded-3xl overflow-hidden shadow-2xl shadow-[#1F7F85]/30 flex flex-col md:flex-row items-stretch">
-          <div className="flex-1 p-8 lg:p-16 text-white flex flex-col justify-center">
-            <h2 className="text-3xl lg:text-4xl font-extrabold mb-4 leading-tight">Certified Electronics Technicians</h2>
-            <p className="text-white/80 text-lg mb-10 opacity-90">
-              Professional repair specialists with years of experience. Our certified technicians use genuine parts and provide warranty on all repairs for your peace of mind.
-            </p>
-            <div className="flex flex-wrap gap-4">
-              <button onClick={() => setShowForm(true)} className="px-8 py-3.5 bg-white text-[#1F7F85] font-extrabold rounded-xl hover:bg-slate-100 transition-all shadow-lg hover:shadow-xl">
-                Book Repair Service
-              </button>
-              <button className="px-8 py-3.5 border-2 border-white/40 hover:bg-white/10 font-bold rounded-xl transition-all">
-                View Certifications
-              </button>
-            </div>
-          </div>
-          
-          <div className="flex-1 relative min-h-[400px] bg-gradient-to-bl from-[#1F7F85]/90 to-teal-900/90">
-            <div className="grid grid-cols-3 gap-4 p-6 h-full">
-              {professionals.slice(0, 6).map((pro, index) => (
-                <div key={pro.id} className={`relative overflow-hidden rounded-xl border-4 border-white/20 ${index === 1 || index === 4 ? 'mt-8' : ''}`}>
-                  <img 
-                    alt={pro.name} 
-                    className="w-full h-32 object-cover hover:scale-110 transition-transform duration-300" 
-                    src={pro.image}
-                  />
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2">
-                    <p className="text-xs text-white font-bold truncate">{pro.name}</p>
-                    <p className="text-[10px] text-white/80">{pro.specialty}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-            
-            <div className="absolute bottom-8 right-8 bg-white p-4 rounded-2xl shadow-xl z-20 flex items-center gap-3">
-              <div className="bg-green-100 p-2 rounded-full">
-                <span className="material-symbols-outlined text-green-600">verified</span>
-              </div>
-              <div>
-                <p className="text-slate-900 font-bold text-sm">500+ Experts</p>
-                <p className="text-slate-500 text-xs">Vetted & Verified</p>
-              </div>
-            </div>
-          </div>
-        </div>
       </main>
-
-      {/* Booking Form Modal */}
-      {showForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[80vh] overflow-auto relative">
-            <button
-              onClick={() => setShowForm(false)}
-              className="absolute top-4 right-4 z-10 p-2 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors"
-            >
-              <span className="material-symbols-outlined">close</span>
-            </button>
-            <BookServiceForm showNavbar={false} />
-          </div>
-        </div>
-      )}
 
       {/* Footer */}
       <footer className="bg-white border-t border-slate-200 py-16 mt-20">

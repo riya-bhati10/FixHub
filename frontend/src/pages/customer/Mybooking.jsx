@@ -13,11 +13,10 @@ const MyBooking = () => {
 
   // Tab items with icons
   const tabItems = [
-    { id: 'all', label: 'All Bookings', icon: 'list_alt' },
-    { id: 'pending', label: 'Pending', icon: 'pending_actions' },
-    { id: 'accepted', label: 'Accepted', icon: 'check_circle' },
-    { id: 'ongoing', label: 'Ongoing', icon: 'home_repair_service' },
-    { id: 'completed', label: 'Completed', icon: 'task_alt' }
+    { id: 'all', label: 'All Booking', icon: 'list_alt' },
+    { id: 'active', label: 'Active', icon: 'home_repair_service' },
+    { id: 'completed', label: 'Completed', icon: 'task_alt' },
+    { id: 'cancelled', label: 'Cancelled', icon: 'cancel' }
   ];
 
   // Stat cards data
@@ -72,8 +71,8 @@ const MyBooking = () => {
       date: 'Oct 24, 2023',
       serviceName: 'iPhone Screen Repair',
       technician: 'Alex Chen',
-      status: 'ongoing',
-      statusText: 'Ongoing',
+      status: 'active',
+      statusText: 'Active',
       statusColor: 'bg-blue-500',
       statusIcon: 'home_repair_service',
       serviceIcon: 'smartphone',
@@ -114,6 +113,18 @@ const MyBooking = () => {
       statusIcon: 'check_circle',
       serviceIcon: 'sports_esports',
       imageUrl: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400&h=300&fit=crop'
+    },
+    {
+      id: 'BK-9288',
+      date: 'Oct 22, 2023',
+      serviceName: 'MacBook Battery Replacement',
+      technician: null,
+      status: 'cancelled',
+      statusText: 'Cancelled',
+      statusColor: 'bg-red-500',
+      statusIcon: 'cancel',
+      serviceIcon: 'laptop_mac',
+      imageUrl: 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400&h=300&fit=crop'
     }
   ];
 
@@ -129,10 +140,9 @@ const MyBooking = () => {
   // Status mapping for tabs
   const statusMap = {
     'all': 'all',
-    'pending': 'pending',
-    'accepted': 'accepted',
-    'ongoing': 'ongoing',
-    'completed': 'completed'
+    'active': 'active',
+    'completed': 'completed',
+    'cancelled': 'cancelled'
   };
 
   // Further filter by active tab
@@ -245,89 +255,75 @@ const MyBooking = () => {
             </div>
           </div>
 
-          {/* Booking Cards with Icons */}
+          {/* Booking Rows */}
           {tabFilteredBookings.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 justify-items-center">
-              {tabFilteredBookings.map((booking) => (
-                <div
-                  key={booking.id}
-                  className={`bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 w-full max-w-[400px] h-auto min-h-[400px] flex flex-col ${animatingBookingId === booking.id ? 'animate-wave' : ''}`}
-                >
-                  <div className="relative h-52 overflow-hidden">
-                    <img
-                      alt="Service Image"
-                      className="w-full h-full object-cover"
-                      src={booking.imageUrl}
-                    />
-                    <div className={`absolute top-4 right-4 px-3 py-1 ${booking.statusColor} text-white text-[10px] font-black uppercase tracking-widest rounded-full flex items-center gap-1`}>
-                      <span className="material-symbols-outlined text-xs">
-                        {booking.statusIcon}
-                      </span>
-                      {booking.statusText}
-                    </div>
-                  </div>
-
-                  <div className="p-6 flex-1 flex flex-col">
-                    <div className="space-y-4 flex-1">
-                      <div>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1 flex items-center gap-1">
-                          <span className="material-symbols-outlined text-xs">
-                            {booking.serviceIcon}
-                          </span>
-                          Service Name
-                        </p>
-                        <p className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                          <span className="material-symbols-outlined text-[#1F7F85]">
-                            {booking.serviceIcon}
-                          </span>
-                          {booking.serviceName}
-                        </p>
-                      </div>
-
-                      <div>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 flex items-center gap-1">
-                          <span className="material-symbols-outlined text-xs">
-                            engineering
-                          </span>
-                          Technician
-                        </p>
-                        <div className="flex items-center gap-3">
-                          <div className={`w-10 h-10 rounded-full flex items-center justify-center border ${booking.technician ? 'bg-[#DCEBEC] text-[#1F7F85] border-[#1F7F85]/20' : 'bg-slate-100 text-slate-400 border-slate-200'}`}>
-                            <span className="material-symbols-outlined text-lg">
-                              {booking.technician ? 'engineering' : 'person_off'}
-                            </span>
+            <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-slate-50 border-b border-slate-200">
+                    <tr>
+                      <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Booking ID</th>
+                      <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Service</th>
+                      <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Technician</th>
+                      <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Date</th>
+                      <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Status</th>
+                      <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200">
+                    {tabFilteredBookings.map((booking) => (
+                      <tr key={booking.id} className="hover:bg-slate-50 transition-colors">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm font-bold text-slate-900">{booking.id}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center gap-3">
+                            <span className="material-symbols-outlined text-[#1F7F85]">{booking.serviceIcon}</span>
+                            <div>
+                              <div className="text-sm font-bold text-slate-900">{booking.serviceName}</div>
+                            </div>
                           </div>
-                          <div>
-                            <span className={`text-sm font-bold ${booking.technician ? 'text-slate-700' : 'text-slate-400 italic'}`}>
-                              {booking.technician || 'Unassigned'}
-                            </span>
-                            {booking.technician && (
-                              <p className="text-[10px] text-slate-500">Available now</p>
-                            )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center gap-3">
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center border ${booking.technician ? 'bg-[#DCEBEC] text-[#1F7F85] border-[#1F7F85]/20' : 'bg-slate-100 text-slate-400 border-slate-200'}`}>
+                              <span className="material-symbols-outlined text-sm">
+                                {booking.technician ? 'engineering' : 'person_off'}
+                              </span>
+                            </div>
+                            <div>
+                              <div className={`text-sm font-medium ${booking.technician ? 'text-slate-700' : 'text-slate-400 italic'}`}>
+                                {booking.technician || 'Unassigned'}
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <button
-                      className="w-full py-3 mt-6 bg-[#1F7F85] text-white font-bold rounded-2xl hover:bg-[#0F4C5C] transition-colors shadow-md shadow-[#1F7F85]/20 flex items-center justify-center gap-2"
-                      onClick={() => {
-                        setAnimatingBookingId(booking.id);
-                        setTimeout(() => {
-                          setSelectedBooking(booking);
-                          setShowModal(true);
-                          setAnimatingBookingId(null);
-                        }, 500);
-                      }}
-                    >
-                      <span className="material-symbols-outlined">
-                        visibility
-                      </span>
-                      View Details
-                    </button>
-                  </div>
-                </div>
-              ))}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-slate-900">{booking.date}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold ${booking.statusColor} text-white`}>
+                            <span className="material-symbols-outlined text-xs">{booking.statusIcon}</span>
+                            {booking.statusText}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <button
+                            className="px-4 py-2 bg-[#1F7F85] text-white font-bold rounded-lg hover:bg-[#0F4C5C] transition-colors flex items-center gap-2 text-sm"
+                            onClick={() => {
+                              setSelectedBooking(booking);
+                              setShowModal(true);
+                            }}
+                          >
+                            <span className="material-symbols-outlined text-sm">visibility</span>
+                            View
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           ) : (
             <div className="text-center py-12">

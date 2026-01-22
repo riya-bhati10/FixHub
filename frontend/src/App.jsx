@@ -13,7 +13,7 @@ const App = () => {
       <Route path="/my-booking" element={<FixHubDashboard />} />
       <Route path="/book-service" element={<BookService />} />
       <Route path="/profile" element={<ProfileEdi />} />
-      <Route path="/booking-from" element={<BookServiceForm />} />
+      <Route path="/booking-from" element={<BookServiceForm showNavbar={false} />} />
 
     </Routes>
   );

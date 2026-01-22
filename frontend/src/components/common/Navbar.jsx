@@ -17,9 +17,7 @@ const Navbar = ({ isMenuOpen, setIsMenuOpen }) => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            <Link to="/" className="text-slate-600 hover:text-[#1F7F85] font-medium transition-colors">
-              Home
-            </Link>
+          
             <Link to="/my-booking" className="text-slate-600 hover:text-[#1F7F85] font-medium transition-colors">
               My booking
             </Link>
@@ -54,13 +52,7 @@ const Navbar = ({ isMenuOpen, setIsMenuOpen }) => {
         {isMenuOpen && (
           <div className="md:hidden border-t border-slate-200 py-4">
             <div className="flex flex-col space-y-4">
-              <Link
-                to="/"
-                className="text-slate-600 hover:text-[#1F7F85] font-medium transition-colors"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Home
-              </Link>
+             
               <Link
                 to="/my-booking"
                 className="text-slate-600 hover:text-[#1F7F85] font-medium transition-colors"
