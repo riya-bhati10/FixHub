@@ -6,6 +6,9 @@ import BookService from "./pages/customer/BookService"
 import ProfileEdi from "./pages/customer/ProfileEdit"
 import BookServiceForm from "./pages/customer/Bookingform";
 import Dashabaord from "./pages/customer/Dashbaord";
+import ReviewPage from "./pages/customer/ReviewPage";
+import BookingSuccess from "./pages/customer/BookingSuccess";
+
 const App = () => {
   return (
     <Routes>
@@ -14,10 +17,10 @@ const App = () => {
       <Route path="/book-service" element={<BookService />} />
       <Route path="/profile" element={<ProfileEdi />} />
       <Route path="/booking-from" element={<BookServiceForm showNavbar={false} />} />
-
+       <Route path="/review" element={<ReviewPage/>} />
+       <Route path="/booking-success" element={<BookingSuccess />} />
     </Routes>
   );
 };
 
 export default App;
-

@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import logo from '../../../public/logo.png';
 import Navbar from '../../components/common/Navbar';
 
 const MyBooking = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
@@ -76,19 +78,23 @@ const MyBooking = () => {
       statusColor: 'bg-blue-500',
       statusIcon: 'home_repair_service',
       serviceIcon: 'smartphone',
-      imageUrl: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400&h=300&fit=crop'
+      imageUrl: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400&h=300&fit=crop',
+      location: '123 Tech Avenue, San Francisco, CA',
+      serviceCharge: '$120.00'
     },
     {
       id: 'BK-9285',
       date: 'Oct 25, 2023',
       serviceName: 'Laptop Keyboard Replacement',
       technician: null,
-      status: 'pending',
-      statusText: 'Pending',
-      statusColor: 'bg-amber-500',
-      statusIcon: 'pending_actions',
+      status: 'active',
+      statusText: 'Active',
+      statusColor: 'bg-blue-500',
+      statusIcon: 'home_repair_service',
       serviceIcon: 'laptop',
-      imageUrl: 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400&h=300&fit=crop'
+      imageUrl: 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400&h=300&fit=crop',
+      location: '456 Innovation Dr, Palo Alto, CA',
+      serviceCharge: '$85.00'
     },
     {
       id: 'BK-9286',
@@ -100,19 +106,23 @@ const MyBooking = () => {
       statusColor: 'bg-emerald-500',
       statusIcon: 'task_alt',
       serviceIcon: 'tv',
-      imageUrl: 'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=400&h=300&fit=crop'
+      imageUrl: 'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=400&h=300&fit=crop',
+      location: '789 Screen Blvd, San Jose, CA',
+      serviceCharge: '$200.00'
     },
     {
       id: 'BK-9287',
       date: 'Oct 26, 2023',
       serviceName: 'PlayStation Controller Fix',
       technician: 'Marcus Rodriguez',
-      status: 'accepted',
-      statusText: 'Accepted',
-      statusColor: 'bg-green-500',
-      statusIcon: 'check_circle',
+      status: 'completed',
+      statusText: 'Completed',
+      statusColor: 'bg-emerald-500',
+      statusIcon: 'task_alt',
       serviceIcon: 'sports_esports',
-      imageUrl: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400&h=300&fit=crop'
+      imageUrl: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400&h=300&fit=crop',
+      location: '321 Gamer Lane, Los Angeles, CA',
+      serviceCharge: '$45.00'
     },
     {
       id: 'BK-9288',
@@ -124,7 +134,9 @@ const MyBooking = () => {
       statusColor: 'bg-red-500',
       statusIcon: 'cancel',
       serviceIcon: 'laptop_mac',
-      imageUrl: 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400&h=300&fit=crop'
+      imageUrl: 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400&h=300&fit=crop',
+      location: '555 Apple Way, Cupertino, CA',
+      serviceCharge: '$150.00'
     }
   ];
 
@@ -308,16 +320,17 @@ const MyBooking = () => {
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <button
-                            className="px-4 py-2 bg-[#1F7F85] text-white font-bold rounded-lg hover:bg-[#0F4C5C] transition-colors flex items-center gap-2 text-sm"
-                            onClick={() => {
-                              setSelectedBooking(booking);
-                              setShowModal(true);
-                            }}
-                          >
-                            <span className="material-symbols-outlined text-sm">visibility</span>
-                            View
-                          </button>
+                          <div className="flex items-center gap-2">
+                            {booking.status === 'completed' && (
+                              <button
+                                className="px-4 py-2 bg-amber-500 text-white font-bold rounded-lg hover:bg-amber-600 transition-colors flex items-center gap-2 text-sm"
+                                onClick={() => navigate('/review')}
+                              >
+                                <span className="material-symbols-outlined text-sm">rate_review</span>
+                                Review
+                              </button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -376,82 +389,129 @@ const MyBooking = () => {
 
         {/* Modal */}
         {showModal && selectedBooking && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-bold text-slate-900">Repair Details</h3>
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0F4C5C]/40 backdrop-blur-sm">
+            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden max-h-[90vh] flex flex-col animate-wave">
+              {/* Header */}
+              <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                <div>
+                  <h3 className="text-xl font-bold text-slate-900">Booking Details</h3>
+                  <p className="text-xs text-slate-500 font-medium mt-1">View complete information about your service</p>
+                </div>
                 <button
                   onClick={() => setShowModal(false)}
-                  className="text-slate-400 hover:text-slate-600 p-1"
+                  className="w-8 h-8 flex items-center justify-center rounded-full bg-white border border-slate-200 text-slate-400 hover:text-[#1F7F85] hover:border-[#1F7F85] transition-all"
                 >
-                  <span className="material-symbols-outlined">close</span>
+                  <span className="material-symbols-outlined text-lg">close</span>
                 </button>
               </div>
-              <img
-                src={selectedBooking.imageUrl}
-                alt="Service Image"
-                className="w-full h-48 object-cover rounded-xl mb-4"
-              />
-              <div className="space-y-4">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-[#1F7F85] mb-1 flex items-center gap-1">
-                      <span className="material-symbols-outlined text-xs">credit_card</span>
-                      Booking ID
-                    </p>
-                    <p className="text-xl font-bold text-[#0F4C5C]">{selectedBooking.id}</p>
+
+              {/* Scrollable Content */}
+              <div className="overflow-y-auto p-6 space-y-6">
+                {/* Service Image & Status */}
+                <div className="relative h-48 rounded-2xl overflow-hidden group shadow-sm">
+                  <img
+                    src={selectedBooking.imageUrl}
+                    alt="Service"
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                  <div className="absolute top-4 right-4">
+                     <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold shadow-sm ${selectedBooking.statusColor} text-white backdrop-blur-md bg-opacity-90`}>
+                        <span className="material-symbols-outlined text-[16px]">{selectedBooking.statusIcon}</span>
+                        {selectedBooking.statusText}
+                      </span>
                   </div>
-                  <div className="text-right">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1 flex items-center gap-1 justify-end">
-                      <span className="material-symbols-outlined text-xs">calendar_today</span>
-                      Date
-                    </p>
-                    <p className="text-sm font-bold text-slate-600">{selectedBooking.date}</p>
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4">
+                    <h4 className="text-white font-bold text-lg flex items-center gap-2">
+                       <span className="material-symbols-outlined text-[#AEE3E6]">{selectedBooking.serviceIcon}</span>
+                       {selectedBooking.serviceName}
+                    </h4>
                   </div>
                 </div>
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1 flex items-center gap-1">
-                    <span className="material-symbols-outlined text-xs">{selectedBooking.serviceIcon}</span>
-                    Service Name
-                  </p>
-                  <p className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                    <span className="material-symbols-outlined text-[#1F7F85]">{selectedBooking.serviceIcon}</span>
-                    {selectedBooking.serviceName}
-                  </p>
+
+                {/* Info Grid */}
+                <div className="grid grid-cols-2 gap-4">
+                   {/* Booking ID */}
+                   <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 hover:border-[#1F7F85]/20 transition-colors">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1 flex items-center gap-1">
+                        <span className="material-symbols-outlined text-sm">tag</span>
+                        Booking ID
+                      </p>
+                      <p className="text-sm font-bold text-slate-900">{selectedBooking.id}</p>
+                   </div>
+                   {/* Date */}
+                   <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 hover:border-[#1F7F85]/20 transition-colors">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1 flex items-center gap-1">
+                        <span className="material-symbols-outlined text-sm">event</span>
+                        Date
+                      </p>
+                      <p className="text-sm font-bold text-slate-900">{selectedBooking.date}</p>
+                   </div>
                 </div>
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 flex items-center gap-1">
-                    <span className="material-symbols-outlined text-xs">engineering</span>
-                    Technician
-                  </p>
-                  <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center border ${selectedBooking.technician ? 'bg-[#DCEBEC] text-[#1F7F85] border-[#1F7F85]/20' : 'bg-slate-100 text-slate-400 border-slate-200'}`}>
-                      <span className="material-symbols-outlined text-lg">
+
+                {/* Technician */}
+                <div className="p-4 border border-slate-100 rounded-2xl flex items-center gap-4 hover:border-[#1F7F85]/30 transition-colors bg-white shadow-sm">
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center border-2 ${selectedBooking.technician ? 'bg-[#DCEBEC] text-[#1F7F85] border-white shadow-md' : 'bg-slate-100 text-slate-400 border-slate-50'}`}>
+                      <span className="material-symbols-outlined text-xl">
                         {selectedBooking.technician ? 'engineering' : 'person_off'}
                       </span>
                     </div>
                     <div>
-                      <span className={`text-sm font-bold ${selectedBooking.technician ? 'text-slate-700' : 'text-slate-400 italic'}`}>
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-0.5">Technician</p>
+                      <p className={`text-sm font-bold ${selectedBooking.technician ? 'text-slate-900' : 'text-slate-400 italic'}`}>
                         {selectedBooking.technician || 'Unassigned'}
-                      </span>
-                      {selectedBooking.technician && (
-                        <p className="text-[10px] text-slate-500">Available now</p>
-                      )}
+                      </p>
                     </div>
-                  </div>
                 </div>
-                <div className="pt-4 border-t border-slate-100">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-slate-400 text-sm">schedule</span>
-                      <p className="text-xs text-slate-600">Estimated: 3 hours</p>
+
+                {/* Location & Cost Details */}
+                <div className="space-y-4">
+                    <div className="flex items-start gap-3">
+                        <div className="w-8 h-8 rounded-full bg-[#1F7F85]/10 flex items-center justify-center text-[#1F7F85] shrink-0">
+                            <span className="material-symbols-outlined text-lg">location_on</span>
+                        </div>
+                        <div>
+                            <h5 className="text-sm font-bold text-slate-900">Service Location</h5>
+                            <p className="text-sm text-slate-500 mt-0.5 leading-relaxed">
+                                {selectedBooking.location || "123, Tech Park, Silicon Valley, CA 94043"}
+                            </p>
+                        </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-slate-400 text-sm">payments</span>
-                      <p className="text-xs font-bold text-slate-700">$249.99</p>
+
+                    <div className="border-t border-dashed border-slate-200 pt-4 space-y-3">
+                        <div className="flex justify-between items-center">
+                            <span className="text-sm text-slate-500 font-medium flex items-center gap-2">
+                                <span className="material-symbols-outlined text-slate-400 text-lg">payments</span>
+                                Service Charge
+                            </span>
+                            <span className="text-xl font-black text-[#1F7F85]">{selectedBooking.serviceCharge || "$120.00"}</span>
+                        </div>
                     </div>
-                  </div>
                 </div>
+
+              </div>
+              
+              {/* Footer Actions */}
+              <div className="p-4 border-t border-slate-100 bg-slate-50/50 flex gap-3">
+                 <button 
+                    onClick={() => setShowModal(false)}
+                    className="flex-1 py-3 rounded-xl font-bold text-slate-600 hover:bg-white hover:shadow-sm hover:text-slate-800 border border-transparent hover:border-slate-200 transition-all"
+                 >
+                    Close
+                 </button>
+                 {selectedBooking.status === 'completed' ? (
+                    <button 
+                        onClick={() => navigate('/review')}
+                        className="flex-1 py-3 rounded-xl font-bold text-white bg-[#1F7F85] hover:bg-[#0F4C5C] shadow-lg shadow-[#1F7F85]/20 transition-all flex items-center justify-center gap-2"
+                    >
+                        <span className="material-symbols-outlined text-lg">rate_review</span>
+                        Write Review
+                    </button>
+                 ) : (
+                    <button className="flex-1 py-3 rounded-xl font-bold text-white bg-[#1F7F85] hover:bg-[#0F4C5C] shadow-lg shadow-[#1F7F85]/20 transition-all flex items-center justify-center gap-2">
+                        <span className="material-symbols-outlined text-lg">support_agent</span>
+                        Contact Support
+                    </button>
+                 )}
               </div>
             </div>
           </div>
