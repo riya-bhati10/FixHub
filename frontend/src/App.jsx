@@ -1,11 +1,10 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-
-import LandingPage from "./pages/LandingPage";
-import LoginPage from "./pages/LoginPage";
-import SignupPage from "./pages/SignupPage";
-import HowItWorksPage from "./pages/HowItWorksPage";
-import AboutPage from "./pages/AboutPage";
-import BookServicePage from "./pages/BookServicePage";
+import LandingPage from "./pages/Landing/LandingPage";
+import LoginPage from "./pages/Landing/LoginPage";
+import SignupPage from "./pages/Landing/SignupPage";
+import HowItWorksPage from "./pages/Landing/HowItWorksPage";
+import AboutPage from "./pages/Landing/AboutPage";
+import BookServicePage from "./pages/Landing/BookServicePage";
 
 function App() {
   return (

@@ -1,8 +1,10 @@
 import React from 'react';
-import Navbar from '../Common/Navbar';
-import Footer from '../Common/Footer';
+import { useNavigate } from 'react-router-dom';
+import Navbar from '../../Common/Navbar';
+import Footer from '../../Common/Footer';
 
 const AboutPage = () => {
+  const navigate = useNavigate();
   const stats = [
     { number: '500+', label: 'Happy Customers' },
     { number: '50+', label: 'Expert Technicians' },
@@ -34,13 +36,24 @@ const AboutPage = () => {
       
       {/* Hero Section */}
       <section className="pt-20 pb-16 bg-gradient-to-br from-fixhub-bgDark to-fixhub-bgDarkAlt">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <button
+            onClick={() => navigate('/')}
+            className="mb-6 flex items-center text-fixhub-textWhite hover:text-fixhub-mint transition-colors"
+          >
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Back to Home
+          </button>
+          <div className="text-center">
           <h1 className="text-4xl md:text-5xl font-bold text-fixhub-textWhite mb-6">
             About FixHub
           </h1>
           <p className="text-xl text-fixhub-light max-w-3xl mx-auto">
             We're on a mission to make electronics repair accessible, reliable, and convenient for everyone.
           </p>
+          </div>
         </div>
       </section>
 
