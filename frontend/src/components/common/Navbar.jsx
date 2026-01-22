@@ -62,11 +62,11 @@ const Navbar = ({ isMenuOpen, setIsMenuOpen }) => {
                 Home
               </Link>
               <Link
-                to="/services"
+                to="/my-booking"
                 className="text-slate-600 hover:text-[#1F7F85] font-medium transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Services
+                My Booking
               </Link>
               <Link
                 to="/book-service"

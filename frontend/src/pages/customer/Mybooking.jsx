@@ -23,8 +23,8 @@ const MyBooking = () => {
   // Stat cards data
   const statCards = [
     {
-      icon: 'book_online',
-      title: 'Total Service',
+      icon: 'build',
+      title: 'Total Repairs',
       value: '1,284',
       iconColor: 'text-[#1F7F85]',
       bgColor: 'bg-[#DCEBEC]',
@@ -34,7 +34,7 @@ const MyBooking = () => {
     },
     {
       icon: 'home_repair_service',
-      title: 'Ongoing Services',
+      title: 'Active Repairs',
       value: '42',
       iconColor: 'text-[#1F7F85]',
       bgColor: 'bg-[#DCEBEC]',
@@ -44,7 +44,7 @@ const MyBooking = () => {
     },
     {
       icon: 'pending_actions',
-      title: 'Pending Services',
+      title: 'Pending Repairs',
       value: '8',
       iconColor: 'text-orange-500',
       bgColor: 'bg-[#DCEBEC]',
@@ -54,7 +54,7 @@ const MyBooking = () => {
     },
     {
       icon: 'payments',
-      title: "Total Invesment",
+      title: "Total Spent",
       value: '$2,450.00',
       iconColor: 'text-teal-100',
       bgColor: 'bg-[#1F7F85]',
@@ -70,50 +70,50 @@ const MyBooking = () => {
     {
       id: 'BK-9284',
       date: 'Oct 24, 2023',
-      serviceName: 'Central AC Repair',
-      technician: 'David Smith',
+      serviceName: 'iPhone Screen Repair',
+      technician: 'Alex Chen',
       status: 'ongoing',
       statusText: 'Ongoing',
       statusColor: 'bg-blue-500',
       statusIcon: 'home_repair_service',
-      serviceIcon: 'ac_unit',
-      imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuC73LYjJHG6QGMzBZ0T6BHaXM1jt-z-IUz-3ojbuE5XgytTVZX-JlXQcqFqcucKvX7ww3i2_I54rR0n7AP5OaR1HKOkS8MKy0t4wFW9Jt0o8KwikeKxfWO60BYK8W7988kxnv2CVfy18Y1HoFS1ic9ySx_9gkB9iKD1O2gUAPgz66zeSK5w2r0jHHECB5BQYZDqfVNK0xlVYTiycPae_B_ASKZNq9u8t3UNPuXgtslXMysIugmH9PCxUM7hTKIlXBtYsMta04oxrs4'
+      serviceIcon: 'smartphone',
+      imageUrl: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400&h=300&fit=crop'
     },
     {
       id: 'BK-9285',
       date: 'Oct 25, 2023',
-      serviceName: 'Kitchen Plumbing',
+      serviceName: 'Laptop Keyboard Replacement',
       technician: null,
       status: 'pending',
       statusText: 'Pending',
       statusColor: 'bg-amber-500',
       statusIcon: 'pending_actions',
-      serviceIcon: 'plumbing',
-      imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDpznWPC2cwO3H92IDa3H9eE8Molmg1OxInpgl05g38FYA0slFwdDQ3sKkLLIi8y86rd9KfeKDsIU8JeeLQm0GJ130SqXIAdf9-i-wzFh0ShL8I8VsbWAho1XGYIvtng1khjheWgyLlLy7lhmudkja9aTniqR_jNVlepKbusk9VO450WzY_VdojN6ZGcrNvXB_bb8Bh7bk32iWHgkNGGAmMhsF21Kw62krd7SeXgDZ0qlXyjwicA-6TnN1oVsgcMKZJ70cwa_9ctxw'
+      serviceIcon: 'laptop',
+      imageUrl: 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400&h=300&fit=crop'
     },
     {
       id: 'BK-9286',
       date: 'Oct 23, 2023',
-      serviceName: 'Deep House Cleaning',
-      technician: 'Sarah Lee',
+      serviceName: 'TV LED Panel Repair',
+      technician: 'Sarah Johnson',
       status: 'completed',
       statusText: 'Completed',
       statusColor: 'bg-emerald-500',
       statusIcon: 'task_alt',
-      serviceIcon: 'cleaning_services',
-      imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBWDR0Ogo2ZEcjLeQw3Rw0ZjGNFWOWElwDxW_o7VWTfb_yKSn9N06MGavSUweUuz4p_Lx2RbOFMPdbJDrhZlF47EaX0HJtajAjY3nSQehpVG_5ZfR9uV20fmyNeiBikVwq3Bgbf0IiBqC1gfJscZAvPgeD5--IGDLZwQ8mhJMSe-qxKK093-XfY8gxvp5OYQ0gpM4Qm4wFO6U2JkVH1V2d7OD8B2sx-o0jVq6kM_EJKdgHgcAfiYxRvX7AuZ-5-lBZ6-gPIkD6SFtA'
+      serviceIcon: 'tv',
+      imageUrl: 'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=400&h=300&fit=crop'
     },
     {
       id: 'BK-9287',
       date: 'Oct 26, 2023',
-      serviceName: 'Electrical Wiring',
-      technician: 'Mike Johnson',
+      serviceName: 'PlayStation Controller Fix',
+      technician: 'Marcus Rodriguez',
       status: 'accepted',
       statusText: 'Accepted',
       statusColor: 'bg-green-500',
       statusIcon: 'check_circle',
-      serviceIcon: 'electrical_services',
-      imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuC73LYjJHG6QGMzBZ0T6BHaXM1jt-z-IUz-3ojbuE5XgytTVZX-JlXQcqFqcucKvX7ww3i2_I54rR0n7AP5OaR1HKOkS8MKy0t4wFW9Jt0o8KwikeKxfWO60BYK8W7988kxnv2CVfy18Y1HoFS1ic9ySx_9gkB9iKD1O2gUAPgz66zeSK5w2r0jHHECB5BQYZDqfVNK0xlVYTiycPae_B_ASKZNq9u8t3UNPuXgtslXMysIugmH9PCxUM7hTKIlXBtYsMta04oxrs4'
+      serviceIcon: 'sports_esports',
+      imageUrl: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400&h=300&fit=crop'
     }
   ];
 
@@ -196,14 +196,14 @@ const MyBooking = () => {
         <div className="bg-white border-b border-slate-200 sticky top-20 z-30">
           <div className="max-w-[1400px] mx-auto px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="w-full sm:w-auto">
-              <h2 className="text-xl font-bold text-slate-900 tracking-tight">Bookings Overview</h2>
+              <h2 className="text-xl font-bold text-slate-900 tracking-tight">Repair Bookings Overview</h2>
             </div>
             <div className="flex items-center gap-3 w-full sm:w-auto">
               <div className="relative w-full sm:w-80">
                 <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xl">search</span>
                 <input
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-[#1F7F85] focus:border-[#1F7F85]"
-                  placeholder="Search bookings..."
+                  placeholder="Search repairs..."
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
@@ -220,7 +220,7 @@ const MyBooking = () => {
         {/* Main Content */}
         <main className="flex-1 w-full max-w-[1400px] mx-auto p-8 space-y-8">
           {/* MyBooking Heading */}
-          <h1 className="text-2xl font-bold text-slate-900">MyBooking</h1>
+          <h1 className="text-2xl font-bold text-slate-900">My Repair Bookings</h1>
           {/* Stats Cards */}
 
 
@@ -332,7 +332,7 @@ const MyBooking = () => {
           ) : (
             <div className="text-center py-12">
               <span className="material-symbols-outlined text-6xl text-slate-300">search_off</span>
-              <p className="text-slate-500 mt-4 text-lg">No bookings found matching your search.</p>
+              <p className="text-slate-500 mt-4 text-lg">No repairs found matching your search.</p>
               <p className="text-slate-400 mt-2">Try adjusting your search terms.</p>
             </div>
           )}
@@ -343,7 +343,7 @@ const MyBooking = () => {
               <span className="material-symbols-outlined text-sm">
                 list
               </span>
-              Showing 3 of 1,284 bookings
+              Showing 3 of 1,284 repairs
             </p>
             <div className="flex gap-2">
               <button
@@ -383,7 +383,7 @@ const MyBooking = () => {
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
             <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
               <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-bold text-slate-900">Booking Details</h3>
+                <h3 className="text-xl font-bold text-slate-900">Repair Details</h3>
                 <button
                   onClick={() => setShowModal(false)}
                   className="text-slate-400 hover:text-slate-600 p-1"
