@@ -59,3 +59,51 @@ exports.createBooking = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+
+//  getBookings (for technician
+
+exports.getTechnicianBookings = async (req, res) => {
+  try {
+    const technicianId = req.user.userId;
+    const { status } = req.query;
+
+    const filter = { technicianId };
+    if (status) filter.status = status;
+
+    const bookings = await Booking.find(filter)
+      .populate("customerId", "fullname phone")
+      .populate("serviceId", "serviceName serviceCharge")
+      .sort({ createdAt: -1 });
+
+    const formattedBookings = bookings.map((b) => ({
+      bookingId: b._id,
+      status: b.status,
+      serviceDate: b.serviceDate,
+      timeSlot: b.timeSlot,
+      createdAt: b.createdAt,
+
+      customer: {
+        id: b.customerId._id,
+        name:
+          b.customerId.fullname.firstname +
+          " " +
+          b.customerId.fullname.lastname,
+        phone: b.customerId.phone,
+      },
+
+      service: {
+        id: b.serviceId._id,
+        name: b.serviceId.serviceName,
+        charge: b.serviceId.serviceCharge,
+      },
+    }));
+
+    res.json({
+      count: formattedBookings.length,
+      bookings: formattedBookings,
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
