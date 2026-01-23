@@ -107,3 +107,82 @@ exports.getTechnicianBookings = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+// Accept booking 
+exports.acceptBooking = async (req, res) => {
+  try {
+    const technicianId = req.user.userId;
+    const bookingId = req.params.id;
+
+    const booking = await Booking.findOne({
+      _id: bookingId,
+      technicianId,
+      status: "pending",
+    });
+
+    if (!booking) {
+      return res.status(404).json({
+        message: "Booking not found or already processed",
+      });
+    }
+
+    booking.status = "accepted";
+    booking.statusHistory.push({
+      status: "accepted",
+      updatedAt: new Date(),
+    });
+
+    await booking.save();
+
+    res.json({
+      message: "Booking accepted successfully",
+      bookingId: booking._id,
+      status: booking.status,
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// Reject booking
+exports.cancelBooking = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const role = req.user.role;
+    const bookingId = req.params.id;
+
+    const booking = await Booking.findOne({
+      _id: bookingId,
+      status: "pending",
+    });
+
+    if (!booking) {
+      return res.status(404).json({
+        message: "Booking not found or cannot be cancelled",
+      });
+    }
+    if (
+      (role === "customer" && booking.customerId.toString() !== userId) ||
+      (role === "technician" && booking.technicianId.toString() !== userId)
+    ) {
+      return res.status(403).json({
+        message: "Not authorized to cancel this booking",
+      });
+    }
+
+    booking.status = "cancelled";
+    booking.statusHistory.push({
+      status: "cancelled",
+      updatedAt: new Date(),
+    });
+
+    await booking.save();
+
+    res.json({
+      message: "Booking cancelled successfully",
+      status: booking.status,
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
