@@ -74,6 +74,31 @@ const BookService = () => {
     { id: 'washing_machine', label: 'Washing Machines' }
   ];
 
+  // Function to handle card click and navigate to booking form
+  const handleCardClick = (service) => {
+    navigate('/booking-form', {
+      state: {
+        serviceId: service.id,
+        serviceTitle: service.title,
+        servicePrice: service.price,
+        formData: {
+          issue: "",
+          serviceDate: "",
+          timeSlot: "",
+          address: "",
+          serviceType: service.title,
+          estimatedPrice: service.price
+        }
+      }
+    });
+  };
+
+  // Function to handle Book Now button click (to prevent event bubbling)
+  const handleBookNowClick = (e, service) => {
+    e.stopPropagation();
+    handleCardClick(service);
+  };
+
   const filteredServices = activeCategory === 'all' 
     ? services 
     : services.filter(service => service.category === activeCategory);
@@ -94,7 +119,11 @@ const BookService = () => {
           
           <div className="flex gap-6 overflow-x-auto pb-8 custom-scrollbar scroll-smooth">
             {featuredServices.map(service => (
-              <div key={service.id} className="w-[280px] h-[380px] flex-shrink-0 group relative overflow-hidden rounded-2xl cursor-pointer">
+              <div 
+                key={service.id} 
+                className="w-[280px] h-[380px] flex-shrink-0 group relative overflow-hidden rounded-2xl cursor-pointer"
+                onClick={() => handleCardClick(service)}
+              >
                 <img 
                   alt={service.title} 
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
@@ -148,7 +177,11 @@ const BookService = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredServices.map(service => (
-                <div key={service.id} className="group flex flex-col bg-white rounded-3xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-[#1F7F85]/10 transition-all duration-300 hover:-translate-y-1">
+                <div 
+                  key={service.id} 
+                  className="group flex flex-col bg-white rounded-3xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-[#1F7F85]/10 transition-all duration-300 hover:-translate-y-1 cursor-pointer"
+                  onClick={() => handleCardClick(service)}
+                >
                   <div className="h-56 overflow-hidden relative">
                     <img 
                       alt={service.title} 
@@ -179,7 +212,7 @@ const BookService = () => {
                         <p className="text-2xl font-black text-[#0F4C5C]">${service.price}</p>
                       </div>
                       <button 
-                        onClick={() => navigate('/booking-from')} 
+                        onClick={(e) => handleBookNowClick(e, service)}
                         className="px-6 py-3 bg-[#1F7F85] text-white text-sm font-bold rounded-xl hover:bg-[#0F4C5C] transition-all shadow-lg shadow-[#1F7F85]/20 flex items-center gap-2"
                       >
                         Book Now

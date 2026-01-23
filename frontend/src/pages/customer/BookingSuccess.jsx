@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import Navbar from '../../components/common/Navbar';
 
 const BookingSuccessConfirmation = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAnimating, setIsAnimating] = useState(true);
 
   const handleTrackBooking = () => {
@@ -21,132 +23,50 @@ const BookingSuccessConfirmation = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  // Rising icons data - bigger and white
-  const risingIcons = [
-    { 
-      icon: 'check_circle', 
-      color: '#FFFFFF', 
-      size: 'text-4xl md:text-5xl', 
-      delay: '0s', 
-      startBottom: '10%', 
-      endTop: '-10%',
-      right: '5%',
-      duration: '15s'
-    },
-    { 
-      icon: 'verified', 
-      color: '#FFFFFF', 
-      size: 'text-3xl md:text-4xl', 
-      delay: '2s', 
-      startBottom: '15%', 
-      endTop: '-15%',
-      right: '8%',
-      duration: '18s'
-    },
-    { 
-      icon: 'star', 
-      color: '#FFFFFF', 
-      size: 'text-4xl md:text-5xl', 
-      delay: '4s', 
-      startBottom: '5%', 
-      endTop: '-20%',
-      right: '12%',
-      duration: '20s'
-    },
-    { 
-      icon: 'celebration', 
-      color: '#FFFFFF', 
-      size: 'text-3xl md:text-4xl', 
-      delay: '1s', 
-      startBottom: '20%', 
-      endTop: '-5%',
-      right: '3%',
-      duration: '16s'
-    },
-    { 
-      icon: 'confirmation_number', 
-      color: '#FFFFFF', 
-      size: 'text-4xl md:text-5xl', 
-      delay: '3s', 
-      startBottom: '25%', 
-      endTop: '-25%',
-      right: '15%',
-      duration: '22s'
-    },
-    { 
-      icon: 'done_all', 
-      color: '#FFFFFF', 
-      size: 'text-3xl md:text-4xl', 
-      delay: '5s', 
-      startBottom: '8%', 
-      endTop: '-30%',
-      right: '18%',
-      duration: '25s'
-    },
-    { 
-      icon: 'thumb_up', 
-      color: '#FFFFFF', 
-      size: 'text-4xl md:text-5xl', 
-      delay: '1.5s', 
-      startBottom: '30%', 
-      endTop: '-8%',
-      right: '10%',
-      duration: '19s'
-    },
-    { 
-      icon: 'rocket_launch', 
-      color: '#FFFFFF', 
-      size: 'text-3xl md:text-4xl', 
-      delay: '3.5s', 
-      startBottom: '12%', 
-      endTop: '-12%',
-      right: '6%',
-      duration: '17s'
-    },
+  // Floating icons data
+  const floatingIcons = [
+    { icon: 'check_circle', color: '#1f7d84', size: 'text-2xl', delay: '0s', top: '20%', right: '10%' },
+    { icon: 'verified', color: '#1f7d84', size: 'text-xl', delay: '0.5s', top: '30%', right: '5%' },
+    { icon: 'star', color: '#FFD700', size: 'text-lg', delay: '1s', top: '40%', right: '15%' },
+    { icon: 'celebration', color: '#AEE3E6', size: 'text-xl', delay: '1.5s', top: '50%', right: '8%' },
+    { icon: 'confirmation_number', color: '#1f7d84', size: 'text-lg', delay: '2s', top: '60%', right: '12%' },
   ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F7FBFC] via-white to-[#E8F3F4] text-[#1A2E35] font-['Plus_Jakarta_Sans'] relative overflow-hidden">
+      <Navbar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
       {/* Material Icons Link */}
       <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
       
-      {/* Right Side Animated Rising Icons - Bigger and White */}
-      <div className="absolute right-0 top-0 h-full w-1/3 md:w-1/4 pointer-events-none overflow-hidden">
-        {risingIcons.map((item, index) => (
+      {/* Animated Floating Icons on Right Side */}
+      <div className="absolute right-0 top-0 h-full w-1/4 pointer-events-none overflow-hidden">
+        {floatingIcons.map((item, index) => (
           <div
             key={index}
-            className="absolute animate-rise opacity-0"
+            className="absolute animate-float"
             style={{
-              bottom: item.startBottom,
+              top: item.top,
               right: item.right,
               animationDelay: item.delay,
-              animationDuration: item.duration,
+              animationDuration: '3s',
               animationIterationCount: 'infinite',
-              animationTimingFunction: 'linear',
-              animationFillMode: 'forwards'
+              animationTimingFunction: 'ease-in-out'
             }}
           >
             <span
-              className={`material-symbols-outlined ${item.size} drop-shadow-lg`}
-              style={{ 
-                color: item.color,
-                textShadow: '0 4px 20px rgba(31, 125, 132, 0.4)',
-                filter: 'drop-shadow(0 4px 8px rgba(31, 125, 132, 0.3))'
-              }}
+              className={`material-symbols-outlined ${item.size} opacity-30`}
+              style={{ color: item.color }}
             >
               {item.icon}
             </span>
           </div>
         ))}
-        
-        {/* Background gradient for right side */}
-        <div className="absolute inset-0 bg-gradient-to-l from-[#1f7d84]/5 via-transparent to-transparent pointer-events-none"></div>
       </div>
 
       {/* Main Content */}
-      <div className="relative z-10">
-        <main className="flex flex-col items-center justify-center px-4 py-8 md:py-12 min-h-[calc(100vh-80px)]">
-          <div className="max-w-2xl w-full flex flex-col items-center text-center">
+      <div className="relative z-10 pt-24">
+        <main className="flex flex-col items-center justify-center px-4 py-8 md:py-12 min-h-[calc(100vh-96px)]">
+          <div className="max-w-xl w-full flex flex-col items-center text-center">
             
             {/* Success Icon with Animation */}
             <div className="mb-8 relative">
@@ -358,51 +278,12 @@ const BookingSuccessConfirmation = () => {
           font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
         }
         
-        /* Rising Animation - Bottom to Top */
-        @keyframes rise {
-          0% {
-            transform: translateY(0) scale(1);
-            opacity: 0;
-          }
-          10% {
-            opacity: 0.8;
+        @keyframes float {
+          0%, 100% {
+            transform: translateY(0px) rotate(0deg);
           }
           50% {
-            opacity: 1;
-            transform: translateY(-25vh) scale(1.1);
-          }
-          90% {
-            opacity: 0.5;
-          }
-          100% {
-            transform: translateY(-100vh) scale(1.2);
-            opacity: 0;
-          }
-        }
-        
-        /* Bubble Effect Animation */
-        @keyframes bubble {
-          0% {
-            transform: scale(0.8) translateY(0);
-            opacity: 0;
-          }
-          20% {
-            opacity: 1;
-            transform: scale(1) translateY(-10px);
-          }
-          40% {
-            transform: scale(1.05) translateY(-20px);
-          }
-          60% {
-            transform: scale(1.1) translateY(-30px);
-          }
-          80% {
-            transform: scale(1.05) translateY(-40px);
-            opacity: 0.8;
-          }
-          100% {
-            transform: scale(1) translateY(-50px);
-            opacity: 0;
+            transform: translateY(-20px) rotate(5deg);
           }
         }
         
@@ -437,12 +318,8 @@ const BookingSuccessConfirmation = () => {
           }
         }
         
-        .animate-rise {
-          animation: rise linear infinite;
-        }
-        
-        .animate-bubble {
-          animation: bubble ease-out infinite;
+        .animate-float {
+          animation: float 3s ease-in-out infinite;
         }
         
         .animate-fade-in-up {
@@ -467,11 +344,6 @@ const BookingSuccessConfirmation = () => {
         
         .animation-delay-700 {
           animation-delay: 700ms;
-        }
-        
-        /* Glow Effect for White Icons */
-        .material-symbols-outlined {
-          filter: drop-shadow(0 2px 4px rgba(255, 255, 255, 0.3));
         }
       `}</style>
     </div>

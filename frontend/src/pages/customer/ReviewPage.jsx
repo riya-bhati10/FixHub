@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Navbar from '../../components/common/Navbar';
 
 const ReviewPage = () => {
   const navigate = useNavigate();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [overallRating, setOverallRating] = useState(4);
   const [technicianRating, setTechnicianRating] = useState(5);
   const [reviewText, setReviewText] = useState('');
@@ -104,8 +106,9 @@ const ReviewPage = () => {
 
   return (
     <div className="min-h-screen bg-[#F7FBFC] text-[#1A2E35] font-['Manrope']">
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-3xl mx-auto">
+      <Navbar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
+      <div className="container mx-auto px-4 py-8 pt-24">
+        <div className="max-w-2xl mx-auto">
           {/* Header */}
           <div className="text-center mb-10">
             <h1 className="text-4xl md:text-5xl font-extrabold mb-4 text-[#0F4C5C] tracking-tight">
