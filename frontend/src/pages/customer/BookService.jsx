@@ -1,11 +1,19 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/common/Navbar';
 
 const BookService = () => {
-  const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState('all');
+  const [selectedService, setSelectedService] = useState(null);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  
+  // Form state
+  const [formData, setFormData] = useState({
+    issue: "",
+    serviceDate: "",
+    timeSlot: "",
+    address: ""
+  });
 
   const services = [
     {
@@ -74,29 +82,38 @@ const BookService = () => {
     { id: 'washing_machine', label: 'Washing Machines' }
   ];
 
-  // Function to handle card click and navigate to booking form
+  // Function to handle card click
   const handleCardClick = (service) => {
-    navigate('/booking-form', {
-      state: {
-        serviceId: service.id,
-        serviceTitle: service.title,
-        servicePrice: service.price,
-        formData: {
-          issue: "",
-          serviceDate: "",
-          timeSlot: "",
-          address: "",
-          serviceType: service.title,
-          estimatedPrice: service.price
-        }
-      }
+    setSelectedService(service);
+    setIsFormOpen(true);
+    // Reset form data
+    setFormData({
+      issue: "",
+      serviceDate: "",
+      timeSlot: "",
+      address: ""
     });
   };
 
-  // Function to handle Book Now button click (to prevent event bubbling)
-  const handleBookNowClick = (e, service) => {
-    e.stopPropagation();
-    handleCardClick(service);
+  // Function to handle form input changes
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  // Function to handle form submission
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log("Booking Details:", {
+      service: selectedService,
+      formData: formData
+    });
+    alert(`Booking confirmed for ${selectedService.title}!`);
+    setIsFormOpen(false);
+    setSelectedService(null);
   };
 
   const filteredServices = activeCategory === 'all' 
@@ -106,8 +123,147 @@ const BookService = () => {
   const featuredServices = services.filter(service => service.rating >= 4.8);
 
   return (
-    <div className="min-h-screen bg-[#F7FBFC] text-slate-800 font-['Manrope']">
+    <div className="min-h-screen bg-[#F7FBFC] text-slate-800 font-['Manrope'] relative">
       <Navbar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
+      
+      {/* Booking Form Modal */}
+      {isFormOpen && selectedService && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-8">
+              <div className="flex justify-between items-center mb-6">
+                <div>
+                  <h2 className="text-2xl font-bold text-slate-900">Book Service</h2>
+                  <p className="text-slate-500">Complete the form to schedule your repair</p>
+                </div>
+                <button 
+                  onClick={() => setIsFormOpen(false)}
+                  className="p-2 rounded-lg hover:bg-slate-100 transition-colors"
+                >
+                  <span className="material-symbols-outlined text-2xl">close</span>
+                </button>
+              </div>
+
+              {/* Service Summary */}
+              <div className="bg-slate-50 rounded-2xl p-6 mb-8">
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 rounded-xl overflow-hidden">
+                    <img 
+                      src={selectedService.image} 
+                      alt={selectedService.title}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-slate-900">{selectedService.title}</h3>
+                    <p className="text-slate-500 text-sm">{selectedService.description}</p>
+                    <div className="flex items-center gap-4 mt-2">
+                      <span className="text-lg font-bold text-[#0F4C5C]">${selectedService.price}</span>
+                      <span className="flex items-center gap-1 text-sm text-slate-600">
+                        <span className="material-symbols-outlined text-amber-400 text-sm fill-current">star</span>
+                        {selectedService.rating} ({selectedService.reviews} reviews)
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Booking Form */}
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                    Describe the Issue
+                  </label>
+                  <textarea
+                    name="issue"
+                    value={formData.issue}
+                    onChange={handleInputChange}
+                    placeholder="Please describe what problem you're facing with your device..."
+                    className="w-full p-4 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-[#1F7F85] focus:border-[#1F7F85] outline-none transition-all h-32 resize-none"
+                    required
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">
+                      Preferred Service Date
+                    </label>
+                    <input
+                      type="date"
+                      name="serviceDate"
+                      value={formData.serviceDate}
+                      onChange={handleInputChange}
+                      className="w-full p-4 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-[#1F7F85] focus:border-[#1F7F85] outline-none transition-all"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">
+                      Preferred Time Slot
+                    </label>
+                    <select
+                      name="timeSlot"
+                      value={formData.timeSlot}
+                      onChange={handleInputChange}
+                      className="w-full p-4 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-[#1F7F85] focus:border-[#1F7F85] outline-none transition-all"
+                      required
+                    >
+                      <option value="">Select time slot</option>
+                      <option value="9:00 AM - 11:00 AM">9:00 AM - 11:00 AM</option>
+                      <option value="11:00 AM - 1:00 PM">11:00 AM - 1:00 PM</option>
+                      <option value="1:00 PM - 3:00 PM">1:00 PM - 3:00 PM</option>
+                      <option value="3:00 PM - 5:00 PM">3:00 PM - 5:00 PM</option>
+                      <option value="5:00 PM - 7:00 PM">5:00 PM - 7:00 PM</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                    Service Address
+                  </label>
+                  <textarea
+                    name="address"
+                    value={formData.address}
+                    onChange={handleInputChange}
+                    placeholder="Enter your complete address where the technician should visit..."
+                    className="w-full p-4 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-[#1F7F85] focus:border-[#1F7F85] outline-none transition-all h-32 resize-none"
+                    required
+                  />
+                </div>
+
+                <div className="pt-6 border-t border-slate-200">
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <p className="text-sm text-slate-500">Service Charge</p>
+                      <p className="text-2xl font-bold text-[#0F4C5C]">${selectedService.price}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-slate-500">Total Amount</p>
+                      <p className="text-2xl font-bold text-[#0F4C5C]">${selectedService.price}</p>
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full py-4 bg-[#1F7F85] text-white text-lg font-bold rounded-2xl hover:bg-[#0F4C5C] transition-all shadow-lg shadow-[#1F7F85]/20 flex items-center justify-center gap-2"
+                  >
+                    <span className="material-symbols-outlined">calendar_month</span>
+                    Confirm Booking
+                  </button>
+                  
+                  <p className="text-center text-sm text-slate-500 mt-4">
+                    By booking, you agree to our Terms of Service
+                  </p>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Main Content */}
       <main className="max-w-[1440px] mx-auto px-6 py-10 pt-24">
 
@@ -212,7 +368,10 @@ const BookService = () => {
                         <p className="text-2xl font-black text-[#0F4C5C]">${service.price}</p>
                       </div>
                       <button 
-                        onClick={(e) => handleBookNowClick(e, service)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCardClick(service);
+                        }}
                         className="px-6 py-3 bg-[#1F7F85] text-white text-sm font-bold rounded-xl hover:bg-[#0F4C5C] transition-all shadow-lg shadow-[#1F7F85]/20 flex items-center gap-2"
                       >
                         Book Now
@@ -249,9 +408,12 @@ const BookService = () => {
                 <ul className="space-y-3 text-sm text-slate-500">
                   {services.slice(0, 4).map(service => (
                     <li key={service.id}>
-                      <a className="hover:text-[#1F7F85] transition-colors hover:font-medium" href="#">
+                      <button 
+                        onClick={() => handleCardClick(service)}
+                        className="hover:text-[#1F7F85] transition-colors hover:font-medium text-left"
+                      >
                         {service.title}
-                      </a>
+                      </button>
                     </li>
                   ))}
                 </ul>
@@ -281,12 +443,12 @@ const BookService = () => {
           <div className="mt-16 pt-8 border-t border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-6">
             <p className="text-xs text-slate-400 font-medium">© 2024 FixHub Electronics. All rights reserved.</p>
             <div className="flex gap-4">
-              <a className="size-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:text-[#1F7F85] transition-all border border-slate-100 hover:border-[#1F7F85]/30 hover:shadow-md" href="#">
+              <button className="size-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:text-[#1F7F85] transition-all border border-slate-100 hover:border-[#1F7F85]/30 hover:shadow-md">
                 <span className="material-symbols-outlined text-xl">public</span>
-              </a>
-              <a className="size-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:text-[#1F7F85] transition-all border border-slate-100 hover:border-[#1F7F85]/30 hover:shadow-md" href="#">
+              </button>
+              <button className="size-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:text-[#1F7F85] transition-all border border-slate-100 hover:border-[#1F7F85]/30 hover:shadow-md">
                 <span className="material-symbols-outlined text-xl">share</span>
-              </a>
+              </button>
             </div>
           </div>
         </div>
