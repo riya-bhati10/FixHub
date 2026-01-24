@@ -8,6 +8,7 @@ import BookServiceForm from "./pages/customer/Bookingform";
 import Dashabaord from "./pages/customer/Dashbaord";
 import ReviewPage from "./pages/customer/ReviewPage";
 import BookingSuccess from "./pages/customer/BookingSuccess";
+import CancelBooking from "./pages/customer/CancelBooking";
 
 const App = () => {
   return (
@@ -19,6 +20,7 @@ const App = () => {
       <Route path="/booking-from" element={<BookServiceForm showNavbar={false} />} />
        <Route path="/review" element={<ReviewPage/>} />
        <Route path="/booking-success" element={<BookingSuccess />} />
+       <Route path="/cancel-booking" element={<CancelBooking />} />
     </Routes>
   );
 };

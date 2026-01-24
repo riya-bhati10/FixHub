@@ -224,14 +224,14 @@ const MyBooking = () => {
               <div className="relative w-full sm:w-80">
                 <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xl">search</span>
                 <input
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-[#1F7F85] focus:border-[#1F7F85]"
+                  className="w-full bg-slate-50 border border-slate-200 pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-[#1F7F85] focus:border-[#1F7F85]"
                   placeholder="Search repairs..."
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
-              <button className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-[#1F7F85] bg-[#DCEBEC] border border-[#1F7F85]/20 rounded-xl hover:bg-[#1F7F85] hover:text-white transition-all whitespace-nowrap">
+              <button className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-[#1F7F85] bg-[#DCEBEC] border border-[#1F7F85]/20 hover:bg-[#1F7F85] hover:text-white transition-all whitespace-nowrap">
                 <span className="material-symbols-outlined text-lg">search</span>
                 Search
               </button>
@@ -247,7 +247,7 @@ const MyBooking = () => {
 
 
           {/* Tabs with Icons */}
-          <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+          <div className="bg-white border border-slate-200 overflow-hidden">
             <div className="px-8 flex items-center gap-8 border-b border-slate-100 overflow-x-auto scrollbar-hide">
               {tabItems.map((tab) => (
                 <button
@@ -269,7 +269,7 @@ const MyBooking = () => {
 
           {/* Booking Rows */}
           {tabFilteredBookings.length > 0 ? (
-            <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+            <div className="bg-white border border-slate-200 overflow-hidden shadow-sm">
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead className="bg-slate-50 border-b border-slate-200">
@@ -298,7 +298,7 @@ const MyBooking = () => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center gap-3">
-                            <div className={`w-8 h-8 rounded-full flex items-center justify-center border ${booking.technician ? 'bg-[#DCEBEC] text-[#1F7F85] border-[#1F7F85]/20' : 'bg-slate-100 text-slate-400 border-slate-200'}`}>
+                            <div className={`w-8 h-8 flex items-center justify-center border ${booking.technician ? 'bg-[#DCEBEC] text-[#1F7F85] border-[#1F7F85]/20' : 'bg-slate-100 text-slate-400 border-slate-200'}`}>
                               <span className="material-symbols-outlined text-sm">
                                 {booking.technician ? 'engineering' : 'person_off'}
                               </span>
@@ -314,7 +314,7 @@ const MyBooking = () => {
                           <div className="text-sm text-slate-900">{booking.date}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold ${booking.statusColor} text-white`}>
+                          <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-bold ${booking.statusColor} text-white`}>
                             <span className="material-symbols-outlined text-xs">{booking.statusIcon}</span>
                             {booking.statusText}
                           </span>
@@ -323,7 +323,7 @@ const MyBooking = () => {
                           <div className="flex items-center gap-2">
                             {booking.status === 'completed' && (
                               <button
-                                className="px-4 py-2 bg-amber-500 text-white font-bold rounded-lg hover:bg-amber-600 transition-colors flex items-center gap-2 text-sm"
+                                className="px-4 py-2 bg-amber-500 text-white font-bold hover:bg-amber-600 transition-colors flex items-center gap-2 text-sm"
                                 onClick={() => navigate('/review')}
                               >
                                 <span className="material-symbols-outlined text-sm">rate_review</span>
@@ -346,51 +346,19 @@ const MyBooking = () => {
             </div>
           )}
 
-          {/* Pagination */}
-          <div className="flex items-center justify-between pt-8">
-            <p className="text-xs text-slate-500 font-medium tracking-tight flex items-center gap-1">
-              <span className="material-symbols-outlined text-sm">
-                list
-              </span>
-              Showing 3 of 1,284 repairs
-            </p>
-            <div className="flex gap-2">
-              <button
-                className="p-2 border border-slate-200 rounded-lg text-slate-400 hover:bg-slate-50 transition-colors flex items-center gap-1"
-                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-              >
-                <span className="material-symbols-outlined text-sm">chevron_left</span>
-                Prev
-              </button>
-
-              {paginationButtons.map((num) => (
-                <button
-                  key={num}
-                  onClick={() => setCurrentPage(num)}
-                  className={`w-9 h-9 flex items-center justify-center text-xs font-bold rounded-lg transition-colors ${currentPage === num
-                      ? 'bg-[#1F7F85] text-white shadow-sm'
-                      : 'text-slate-500 hover:bg-slate-50'
-                    }`}
-                >
-                  {num}
-                </button>
-              ))}
-
-              <button
-                className="p-2 border border-slate-200 rounded-lg text-slate-400 hover:bg-slate-50 transition-colors flex items-center gap-1"
-                onClick={() => setCurrentPage(prev => prev + 1)}
-              >
-                Next
-                <span className="material-symbols-outlined text-sm">chevron_right</span>
-              </button>
-            </div>
+          {/* Show All Button */}
+          <div className="flex justify-center pt-8">
+            <button className="px-6 py-3 bg-white border border-slate-200 text-slate-600 font-bold hover:bg-slate-50 hover:text-[#1F7F85] hover:border-[#1F7F85] transition-all shadow-sm flex items-center gap-2">
+              Show All
+              <span className="material-symbols-outlined text-lg">expand_more</span>
+            </button>
           </div>
         </main>
 
         {/* Modal */}
         {showModal && selectedBooking && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0F4C5C]/40 backdrop-blur-sm">
-            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden max-h-[90vh] flex flex-col animate-wave">
+            <div className="bg-white shadow-2xl w-full max-w-lg overflow-hidden max-h-[90vh] flex flex-col animate-wave">
               {/* Header */}
               <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                 <div>
@@ -399,7 +367,7 @@ const MyBooking = () => {
                 </div>
                 <button
                   onClick={() => setShowModal(false)}
-                  className="w-8 h-8 flex items-center justify-center rounded-full bg-white border border-slate-200 text-slate-400 hover:text-[#1F7F85] hover:border-[#1F7F85] transition-all"
+                  className="w-8 h-8 flex items-center justify-center bg-white border border-slate-200 text-slate-400 hover:text-[#1F7F85] hover:border-[#1F7F85] transition-all"
                 >
                   <span className="material-symbols-outlined text-lg">close</span>
                 </button>
@@ -408,14 +376,14 @@ const MyBooking = () => {
               {/* Scrollable Content */}
               <div className="overflow-y-auto p-6 space-y-6">
                 {/* Service Image & Status */}
-                <div className="relative h-48 rounded-2xl overflow-hidden group shadow-sm">
+                <div className="relative h-48 overflow-hidden group shadow-sm">
                   <img
                     src={selectedBooking.imageUrl}
                     alt="Service"
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
                   <div className="absolute top-4 right-4">
-                     <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold shadow-sm ${selectedBooking.statusColor} text-white backdrop-blur-md bg-opacity-90`}>
+                     <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold shadow-sm ${selectedBooking.statusColor} text-white backdrop-blur-md bg-opacity-90`}>
                         <span className="material-symbols-outlined text-[16px]">{selectedBooking.statusIcon}</span>
                         {selectedBooking.statusText}
                       </span>
@@ -431,7 +399,7 @@ const MyBooking = () => {
                 {/* Info Grid */}
                 <div className="grid grid-cols-2 gap-4">
                    {/* Booking ID */}
-                   <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 hover:border-[#1F7F85]/20 transition-colors">
+                   <div className="p-4 bg-slate-50 border border-slate-100 hover:border-[#1F7F85]/20 transition-colors">
                       <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1 flex items-center gap-1">
                         <span className="material-symbols-outlined text-sm">tag</span>
                         Booking ID
@@ -439,7 +407,7 @@ const MyBooking = () => {
                       <p className="text-sm font-bold text-slate-900">{selectedBooking.id}</p>
                    </div>
                    {/* Date */}
-                   <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 hover:border-[#1F7F85]/20 transition-colors">
+                   <div className="p-4 bg-slate-50 border border-slate-100 hover:border-[#1F7F85]/20 transition-colors">
                       <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1 flex items-center gap-1">
                         <span className="material-symbols-outlined text-sm">event</span>
                         Date
@@ -449,8 +417,8 @@ const MyBooking = () => {
                 </div>
 
                 {/* Technician */}
-                <div className="p-4 border border-slate-100 rounded-2xl flex items-center gap-4 hover:border-[#1F7F85]/30 transition-colors bg-white shadow-sm">
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center border-2 ${selectedBooking.technician ? 'bg-[#DCEBEC] text-[#1F7F85] border-white shadow-md' : 'bg-slate-100 text-slate-400 border-slate-50'}`}>
+                <div className="p-4 border border-slate-100 flex items-center gap-4 hover:border-[#1F7F85]/30 transition-colors bg-white shadow-sm">
+                    <div className={`w-12 h-12 flex items-center justify-center border-2 ${selectedBooking.technician ? 'bg-[#DCEBEC] text-[#1F7F85] border-white shadow-md' : 'bg-slate-100 text-slate-400 border-slate-50'}`}>
                       <span className="material-symbols-outlined text-xl">
                         {selectedBooking.technician ? 'engineering' : 'person_off'}
                       </span>
@@ -466,7 +434,7 @@ const MyBooking = () => {
                 {/* Location & Cost Details */}
                 <div className="space-y-4">
                     <div className="flex items-start gap-3">
-                        <div className="w-8 h-8 rounded-full bg-[#1F7F85]/10 flex items-center justify-center text-[#1F7F85] shrink-0">
+                        <div className="w-8 h-8 bg-[#1F7F85]/10 flex items-center justify-center text-[#1F7F85] shrink-0">
                             <span className="material-symbols-outlined text-lg">location_on</span>
                         </div>
                         <div>
@@ -494,20 +462,20 @@ const MyBooking = () => {
               <div className="p-4 border-t border-slate-100 bg-slate-50/50 flex gap-3">
                  <button 
                     onClick={() => setShowModal(false)}
-                    className="flex-1 py-3 rounded-xl font-bold text-slate-600 hover:bg-white hover:shadow-sm hover:text-slate-800 border border-transparent hover:border-slate-200 transition-all"
+                    className="flex-1 py-3 font-bold text-slate-600 hover:bg-white hover:shadow-sm hover:text-slate-800 border border-transparent hover:border-slate-200 transition-all"
                  >
                     Close
                  </button>
                  {selectedBooking.status === 'completed' ? (
                     <button 
                         onClick={() => navigate('/review')}
-                        className="flex-1 py-3 rounded-xl font-bold text-white bg-[#1F7F85] hover:bg-[#0F4C5C] shadow-lg shadow-[#1F7F85]/20 transition-all flex items-center justify-center gap-2"
+                        className="flex-1 py-3 font-bold text-white bg-[#1F7F85] hover:bg-[#0F4C5C] shadow-lg shadow-[#1F7F85]/20 transition-all flex items-center justify-center gap-2"
                     >
                         <span className="material-symbols-outlined text-lg">rate_review</span>
                         Write Review
                     </button>
                  ) : (
-                    <button className="flex-1 py-3 rounded-xl font-bold text-white bg-[#1F7F85] hover:bg-[#0F4C5C] shadow-lg shadow-[#1F7F85]/20 transition-all flex items-center justify-center gap-2">
+                    <button className="flex-1 py-3 font-bold text-white bg-[#1F7F85] hover:bg-[#0F4C5C] shadow-lg shadow-[#1F7F85]/20 transition-all flex items-center justify-center gap-2">
                         <span className="material-symbols-outlined text-lg">support_agent</span>
                         Contact Support
                     </button>
