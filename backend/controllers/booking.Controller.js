@@ -1,6 +1,7 @@
 const Booking = require("../models/Booking.model");
 const Service = require("../models/Service.model");
 
+// create new booking (for customer)
 exports.createBooking = async (req, res) => {
   try {
     const customerId = req.user.userId;
@@ -60,16 +61,19 @@ exports.createBooking = async (req, res) => {
   }
 };
 
-
-//  getBookings (for technician
-
+//  getBookings (for technician)
 exports.getTechnicianBookings = async (req, res) => {
   try {
     const technicianId = req.user.userId;
     const { status } = req.query;
 
     const filter = { technicianId };
-    if (status) filter.status = status;
+    if (status && typeof status === 'string') {
+      const allowedStatuses = ['pending', 'accepted', 'in_progress', 'completed', 'cancelled'];
+      if (allowedStatuses.includes(status)) {
+        filter.status = status;
+      }
+    }
 
     const bookings = await Booking.find(filter)
       .populate("customerId", "fullname phone")
@@ -84,18 +88,16 @@ exports.getTechnicianBookings = async (req, res) => {
       createdAt: b.createdAt,
 
       customer: {
-        id: b.customerId._id,
-        name:
-          b.customerId.fullname.firstname +
-          " " +
-          b.customerId.fullname.lastname,
-        phone: b.customerId.phone,
+        id: b.customerId?._id || null,
+        name: b.customerId?.fullname ?
+          b.customerId.fullname.firstname + " " + b.customerId.fullname.lastname : "N/A",
+        phone: b.customerId?.phone || "N/A",
       },
 
       service: {
-        id: b.serviceId._id,
-        name: b.serviceId.serviceName,
-        charge: b.serviceId.serviceCharge,
+        id: b.serviceId?._id || null,
+        name: b.serviceId?.serviceName || "N/A",
+        charge: b.serviceId?.serviceCharge || 0,
       },
     }));
 
@@ -108,7 +110,7 @@ exports.getTechnicianBookings = async (req, res) => {
   }
 };
 
-// Accept booking 
+// Accept booking (for technician)
 exports.acceptBooking = async (req, res) => {
   try {
     const technicianId = req.user.userId;
@@ -144,7 +146,7 @@ exports.acceptBooking = async (req, res) => {
   }
 };
 
-// Reject booking
+// Reject booking (for both technician and customer)
 exports.cancelBooking = async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -186,3 +188,114 @@ exports.cancelBooking = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+
+// update booking status(technician)
+exports.updateBookingStatus = async (req, res) => {
+  try {
+    const technicianId = req.user.userId;
+    const bookingId = req.params.id;
+    const { status } = req.body;
+
+    if (!status || typeof status !== 'string') {
+      return res.status(400).json({
+        message: "Status is required and must be a string",
+      });
+    }
+
+    const allowedTransitions = {
+      accepted: ["in_progress"],
+      in_progress: ["completed"],
+    };
+
+    const booking = await Booking.findOne({
+      _id: bookingId,
+      technicianId,
+    });
+
+    if (!booking) {
+      return res.status(404).json({
+        message: "Booking not found or access denied",
+      });
+    }
+
+    const currentStatus = booking.status;
+
+    if (
+      !allowedTransitions[currentStatus] ||
+      !allowedTransitions[currentStatus].includes(status)
+    ) {
+      return res.status(400).json({
+        message: `Invalid status transition from ${currentStatus} to ${status}`,
+      });
+    }
+
+    booking.status = status;
+    booking.statusHistory.push({
+      status,
+      updatedAt: new Date(),
+    });
+
+    await booking.save();
+
+    res.json({
+      message: "Booking status updated successfully",
+      bookingId: booking._id,
+      status: booking.status,
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+
+// Get bookings (for customer)
+exports.getCustomerBookings = async (req, res) => {
+  try {
+    const customerId = req.user.userId;
+    const { status } = req.query;
+
+    const filter = { customerId };
+    if (status && typeof status === 'string') {
+      const allowedStatuses = ['pending', 'accepted', 'in_progress', 'completed', 'cancelled'];
+      if (allowedStatuses.includes(status)) {
+        filter.status = status;
+      }
+    }
+
+    const bookings = await Booking.find(filter)
+      .populate("technicianId", "fullname phone")
+      .populate("serviceId", "serviceName serviceCharge")
+      .sort({ createdAt: -1 });
+
+    const formattedBookings = bookings.map((b) => ({
+      bookingId: b._id,
+      status: b.status,
+      serviceDate: b.serviceDate,
+      timeSlot: b.timeSlot,
+      issue: b.issue,
+      createdAt: b.createdAt,
+
+      technician: {
+        id: b.technicianId?._id || null,
+        name: b.technicianId?.fullname ? 
+          b.technicianId.fullname.firstname + " " + b.technicianId.fullname.lastname : "N/A",
+        phone: b.technicianId?.phone || "N/A",
+      },
+
+      service: {
+        id: b.serviceId?._id || null,
+        name: b.serviceId?.serviceName || "N/A",
+        charge: b.serviceId?.serviceCharge || 0,
+      },
+    }));
+
+    res.json({
+      count: formattedBookings.length,
+      bookings: formattedBookings,
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
