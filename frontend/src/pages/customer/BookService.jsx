@@ -15,6 +15,9 @@ const BookService = () => {
   const [viewingReviewsFor, setViewingReviewsFor] = useState(null);
   const addressInputRef = useRef(null);
   const [isLocating, setIsLocating] = useState(false);
+  const [addressSuggestions, setAddressSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const suggestionTimeoutRef = useRef(null);
   
   // Form state
   const [formData, setFormData] = useState({
@@ -167,10 +170,35 @@ const BookService = () => {
     setIsReviewModalOpen(true);
   };
 
+  const fetchAddressSuggestions = async (query) => {
+    if (!query || query.length < 3) {
+      setAddressSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&addressdetails=1&limit=5`
+      );
+      if (response.ok) {
+        const data = await response.json();
+        setAddressSuggestions(data);
+        setShowSuggestions(true);
+      }
+    } catch (error) {
+      console.error("Error fetching address suggestions:", error);
+    }
+  };
+
   // Function to handle form input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    if (name === 'address') setLocationError(null);
+    if (name === 'address') {
+      setLocationError(null);
+      if (suggestionTimeoutRef.current) clearTimeout(suggestionTimeoutRef.current);
+      suggestionTimeoutRef.current = setTimeout(() => fetchAddressSuggestions(value), 500);
+    }
     setFormData(prev => ({
       ...prev,
       [name]: value
@@ -179,25 +207,118 @@ const BookService = () => {
 
   const [locationError, setLocationError] = useState(null);
 
-  const getLocation = () => {
-    if (navigator.geolocation) {
+  // Helper function to fetch address from coordinates
+  const fetchAddressFromCoords = async (coords) => {
+    const { latitude, longitude } = coords;
+    
+    try {
+      // First try with more detailed Nominatim
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1`
+      );
+      
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      
+      const data = await response.json();
+      
+      if (data && data.display_name) {
+        setFormData(prev => ({ 
+          ...prev, 
+          address: data.display_name 
+        }));
+      } else {
+        // Fallback to coordinates
+        setFormData(prev => ({ 
+          ...prev, 
+          address: `${latitude.toFixed(6)}, ${longitude.toFixed(6)}` 
+        }));
+      }
+    } catch (error) {
+      console.error('Reverse geocoding error:', error);
+      // Fallback to Google Maps format if Nominatim fails
+      setFormData(prev => ({ 
+        ...prev, 
+        address: `https://www.google.com/maps?q=${latitude},${longitude}` 
+      }));
+    } finally {
+      setIsLocating(false);
+    }
+  };
+
+  // Error handler
+  const handleGeolocationError = (error) => {
+    setIsLocating(false);
+    
+    switch(error.code) {
+      case error.PERMISSION_DENIED:
+        setLocationError('Location access was denied. Please allow location access in browser settings.');
+        break;
+      case error.POSITION_UNAVAILABLE:
+        setLocationError('Location information is unavailable.');
+        break;
+      case error.TIMEOUT:
+        setLocationError('The request to get your location timed out.');
+        break;
+      case error.UNKNOWN_ERROR:
+        setLocationError('An unknown error occurred while getting your location.');
+        break;
+      default:
+        setLocationError('Unable to retrieve your location.');
+    }
+  };
+
+  const getLocation = async () => {
+    setIsLocating(true);
+    setLocationError(null);
+    
+    if (!navigator.geolocation) {
+      setLocationError('Geolocation is not supported by your browser.');
+      setIsLocating(false);
+      return;
+    }
+
+    // Permission check
+    if (!navigator.permissions) {
+      // For browsers that don't support permissions API
       navigator.geolocation.getCurrentPosition(
         async (position) => {
-          const { latitude, longitude } = position.coords;
-          try {
-            const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
-            const data = await response.json();
-            setFormData(prev => ({ ...prev, address: data.display_name }));
-          } catch (error) {
-            setFormData(prev => ({ ...prev, address: `${latitude}, ${longitude}` }));
-          }
+          await fetchAddressFromCoords(position.coords);
         },
         (error) => {
-          alert('Unable to retrieve location');
-        }
+          handleGeolocationError(error);
+        },
+        { enableHighAccuracy: false, timeout: 5000, maximumAge: 10000 }
       );
     } else {
-      alert('Geolocation is not supported by this browser.');
+      // Check permission first
+      navigator.permissions.query({ name: 'geolocation' }).then((result) => {
+        if (result.state === 'granted') {
+          navigator.geolocation.getCurrentPosition(
+            async (position) => {
+              await fetchAddressFromCoords(position.coords);
+            },
+            (error) => {
+              handleGeolocationError(error);
+            },
+            { enableHighAccuracy: false, timeout: 5000, maximumAge: 10000 }
+          );
+        } else if (result.state === 'prompt') {
+          navigator.geolocation.getCurrentPosition(
+            async (position) => {
+              await fetchAddressFromCoords(position.coords);
+            },
+            (error) => {
+              handleGeolocationError(error);
+            },
+            { enableHighAccuracy: false, timeout: 5000, maximumAge: 10000 }
+          );
+        } else if (result.state === 'denied') {
+          setLocationError('Location permission denied. Please enable it in browser settings.');
+          setIsLocating(false);
+        }
+      });
     }
   };
 
@@ -268,6 +389,9 @@ const BookService = () => {
                           <span className="font-bold text-slate-700">{tech.rating.toFixed(1)}</span>
                           <span className="text-xs text-slate-500">({tech.reviews} reviews)</span>
                         </div>
+                        <p className="text-sm font-bold text-[#1F7F85] mt-1">
+                          Service Charge: ${selectedService.price}
+                        </p>
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -488,16 +612,39 @@ const BookService = () => {
                       {isLocating ? 'Locating...' : 'Get Current Location'}
                     </button>
                   </div>
-                  <input
-                    type="text"
-                    ref={addressInputRef}
-                    name="address"
-                    value={formData.address}
-                    onChange={handleInputChange}
-                    placeholder="Search for your address..."
-                    className="w-full p-4 border border-slate-200 focus:ring-2 focus:ring-[#1F7F85] focus:border-[#1F7F85] outline-none transition-all"
-                    required
-                  />
+                  <div className="relative">
+                    <input
+                      type="text"
+                      ref={addressInputRef}
+                      name="address"
+                      value={formData.address}
+                      onChange={handleInputChange}
+                      placeholder="Search for your address..."
+                      className="w-full p-4 border border-slate-200 focus:ring-2 focus:ring-[#1F7F85] focus:border-[#1F7F85] outline-none transition-all"
+                      required
+                      autoComplete="off"
+                      onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                      onFocus={() => formData.address.length >= 3 && setShowSuggestions(true)}
+                    />
+                    {showSuggestions && addressSuggestions.length > 0 && (
+                      <div className="absolute z-10 w-full bg-white border border-slate-200 shadow-lg max-h-60 overflow-y-auto mt-1 rounded-md">
+                        {addressSuggestions.map((suggestion) => (
+                          <div 
+                            key={suggestion.place_id}
+                            className="p-3 hover:bg-slate-50 cursor-pointer border-b border-slate-100 last:border-0 text-sm text-slate-700 flex items-start gap-2"
+                            onClick={() => {
+                              setFormData(prev => ({ ...prev, address: suggestion.display_name }));
+                              setAddressSuggestions([]);
+                              setShowSuggestions(false);
+                            }}
+                          >
+                            <span className="material-symbols-outlined text-slate-400 text-lg mt-0.5">location_on</span>
+                            <span>{suggestion.display_name}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                   {locationError && <p className="text-red-500 text-sm mt-1">{locationError}</p>}
                 </div>
 
