@@ -721,11 +721,11 @@ const BookService = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="flex gap-6 overflow-x-auto pb-8 custom-scrollbar scroll-smooth">
             {filteredServices.map(service => (
                 <div 
                   key={service.id} 
-                  className="group flex flex-col bg-white overflow-hidden border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-[#1F7F85]/10 transition-all duration-300 hover:-translate-y-1 cursor-pointer"
+                  className="min-w-[300px] w-[300px] group flex flex-col bg-white overflow-hidden border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-[#1F7F85]/10 transition-all duration-300 hover:-translate-y-1 cursor-pointer"
                   onClick={() => handleCardClick(service)}
                 >
                   <div className="h-56 overflow-hidden relative">
