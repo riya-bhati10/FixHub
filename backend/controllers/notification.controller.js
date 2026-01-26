@@ -40,3 +40,19 @@ exports.markAsRead = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+
+exports.getUnreadCount = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    const unreadCount = await Notification.countDocuments({
+      userId,
+      isRead: false,
+    });
+
+    res.json({ unreadCount });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
