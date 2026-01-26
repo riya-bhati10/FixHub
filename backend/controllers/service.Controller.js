@@ -1,5 +1,6 @@
 const Service = require("../models/Service.model");
 
+// create service (technician)
 exports.createService = async (req, res) => {
   try {
     const technicianId = req.user.userId;
@@ -26,7 +27,7 @@ exports.createService = async (req, res) => {
   }
 };
 
-// Update Service 
+// Update Service (technician)
 exports.updateService = async (req, res) => {
   try {
     const serviceId = req.params.id;
@@ -62,7 +63,7 @@ exports.updateService = async (req, res) => {
   }
 };
 
-// Delete Service
+// Delete Service (technician)
 exports.deleteService = async (req, res) => {
   try {
     const serviceId = req.params.id;
@@ -91,7 +92,7 @@ exports.deleteService = async (req, res) => {
   }
 };
 
-// Get technician's own services
+// View services (technician)
 exports.getMyServices = async (req, res) => {
   try {
     const technicianId = req.user.userId;
@@ -103,6 +104,22 @@ exports.getMyServices = async (req, res) => {
     res.json({
       count: services.length,
       services,
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// view service categories (customer)
+exports.getServiceCategories = async (req, res) => {
+  try {
+    const categories = await Service.distinct("serviceName", {
+      isActive: true,
+    });
+
+    res.json({
+      count: categories.length,
+      categories,
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
