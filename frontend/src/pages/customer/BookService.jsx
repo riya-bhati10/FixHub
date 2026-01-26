@@ -749,7 +749,6 @@ const BookService = () => {
                     </div>
                     
                     <div className="mt-auto pt-4 border-t border-slate-100 flex items-center justify-between gap-4">
-                     
                       <button 
                         onClick={(e) => {
                           e.stopPropagation();
@@ -763,7 +762,7 @@ const BookService = () => {
                     </div>
                   </div>
                 </div>
-              ))}
+            ))}
           </div>
         </div>
 
