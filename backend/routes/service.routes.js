@@ -5,20 +5,17 @@ const {
   createService,
   updateService,
   deleteService,
+  getMyServices,
 } = require("../controllers/service.Controller");
 const auth = require("../middleware/auth.middleware");
 const { authorizeRoles } = require("../middleware/role.middleware");
-const { getAllServices } = require("../controllers/service.Controller");
 
 
-// Services create , update, delete (technician)
+// Services create , update, delete (technician) and view all services
 router.post("/", auth, authorizeRoles("technician"), createService);
 router.put("/:id", auth, authorizeRoles("technician"), updateService);
 router.delete("/:id", auth, authorizeRoles("technician"), deleteService);
-
-// view all services
-router.get("/", getAllServices);
-
+router.get("/", auth, authorizeRoles("technician"), getMyServices);
 
 
 module.exports = router;
