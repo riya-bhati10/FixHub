@@ -6,7 +6,7 @@ const {
   updateService,
   deleteService,
   getMyServices,
-  getServiceCategories,
+  getServiceCategories,getTechniciansByService
 } = require("../controllers/service.Controller");
 const auth = require("../middleware/auth.middleware");
 const { authorizeRoles } = require("../middleware/role.middleware");
@@ -17,5 +17,6 @@ router.put("/:id", auth, authorizeRoles("technician"), updateService);
 router.delete("/:id", auth, authorizeRoles("technician"), deleteService);
 router.get("/", auth, authorizeRoles("technician"), getMyServices);
 router.get("/categories", getServiceCategories);
+router.get("/:serviceName/technicians", getTechniciansByService);
 
 module.exports = router;

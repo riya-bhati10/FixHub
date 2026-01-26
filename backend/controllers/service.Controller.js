@@ -1,4 +1,6 @@
 const Service = require("../models/Service.model");
+const { getTechnicianRating } = require("../utils/rating.helper");
+
 
 // create service (technician)
 exports.createService = async (req, res) => {
@@ -120,6 +122,43 @@ exports.getServiceCategories = async (req, res) => {
     res.json({
       count: categories.length,
       categories,
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+
+// View technicians by service (customer)
+exports.getTechniciansByService = async (req, res) => {
+  try {
+    const { serviceName } = req.params;
+
+    const services = await Service.find({
+      serviceName,
+      isActive: true,
+    }).populate("technicianId", "fullname");
+
+    const technicians = await Promise.all(
+      services.map(async (service) => {
+        const ratingData = await getTechnicianRating(service.technicianId._id);
+
+        return {
+          technicianId: service.technicianId._id,
+          name:
+            service.technicianId.fullname.firstname +
+            " " +
+            service.technicianId.fullname.lastname,
+          serviceCharge: service.serviceCharge,
+          avgRating: ratingData.avgRating,
+          totalReviews: ratingData.totalReviews,
+        };
+      }),
+    );
+
+    res.json({
+      count: technicians.length,
+      technicians,
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
