@@ -1,5 +1,7 @@
 const Booking = require("../models/Booking.model");
 const Service = require("../models/Service.model");
+const Notification = require("../models/Notification.model");
+
 
 // create new booking (for customer)
 exports.createBooking = async (req, res) => {
@@ -56,6 +58,11 @@ exports.createBooking = async (req, res) => {
       bookingId: booking._id,
       status: booking.status,
     });
+    await Notification.create({
+      userId: technicianId,
+      message: "You have received a new booking request",
+    });
+
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -141,6 +148,11 @@ exports.acceptBooking = async (req, res) => {
       bookingId: booking._id,
       status: booking.status,
     });
+    await Notification.create({
+      userId: booking.customerId,
+      message: "Your booking has been accepted",
+    });
+
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -184,6 +196,14 @@ exports.cancelBooking = async (req, res) => {
       message: "Booking cancelled successfully",
       status: booking.status,
     });
+    const otherUser =
+      role === "customer" ? booking.technicianId : booking.customerId;
+
+    await Notification.create({
+      userId: otherUser,
+      message: "Booking has been cancelled",
+    });
+
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -243,6 +263,11 @@ exports.updateBookingStatus = async (req, res) => {
       bookingId: booking._id,
       status: booking.status,
     });
+    await Notification.create({
+      userId: booking.customerId,
+      message: `Your booking status is now ${status.replace("_", " ")}`,
+    });
+
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
