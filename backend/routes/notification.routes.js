@@ -1,7 +1,7 @@
 const router = require("express").Router();
 const auth = require("../middleware/auth.middleware");
 const {
-  getMyNotifications,markAsRead,getUnreadCount
+  getMyNotifications, markAsRead, getUnreadCount
 } = require("../controllers/notification.controller");
 
 router.get("/", auth, getMyNotifications);
