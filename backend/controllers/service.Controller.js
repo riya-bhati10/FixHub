@@ -27,7 +27,6 @@ exports.createService = async (req, res) => {
 };
 
 // Update Service 
-
 exports.updateService = async (req, res) => {
   try {
     const serviceId = req.params.id;
@@ -92,45 +91,19 @@ exports.deleteService = async (req, res) => {
   }
 };
 
-// get all service for customer view 
-exports.getAllServices = async (req, res) => {
+// Get technician's own services
+exports.getMyServices = async (req, res) => {
   try {
-    const { serviceName } = req.query;
+    const technicianId = req.user.userId;
 
-    const filter = {
+    const services = await Service.find({
+      technicianId,
       isActive: true,
-    };
-
-    if (serviceName) {
-      filter.serviceName = { $regex: serviceName, $options: "i" };
-    }
-
-  const services = await Service.find(filter).populate(
-    "technicianId",
-    "fullname phone",
-  );
-
-  const formattedServices = services.map((service) => ({
-    serviceId: service._id,
-    serviceName: service.serviceName,
-    serviceCharge: service.serviceCharge,
-    experience: service.experience,
-    rating: service.averageRating,
-
-    technician: {
-      id: service.technicianId._id,
-      name:
-        service.technicianId.fullname.firstname +
-        " " +
-        service.technicianId.fullname.lastname,
-      phone: service.technicianId.phone,
-    },
-  }));
-
-  res.json({
-    count: formattedServices.length,
-    services: formattedServices,
-  }); 
+    });
+    res.json({
+      count: services.length,
+      services,
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
