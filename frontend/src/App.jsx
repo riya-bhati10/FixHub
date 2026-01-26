@@ -4,7 +4,7 @@ import LoginPage from "./pages/Landing/LoginPage";
 import SignupPage from "./pages/Landing/SignupPage";
 import HowItWorksPage from "./pages/Landing/HowItWorksPage";
 import AboutPage from "./pages/Landing/AboutPage";
-import BookServicePage from "./pages/Landing/BookServicePage";
+import { TechnicianDashboard } from "./pages/Technician";
 
 function App() {
   return (
@@ -16,7 +16,7 @@ function App() {
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/how-it-works" element={<HowItWorksPage />} />
           <Route path="/about" element={<AboutPage />} />
-          <Route path="/book-service" element={<BookServicePage />} />
+          <Route path="/technician/*" element={<TechnicianDashboard />} />
         </Routes>
       </div>
     </BrowserRouter>
