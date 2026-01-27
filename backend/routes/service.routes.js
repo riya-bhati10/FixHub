@@ -8,7 +8,7 @@ const {
   getMyServices,
   getServiceCategories,getTechniciansByService
 } = require("../controllers/service.Controller");
-const auth = require("../middleware/auth.middleware");
+const { auth } = require("../middleware/auth.middleware");
 const { authorizeRoles } = require("../middleware/role.middleware");
 
 // Services create , update, delete (technician) and view all services

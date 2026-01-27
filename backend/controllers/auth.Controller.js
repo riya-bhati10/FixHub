@@ -1,4 +1,5 @@
 const User = require("../models/User.Model");
+const blackListTokenModel = require("../models/blacklistToken.model");
 const {
   hashPassword,
   comparePassword,
@@ -8,10 +9,12 @@ const {
 
 exports.signup = async (req, res) => {
   try {
-    const { firstname, lastname, email, password, phone, role, location } =
+    const { fullname, email, password, phone, role, location } =
       req.body;
+  
 
-    if (!firstname || !email || !password || !phone) {
+    if (!fullname.firstname || !email || !password || !phone) {
+
       return res.status(400).json({ message: "Required fields missing" });
     }
 
@@ -23,13 +26,18 @@ exports.signup = async (req, res) => {
     const hashedPassword = await hashPassword(password);
 
     const user = await User.create({
-      fullname: { firstname, lastname },
+      fullname: {
+        firstname: fullname.firstname,
+        lastname: fullname.lastname
+      },
       email: email.toLowerCase(),
       password: hashedPassword,
       phone,
       role: role || "customer",
       location,
     });
+    // console.log(user);
+
 
     return res.status(201).json({
       message: "Registration successful",
@@ -77,3 +85,29 @@ exports.login = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+// user profile
+module.exports.getUserProfile= async(req,res,next)=>{
+    res.status(200).json(req.user);
+    console.log(req.user);
+    
+}
+
+// user LogOut
+module.exports.logoutUser = async (req, res, next) => {
+  try {
+    res.clearCookie('token')
+    const authHeader = req.headers.authorization;
+    const token = req.cookies?.token || (authHeader && authHeader.startsWith('Bearer') ? authHeader.replace('Bearer', '').trim() : null);
+    console.log(token);
+    
+    if (!token) {
+      return res.status(400).json({ message: "Token not found" });
+    }
+    await blackListTokenModel.create({ token })
+
+    res.status(200).json({ message: 'Logged out' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}

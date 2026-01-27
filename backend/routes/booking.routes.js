@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const auth = require("../middleware/auth.middleware");
+const { auth } = require("../middleware/auth.middleware");
 const { authorizeRoles } = require("../middleware/role.middleware");
 const {
   createBooking,

@@ -7,6 +7,7 @@ exports.createService = async (req, res) => {
   try {
     const technicianId = req.user.userId;
     const { serviceName, description, serviceCharge, experience } = req.body;
+    console.log("Received data:", req.body);
 
     if (!serviceName || !serviceCharge) {
       return res.status(400).json({ message: "Required fields missing" });
