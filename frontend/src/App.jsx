@@ -1,6 +1,5 @@
 import React from "react";
 
-
 import FixHubDashboard from "./pages/customer/Mybooking";
 import BookService from "./pages/customer/BookService"
 import ProfileEdi from "./pages/customer/ProfileEdit"
@@ -15,7 +14,7 @@ import LoginPage from "./pages/Landing/LoginPage";
 import SignupPage from "./pages/Landing/SignupPage";
 import HowItWorksPage from "./pages/Landing/HowItWorksPage";
 import AboutPage from "./pages/Landing/AboutPage";
-import BookServicePage from "./pages/Landing/BookServicePage";
+import { TechnicianDashboard } from "./pages/Technician";
 
 const App = () => {
   return (
@@ -33,7 +32,14 @@ const App = () => {
       <Route path="/signup" element={<SignupPage />} />
       <Route path="/how-it-works" element={<HowItWorksPage />} />
       <Route path="/about" element={<AboutPage />} />
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/signup" element={<SignupPage />} />
+      <Route path="/how-it-works" element={<HowItWorksPage />} />
+      <Route path="/about" element={<AboutPage />} />
+      <Route path="/technician/*" element={<TechnicianDashboard />} />
     </Routes>
+
 
 
   );
