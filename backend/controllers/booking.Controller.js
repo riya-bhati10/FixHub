@@ -265,7 +265,7 @@ exports.updateBookingStatus = async (req, res) => {
     });
     await Notification.create({
       userId: booking.customerId,
-      message: `Your booking status is now ${status.replace("_", " ")}`,
+      message: `Your booking is now ${status.replace("_", " ")}`,
     });
 
   } catch (err) {

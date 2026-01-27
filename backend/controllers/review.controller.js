@@ -34,6 +34,11 @@ exports.createReview = async (req, res) => {
       rating,
       review,
     });
+    
+     await Notification.create({
+       userId: booking.technicianId,
+       message: "You received a new review for your service",
+     });
 
     return res.status(201).json({
       message: "Review submitted successfully",
