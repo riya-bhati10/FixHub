@@ -4,8 +4,15 @@ const mongoose = require("mongoose");
 const userSchema = new mongoose.Schema(
   {
     fullname: {
-      firstname: { type: String, required: true, trim: true },
-      lastname: { type: String, trim: true },
+      firstname: {
+        type: String,
+        required: true,
+        trim: true
+      },
+      lastname: {
+        type: String,
+        trim: true
+      },
     },
     email: {
       type: String,
@@ -25,23 +32,23 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["customer", "technician"],
+      enum: ["customer", "technician","admin"],
       default: "customer",
     },
-    
+
     location: {
-          type: {
-            type: String,
-            enum: ["Point"],
-            default: "Point",
-          },
-          coordinates: {
-            type: [Number], // [lng, lat]
-            required: false,
-            default: []
-          },
+      type: {
+        type: String,
+        enum: ["Point"],
+        default: "Point",
+      },
+      coordinates: {
+        type: [Number], // [lng, lat]
+        required: false,
+        default: []
+      },
     },
-    
+
   },
   { timestamps: true },
 );

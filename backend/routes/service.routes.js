@@ -6,7 +6,7 @@ const {
   updateService,
   deleteService,
 } = require("../controllers/service.Controller");
-const auth = require("../middleware/auth.middleware");
+const { auth } = require("../middleware/auth.middleware");
 const { authorizeRoles } = require("../middleware/role.middleware");
 const { getAllServices } = require("../controllers/service.Controller");
 
