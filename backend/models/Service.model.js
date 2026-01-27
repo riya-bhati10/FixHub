@@ -36,23 +36,11 @@ const serviceSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
-
-    averageRating: {
-      type: Number,
-      default: 0,
-    },
     
     isActive: {
       type: Boolean,
       default: true,
     },
-
-    reviews: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Review",
-      },
-    ],
   },
 
   { timestamps: true },

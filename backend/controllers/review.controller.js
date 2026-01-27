@@ -1,6 +1,8 @@
 const Review = require("../models/Review.model");
 const Booking = require("../models/Booking.model");
+const Service = require("../models/Service.model");
 
+// add new review (customer)
 exports.createReview = async (req, res) => {
   try {
     const customerId = req.user.userId;
@@ -45,5 +47,47 @@ exports.createReview = async (req, res) => {
     }
 
     return res.status(500).json({ message: err.message });
+  }
+};
+
+// View all review (customer)
+
+exports.getTechnicianReviews = async (req, res) => {
+  try {
+    const { technicianId } = req.params;
+    const { serviceName } = req.query;
+
+    let reviews = await Review.find({ technicianId })
+      .populate({
+        path: "bookingId",
+        populate: {
+          path: "serviceId",
+          select: "serviceName",
+        },
+      })
+      .populate("customerId", "fullname")
+      .sort({ createdAt: -1 });
+
+    if (serviceName) {
+      reviews = reviews.filter(
+        (r) => r.bookingId?.serviceId?.serviceName === serviceName,
+      );
+    }
+
+    const formattedReviews = reviews.map((r) => ({
+      rating: r.rating,
+      review: r.review,
+      customerName:
+        r.customerId.fullname.firstname + " " + r.customerId.fullname.lastname,
+      serviceName: r.bookingId.serviceId.serviceName,
+      createdAt: r.createdAt,
+    }));
+
+    res.json({
+      count: formattedReviews.length,
+      reviews: formattedReviews,
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 };

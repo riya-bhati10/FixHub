@@ -1,5 +1,8 @@
 const Service = require("../models/Service.model");
+const { getTechnicianRating } = require("../utils/rating.helper");
 
+
+// create service (technician)
 exports.createService = async (req, res) => {
   try {
     const technicianId = req.user.userId;
@@ -26,7 +29,7 @@ exports.createService = async (req, res) => {
   }
 };
 
-// Update Service 
+// Update Service (technician)
 exports.updateService = async (req, res) => {
   try {
     const serviceId = req.params.id;
@@ -62,7 +65,7 @@ exports.updateService = async (req, res) => {
   }
 };
 
-// Delete Service
+// Delete Service (technician)
 exports.deleteService = async (req, res) => {
   try {
     const serviceId = req.params.id;
@@ -91,7 +94,7 @@ exports.deleteService = async (req, res) => {
   }
 };
 
-// Get technician's own services
+// View services (technician)
 exports.getMyServices = async (req, res) => {
   try {
     const technicianId = req.user.userId;
@@ -103,6 +106,59 @@ exports.getMyServices = async (req, res) => {
     res.json({
       count: services.length,
       services,
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// view service categories (customer)
+exports.getServiceCategories = async (req, res) => {
+  try {
+    const categories = await Service.distinct("serviceName", {
+      isActive: true,
+    });
+
+    res.json({
+      count: categories.length,
+      categories,
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+
+// View technicians by service (customer)
+exports.getTechniciansByService = async (req, res) => {
+  try {
+    const { serviceName } = req.params;
+
+    const services = await Service.find({
+      serviceName,
+      isActive: true,
+    }).populate("technicianId", "fullname");
+
+    const technicians = await Promise.all(
+      services.map(async (service) => {
+        const ratingData = await getTechnicianRating(service.technicianId._id);
+
+        return {
+          technicianId: service.technicianId._id,
+          name:
+            service.technicianId.fullname.firstname +
+            " " +
+            service.technicianId.fullname.lastname,
+          serviceCharge: service.serviceCharge,
+          avgRating: ratingData.avgRating,
+          totalReviews: ratingData.totalReviews,
+        };
+      }),
+    );
+
+    res.json({
+      count: technicians.length,
+      technicians,
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
