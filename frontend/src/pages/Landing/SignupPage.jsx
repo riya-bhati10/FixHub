@@ -14,6 +14,7 @@ const SignupPage = () => {
     phone: '', 
     location: ''
   });
+  const [suggestions, setSuggestions] = useState([]);
 
   useEffect(() => {
     const roleParam = searchParams.get('role');
@@ -29,15 +30,52 @@ const SignupPage = () => {
     });
   };
 
+  const handleLocationChange = async (e) => {
+    const value = e.target.value;
+    setFormData({
+      ...formData,
+      location: value
+    });
+
+    if (value.length > 2) {
+      try {
+        const response = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(value)}&limit=5`
+        );
+        const data = await response.json();
+        setSuggestions(data);
+      } catch (error) {
+        console.error('Error fetching location suggestions:', error);
+      }
+    } else {
+      setSuggestions([]);
+    }
+  };
+
+  const handleSelectSuggestion = (suggestion) => {
+    setFormData({
+      ...formData,
+      location: suggestion.display_name
+    });
+    setSuggestions([]);
+  };
+
   const handleGetLocation = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (position) => {
+        async (position) => {
           const { latitude, longitude } = position.coords;
-          setFormData({
-            ...formData,
-            location: `${latitude}, ${longitude}`
-          });
+          try {
+            const response = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+            );
+            const data = await response.json();
+            setFormData((prev) => ({ ...prev, location: data.display_name }));
+          } catch (error) {
+            console.error('Error fetching address:', error);
+            setFormData((prev) => ({ ...prev, location: `${latitude}, ${longitude}` }));
+          }
+          setSuggestions([]);
         },
         (error) => {
           alert('Unable to retrieve location');
@@ -145,23 +183,39 @@ const SignupPage = () => {
               required
             />
 
-            <div className="flex gap-2">
-              <input
-                type="text"
-                name="location"
-                value={formData.location}
-                onChange={handleChange}
-                placeholder="Location (Lat, Long)"
-                className="flex-1 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-fixhub-primary"
-                required
-              />
-              <button
-                type="button"
-                onClick={handleGetLocation}
-                className="px-3 py-2 bg-fixhub-mint hover:bg-fixhub-primary hover:text-white text-fixhub-textDark rounded-md font-medium transition text-sm whitespace-nowrap"
-              >
-                Get Location
-              </button>
+            <div className="relative">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  name="location"
+                  value={formData.location}
+                  onChange={handleLocationChange}
+                  placeholder="Location or Address"
+                  className="flex-1 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-fixhub-primary"
+                  required
+                  autoComplete="off"
+                />
+                <button
+                  type="button"
+                  onClick={handleGetLocation}
+                  className="px-3 py-2 bg-fixhub-mint hover:bg-fixhub-primary hover:text-white text-fixhub-textDark rounded-md font-medium transition text-sm whitespace-nowrap"
+                >
+                  Get Location
+                </button>
+              </div>
+              {suggestions.length > 0 && (
+                <ul className="absolute z-10 w-full bg-white border border-gray-300 rounded-md mt-1 max-h-60 overflow-y-auto shadow-lg">
+                  {suggestions.map((suggestion) => (
+                    <li
+                      key={suggestion.place_id}
+                      onClick={() => handleSelectSuggestion(suggestion)}
+                      className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm text-gray-700"
+                    >
+                      {suggestion.display_name}
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
 
         
