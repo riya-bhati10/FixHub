@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const connectDB = require("./config/db");
+const app = express();
 
 
 const authRoutes = require("./routes/auth.routes");
@@ -14,7 +15,6 @@ const reviewRoutes = require("./routes/review.routes");
 dotenv.config();
 connectDB();
 
-const app = express();
 
 const corsOptions = {
     origin: ['http://localhost:5173', 'http://localhost:3000', 'http://localhost:3001'],
