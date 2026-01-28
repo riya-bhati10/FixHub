@@ -13,7 +13,7 @@ exports.createBooking = async (req, res) => {
       issue,
       serviceDate,
       timeSlot,
-      serviceLocation,
+      serviceLocation, 
     } = req.body;
 
     if (!serviceId || !technicianId || !issue || !serviceDate || !timeSlot) {
@@ -22,6 +22,11 @@ exports.createBooking = async (req, res) => {
       });
     }
 
+    let finalServiceLocation = serviceLocation;
+    if (!serviceLocation) {
+      const customer = await require("../models/User.model").findById(customerId);
+      finalServiceLocation = customer?.location || "Address not provided";
+    }
     
     const service = await Service.findOne({
       _id: serviceId,
@@ -35,7 +40,6 @@ exports.createBooking = async (req, res) => {
       });
     }
 
-
     const booking = await Booking.create({
       customerId,
       technicianId,
@@ -43,7 +47,7 @@ exports.createBooking = async (req, res) => {
       issue,
       serviceDate,
       timeSlot,
-      serviceLocation,
+      serviceLocation: finalServiceLocation,
       status: "pending",
       statusHistory: [
         {
@@ -265,7 +269,7 @@ exports.updateBookingStatus = async (req, res) => {
     });
     await Notification.create({
       userId: booking.customerId,
-      message: `Your booking status is now ${status.replace("_", " ")}`,
+      message: `Your booking is now ${status.replace("_", " ")}`,
     });
 
   } catch (err) {

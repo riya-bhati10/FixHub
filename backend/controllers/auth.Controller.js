@@ -1,4 +1,4 @@
-const User = require("../models/User.Model");
+const User = require("../models/User.model");
 const blackListTokenModel = require("../models/blacklistToken.model");
 const {
   hashPassword,
@@ -48,10 +48,6 @@ exports.signup = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
-
-
-
-// user login
 
 exports.login = async (req, res) => {
   try {

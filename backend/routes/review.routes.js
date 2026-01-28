@@ -1,12 +1,12 @@
 const router = require("express").Router();
-const auth = require("../middleware/auth.middleware");
-const { authorizeRoles } = require("../middleware/role.middleware");
+const { verifyToken } = require("../middleware/auth.middleware");
+const { checkRole } = require("../middleware/role.middleware");
 const {
   createReview,
   getTechnicianReviews,
-} = require("../controllers/review.controller");
+} = require("../controllers/review.Controller");
 
-router.post("/", auth, authorizeRoles("customer"), createReview);
+router.post("/", verifyToken, checkRole("customer"), createReview);
 
 router.get("/technician/:technicianId", getTechnicianReviews);
 

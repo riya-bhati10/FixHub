@@ -43,16 +43,8 @@ const bookingSchema = new mongoose.Schema(
     },
 
     serviceLocation: {
-      type: {
-        type: String,
-        enum: ["Point"],
-        default: "Point",
-      },
-      coordinates: {
-        type: [Number],
-        required: false,
-        default: [],
-      },
+      type: String,
+      required: false,
     },
     statusHistory: [
       {
