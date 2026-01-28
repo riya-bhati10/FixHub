@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import Navbar from "../../components/common/Navbar";
+import Navbar from "../../Common/Navbar";
 
 const BookServiceForm = () => {
   const navigate = useNavigate();

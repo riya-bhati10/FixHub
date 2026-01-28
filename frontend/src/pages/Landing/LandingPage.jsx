@@ -7,9 +7,20 @@ import ServicesSection from '../../Components/ServicesSection';
 import TestimonialsSection from '../../Components/TestimonialsSection';
 
 const LandingPage = () => {
+  const landingNavLinks = [
+    { path: '/', label: 'Home' },
+    { path: '/how-it-works', label: 'How It Works' },
+    { path: '/about', label: 'About' },
+  ];
+
   return (
     <div className="w-full m-0 p-0">
-      <Navbar />
+      <Navbar 
+        userType="landing"
+        navLinks={landingNavLinks}
+        showProfile={false}
+        showNotifications={false}
+      />
       <HeroSection />
       <GadgetsCarousel />
       <ServicesSection />

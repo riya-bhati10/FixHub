@@ -1,10 +1,16 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from '../../components/common/Navbar';
+import Navbar from '../../Common/Navbar';
 
 const BookService = () => {
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  
+  const customerNavLinks = [
+    { path: '/dashboard', label: 'Dashboard' },
+    { path: '/book-service', label: 'Book Service' },
+    { path: '/my-booking', label: 'My Bookings' },
+  ];
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedService, setSelectedService] = useState(null);
@@ -344,7 +350,13 @@ const BookService = () => {
 
   return (
     <div className="min-h-screen bg-[#F7FBFC] text-slate-800 font-['Manrope'] relative">
-      <Navbar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
+      <Navbar 
+        userType="customer"
+        navLinks={customerNavLinks}
+        showProfile={true}
+        showNotifications={true}
+        userName="Customer"
+      />
       
       {/* Technician Selection Modal */}
       {isTechnicianViewOpen && selectedService && (

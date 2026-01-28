@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logo from '../../../public/logo.png';
-import Navbar from '../../components/common/Navbar';
+import Navbar from '../../Common/Navbar';
 
 const MyBooking = () => {
   const navigate = useNavigate();

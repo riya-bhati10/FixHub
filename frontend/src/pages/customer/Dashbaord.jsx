@@ -1,10 +1,16 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from '../../components/common/Navbar';
+import Navbar from '../../Common/Navbar';
 
 const Dashboard = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
+
+  const customerNavLinks = [
+    { path: '/dashboard', label: 'Dashboard' },
+    { path: '/book-service', label: 'Book Service' },
+    { path: '/my-booking', label: 'My Bookings' },
+  ];
 
   const activeBookings = [
     {
@@ -42,7 +48,13 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-[#F7FBFC] text-slate-800 font-['Manrope']">
-      <Navbar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
+      <Navbar 
+        userType="customer"
+        navLinks={customerNavLinks}
+        showProfile={true}
+        showNotifications={true}
+        userName="Customer"
+      />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header Section */}

@@ -8,7 +8,6 @@ import smartwatchImg from "../assets/smart watches.jpg";
 import televisionImg from "../assets/Television.jpg";
 import washingMachineImg from "../assets/Washing-machine.jpg";
 
-
 const GadgetsCarousel = () => {
   const gadgets = [
     { name: "Refrigerator", image: fridgeImg },
@@ -22,48 +21,46 @@ const GadgetsCarousel = () => {
   ];
 
   return (
-    <section className="py-16 bg-fixhub-bgWhite overflow-hidden">
-      <div className="max-w-7xl mx-auto px-6">
+    <section className="py-12 sm:py-16 lg:py-20 bg-fixhub-bgWhite overflow-hidden">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Heading */}
-        <div className="text-center mb-10">
-          <h2 className="text-3xl md:text-4xl font-bold text-fixhub-textDark">
+        <div className="text-center mb-8 sm:mb-10 lg:mb-12">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-fixhub-textDark mb-3 sm:mb-4">
             We Repair All Your Gadgets
           </h2>
-          <p className="mt-3 text-fixhub-textMuted">
+          <p className="text-sm sm:text-base lg:text-lg text-fixhub-textMuted max-w-2xl mx-auto">
             Professional repair services for all major electronic devices
           </p>
         </div>
 
         {/* Carousel */}
         <div className="relative">
-          <div className="flex gap-6 animate-fixhub-scroll hover:[animation-play-state:paused] w-max">
-
+          <div className="flex gap-4 sm:gap-6 animate-fixhub-scroll hover:[animation-play-state:paused] w-max">
             {[...gadgets, ...gadgets].map((gadget, index) => (
               <div
                 key={index}
-                className="w-56 bg-fixhub-bgCard rounded-xl p-6 text-center shadow-sm"
+                className="w-40 sm:w-48 md:w-56 lg:w-64 bg-fixhub-bgCard rounded-xl p-4 sm:p-6 text-center shadow-sm hover:shadow-md transition-shadow flex-shrink-0"
               >
-                {/* Image / Placeholder */}
-                <div className="w-full h-32 flex items-center justify-center mb-4 bg-white rounded-lg border border-fixhub-borderSoft">
+                {/* Image Container */}
+                <div className="w-full h-24 sm:h-28 md:h-32 lg:h-36 flex items-center justify-center mb-3 sm:mb-4 bg-white rounded-lg border border-fixhub-borderSoft">
                   {gadget.image ? (
                     <img
                       src={gadget.image}
                       alt={gadget.name}
-                      className="max-h-24 object-contain"
+                      className="max-h-16 sm:max-h-20 md:max-h-24 lg:max-h-28 max-w-full object-contain"
                     />
                   ) : (
-                    <span className="text-sm text-fixhub-textMuted">
+                    <span className="text-xs sm:text-sm text-fixhub-textMuted">
                       Image Here
                     </span>
                   )}
                 </div>
 
-                <h3 className="font-semibold text-fixhub-textDark">
+                <h3 className="font-semibold text-fixhub-textDark text-sm sm:text-base lg:text-lg">
                   {gadget.name}
                 </h3>
               </div>
             ))}
-
           </div>
         </div>
       </div>
