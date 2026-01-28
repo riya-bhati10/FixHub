@@ -55,7 +55,7 @@ exports.createReview = async (req, res) => {
   }
 };
 
-// View all review (customer)
+// View all review (customer, technician)
 
 exports.getTechnicianReviews = async (req, res) => {
   try {

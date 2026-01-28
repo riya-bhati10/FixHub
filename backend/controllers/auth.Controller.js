@@ -1,4 +1,4 @@
-const User = require("../models/User.Model");
+const User = require("../models/User.model");
 const blackListTokenModel = require("../models/blacklistToken.model");
 const {
   hashPassword,

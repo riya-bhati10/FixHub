@@ -1,8 +1,8 @@
 const jwt = require("jsonwebtoken");
-const UserModel = require("../models/User.Model");
+const UserModel = require("../models/User.model");
 const blacklistTokenModel = require("../models/blacklistToken.model");
 
-module.exports.auth = async (req ,res, next)=>{
+module.exports.verifyToken = async (req ,res, next)=>{
    const authHeader = req.headers.authorization;
    const token = req.cookies?.token || (authHeader && authHeader.startsWith('Bearer') ? authHeader.replace('Bearer', '').trim() : null);
     if (!token) {
