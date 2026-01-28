@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import bgImage from '../../assets/repair-bg.png';
+import authService from '../../services/auth.service';
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -16,9 +17,19 @@ const LoginPage = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Login attempt:', formData);
+    try {
+      const data = await authService.login(formData.email, formData.password);
+      if (data.role === 'technician') {
+        navigate('/technician/dashboard');
+      } else {
+        navigate('/dashboard');
+      }
+    } catch (error) {
+      console.error('Login failed:', error.response?.data?.message || error.message);
+      alert(error.response?.data?.message || 'Invalid credentials');
+    }
   };
 
   return (

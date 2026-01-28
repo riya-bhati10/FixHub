@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import bgImage from '../../assets/repair-bg.png';
+import authService from '../../services/auth.service';
 
 const SignupPage = () => {
   const navigate = useNavigate();
@@ -86,15 +87,28 @@ const SignupPage = () => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Signup attempt:', { ...formData });
-    
-    // Navigate based on role
-    if (formData.role === 'technician') {
-      navigate('/technician/dashboard');
-    } else {
-      navigate('/customer/dashboard');
+    try {
+      // Format data to match backend expectation
+      const userData = {
+        fullname: {
+          firstname: formData.firstName,
+          lastname: formData.lastName
+        },
+        email: formData.email,
+        password: formData.password,
+        role: formData.role,
+        phone: formData.phone,
+        location: formData.location
+      };
+
+      await authService.register(userData);
+      alert('Registration successful! Please login.');
+      navigate('/login');
+    } catch (error) {
+      console.error('Signup failed:', error.response?.data?.message || error.message);
+      alert(error.response?.data?.message || 'Signup failed');
     }
   };
 
