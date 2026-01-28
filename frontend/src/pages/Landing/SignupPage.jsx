@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import bgImage from '../../assets/repair-bg.png';
-import authService from '../../services/auth.service';
+import authService from './auth.service';
 
 const SignupPage = () => {
   const navigate = useNavigate();

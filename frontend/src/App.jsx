@@ -15,7 +15,7 @@ import SignupPage from "./pages/Landing/SignupPage";
 import HowItWorksPage from "./pages/Landing/HowItWorksPage";
 import AboutPage from "./pages/Landing/AboutPage";
 import { TechnicianDashboard } from "./pages/Technician";
-import ProtectedRoute from "./Components/ProtectedRoute";
+import ProtectedRoute from "../src/pages/Landing/ProtectedRoute";
 
 const App = () => {
   return (

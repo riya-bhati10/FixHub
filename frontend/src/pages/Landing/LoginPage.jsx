@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import bgImage from '../../assets/repair-bg.png';
-import authService from '../../services/auth.service';
+import authService from './auth.service';
 
 const LoginPage = () => {
   const navigate = useNavigate();
