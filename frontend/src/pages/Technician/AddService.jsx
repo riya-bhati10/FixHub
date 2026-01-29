@@ -1,12 +1,15 @@
 import React, { useState } from "react";
+import technicianService from '../../Services/technicianService';
 
-const AddService = ({ onClose }) => {
+const AddService = ({ onClose, onServiceAdded }) => {
   const [formData, setFormData] = useState({
-    serviceType: "",
+    serviceName: "",
     serviceCharge: "",
     experience: "",
     description: "",
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const serviceTypes = [
     "Smartphone Repair",
@@ -33,36 +36,81 @@ const AddService = ({ onClose }) => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+    if (error) setError(null);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Form Data:", formData);
-    alert("Service Added Successfully ✅");
-    if (onClose) onClose();
+    setLoading(true);
+    setError(null);
+
+    // Basic validation
+    if (!formData.serviceName || !formData.serviceCharge || !formData.experience) {
+      setError('Please fill all required fields');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      console.log('Submitting service data:', formData);
+      
+      const serviceData = {
+        serviceName: formData.serviceName.trim(),
+        serviceCharge: parseFloat(formData.serviceCharge),
+        experience: formData.experience,
+        description: formData.description.trim() || ""
+      };
+
+      console.log('Processed service data:', serviceData);
+      const result = await technicianService.createService(serviceData);
+      console.log('Service created successfully:', result);
+      
+      alert('Service added successfully!');
+      
+      if (onServiceAdded) {
+        onServiceAdded();
+      }
+      
+      if (onClose) {
+        onClose();
+      }
+    } catch (error) {
+      console.error('Error creating service:', error);
+      console.error('Error response:', error.response);
+      setError(error.response?.data?.message || error.message || 'Failed to create service');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-md p-6 w-full max-w-md border border-fixhub-borderSoft">
+    <div className="bg-white rounded-xl shadow-md p-6 w-full max-w-lg border border-fixhub-borderSoft">
       {/* Header */}
-      <div className="mb-6">
+      <div className="mb-4">
         <h2 className="text-xl font-bold text-fixhub-textDark">Add Your Service</h2>
         <p className="text-fixhub-textMuted text-sm mt-1">Fill in your service details</p>
       </div>
 
+      {/* Error Message */}
+      {error && (
+        <div className="mb-4 p-3 bg-fixhub-danger bg-opacity-10 border border-fixhub-danger rounded-lg">
+          <p className="text-fixhub-danger text-sm">{error}</p>
+        </div>
+      )}
+
       {/* Form */}
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={handleSubmit} className="space-y-4">
         {/* Service Type */}
         <div>
           <label className="block text-sm font-medium text-fixhub-textDark mb-1">
             Service Type *
           </label>
           <select
-            name="serviceType"
-            value={formData.serviceType}
+            name="serviceName"
+            value={formData.serviceName}
             onChange={handleChange}
             required
-            className="w-full border border-fixhub-borderSoft rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-fixhub-primary bg-white text-fixhub-textDark"
+            className="w-full border border-fixhub-borderSoft rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-fixhub-primary bg-white text-fixhub-textDark"
           >
             <option value="">Select your service</option>
             {serviceTypes.map((type, index) => (
@@ -71,15 +119,12 @@ const AddService = ({ onClose }) => {
           </select>
         </div>
 
-        {/* Service Charge */}
-        <div>
-          <label className="block text-sm font-medium text-fixhub-textDark mb-1">
-            Service Charge (₹) *
-          </label>
-          <div className="relative">
-            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-fixhub-textMuted">
-              ₹
-            </span>
+        {/* Service Charge and Experience in same row */}
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-sm font-medium text-fixhub-textDark mb-1">
+              Service Charge (₹) *
+            </label>
             <input
               type="number"
               name="serviceCharge"
@@ -87,30 +132,27 @@ const AddService = ({ onClose }) => {
               onChange={handleChange}
               required
               min="0"
-              className="w-full border border-fixhub-borderSoft rounded-lg pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-fixhub-primary text-fixhub-textDark"
-              placeholder="Enter amount"
+              className="w-full border border-fixhub-borderSoft rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-fixhub-primary text-fixhub-textDark"
+              placeholder="500"
             />
           </div>
-          <p className="text-xs text-fixhub-textMuted mt-1">Enter your service charge in Indian Rupees</p>
-        </div>
-
-        {/* Experience */}
-        <div>
-          <label className="block text-sm font-medium text-fixhub-textDark mb-1">
-            Experience *
-          </label>
-          <select
-            name="experience"
-            value={formData.experience}
-            onChange={handleChange}
-            required
-            className="w-full border border-fixhub-borderSoft rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-fixhub-primary bg-white text-fixhub-textDark"
-          >
-            <option value="">Select your experience</option>
-            {experienceOptions.map((exp, index) => (
-              <option key={index} value={exp}>{exp}</option>
-            ))}
-          </select>
+          <div>
+            <label className="block text-sm font-medium text-fixhub-textDark mb-1">
+              Experience *
+            </label>
+            <select
+              name="experience"
+              value={formData.experience}
+              onChange={handleChange}
+              required
+              className="w-full border border-fixhub-borderSoft rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-fixhub-primary bg-white text-fixhub-textDark"
+            >
+              <option value="">Select experience</option>
+              {experienceOptions.map((exp, index) => (
+                <option key={index} value={exp}>{exp}</option>
+              ))}
+            </select>
+          </div>
         </div>
 
         {/* Description */}
@@ -122,26 +164,26 @@ const AddService = ({ onClose }) => {
             name="description"
             value={formData.description}
             onChange={handleChange}
-            rows="3"
-            className="w-full border border-fixhub-borderSoft rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-fixhub-primary text-fixhub-textDark"
-            placeholder="Briefly describe the service you offer (e.g., 'Screen replacement for all major smartphone brands')."
+            rows="2"
+            className="w-full border border-fixhub-borderSoft rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-fixhub-primary text-fixhub-textDark"
+            placeholder="Briefly describe the service you offer..."
           />
         </div>
 
-      
-
         {/* Buttons */}
-        <div className="flex gap-3 pt-4">
+        <div className="flex gap-3 pt-3">
           <button
             type="submit"
-            className="flex-1 bg-fixhub-primary hover:bg-fixhub-dark text-white font-medium py-3 rounded-lg transition-colors"
+            disabled={loading}
+            className="flex-1 bg-fixhub-primary hover:bg-fixhub-dark text-white font-medium py-2 rounded-lg transition-colors disabled:opacity-50"
           >
-            Add Service
+            {loading ? 'Adding...' : 'Add Service'}
           </button>
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 border border-fixhub-borderSoft hover:bg-gray-50 text-fixhub-textDark font-medium py-3 rounded-lg transition-colors"
+            disabled={loading}
+            className="flex-1 border border-fixhub-borderSoft hover:bg-fixhub-borderSoft text-fixhub-textDark font-medium py-2 rounded-lg transition-colors"
           >
             Cancel
           </button>

@@ -50,7 +50,7 @@ const HeroSection = () => {
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
                 <Link
-                  to="/book-service"
+                  to="/login"
                   className="bg-fixhub-primary text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-semibold text-sm sm:text-base lg:text-lg hover:bg-fixhub-dark transition-colors shadow-lg text-center"
                 >
                   Book a Service

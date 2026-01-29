@@ -1,59 +1,47 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axiosInstance from '../../Services/axiosInstance';
 
 const Notifications = () => {
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [selectedNotification, setSelectedNotification] = useState(null);
-  
-  const notifications = [
-    {
-      id: 1,
-      type: 'request',
-      title: 'New Service Request',
-      message: 'John Doe has requested Smartphone Repair service for cracked iPhone screen',
-      time: '5 minutes ago',
-      read: false,
-      details: 'Customer needs iPhone 12 screen replacement. Touch functionality is completely lost. Customer available between 10 AM - 12 PM today.'
-    },
-    {
-      id: 2,
-      type: 'review',
-      title: 'New Review Received',
-      message: 'Jane Smith left a 5-star review for your washing machine repair service',
-      time: '1 hour ago',
-      read: false,
-      details: '"Excellent service! My washing machine is working perfectly now. The technician was very professional and fixed the issue quickly. Highly recommended!" - Jane Smith'
-    },
-    {
-      id: 3,
-      type: 'admin',
-      title: 'System Update',
-      message: 'New features have been added to your technician dashboard',
-      time: '2 hours ago',
-      read: true,
-      details: 'We have added new features including: Real-time chat with customers, Enhanced job tracking, New payment methods, and Improved notification system.'
-    },
-    {
-      id: 4,
-      type: 'request',
-      title: 'Service Request Accepted',
-      message: 'Your acceptance for Mike Johnson\'s laptop repair has been confirmed',
-      time: '3 hours ago',
-      read: true,
-      details: 'Customer Mike Johnson has confirmed your acceptance for laptop overheating and battery charging issue. Service scheduled for tomorrow 4-6 PM.'
-    },
-    {
-      id: 5,
-      type: 'admin',
-      title: 'Payment Processed',
-      message: 'Your payment of ₹2,500 for completed TV repair job has been processed',
-      time: '1 day ago',
-      read: true,
-      details: 'Payment for Samsung 55" Smart TV repair has been successfully processed. Amount: ₹2,500. Transaction ID: TXN123456789. Amount will be credited to your account within 24 hours.'
+
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
+
+  const fetchNotifications = async () => {
+    try {
+      setLoading(true);
+      const response = await axiosInstance.get('/notifications/technician');
+      setNotifications(response.data);
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+      setError('Failed to load notifications');
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+
+  const markAsRead = async (notificationId) => {
+    try {
+      await axiosInstance.patch(`/notifications/${notificationId}/read`);
+      setNotifications(prev => 
+        prev.map(notif => 
+          notif._id === notificationId 
+            ? { ...notif, read: true }
+            : notif
+        )
+      );
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+    }
+  };
 
   const getNotificationIcon = (type) => {
     switch (type) {
-      case 'request':
+      case 'booking_request':
         return (
           <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
             <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -61,7 +49,23 @@ const Notifications = () => {
             </svg>
           </div>
         );
-      case 'review':
+      case 'booking_accepted':
+        return (
+          <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+        );
+      case 'booking_completed':
+        return (
+          <div className="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center">
+            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+        );
+      case 'review_received':
         return (
           <div className="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center">
             <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -69,7 +73,15 @@ const Notifications = () => {
             </svg>
           </div>
         );
-      case 'admin':
+      case 'payment_processed':
+        return (
+          <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center">
+            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+            </svg>
+          </div>
+        );
+      case 'system':
         return (
           <div className="w-10 h-10 bg-fixhub-primary rounded-full flex items-center justify-center">
             <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -88,6 +100,56 @@ const Notifications = () => {
     }
   };
 
+  const formatTimeAgo = (dateString) => {
+    const now = new Date();
+    const notificationDate = new Date(dateString);
+    const diffInMinutes = Math.floor((now - notificationDate) / (1000 * 60));
+    
+    if (diffInMinutes < 1) return 'Just now';
+    if (diffInMinutes < 60) return `${diffInMinutes} minutes ago`;
+    
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) return `${diffInHours} hours ago`;
+    
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays < 7) return `${diffInDays} days ago`;
+    
+    return notificationDate.toLocaleDateString();
+  };
+
+  const handleNotificationClick = async (notification) => {
+    if (!notification.read) {
+      await markAsRead(notification._id);
+    }
+    setSelectedNotification(notification);
+  };
+
+  if (loading) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fixhub-primary"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="text-center">
+          <p className="text-red-500">{error}</p>
+          <button 
+            onClick={fetchNotifications}
+            className="mt-4 bg-fixhub-primary text-white px-4 py-2 rounded-lg"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   const unreadCount = notifications.filter(n => !n.read).length;
 
   return (
@@ -100,41 +162,68 @@ const Notifications = () => {
         </p>
       </div>
 
+      {/* Mark All as Read Button */}
+      {unreadCount > 0 && (
+        <div className="mb-6">
+          <button
+            onClick={async () => {
+              try {
+                await axiosInstance.patch('/notifications/mark-all-read');
+                setNotifications(prev => prev.map(notif => ({ ...notif, read: true })));
+              } catch (error) {
+                console.error('Error marking all as read:', error);
+              }
+            }}
+            className="bg-fixhub-primary hover:bg-fixhub-dark text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+          >
+            Mark All as Read
+          </button>
+        </div>
+      )}
+
       {/* Notifications List */}
       <div className="space-y-4">
-        {notifications.map((notification) => (
-          <div
-            key={notification.id}
-            className={`bg-white rounded-lg shadow-md border p-6 transition-all hover:shadow-lg cursor-pointer ${
-              !notification.read 
-                ? 'border-fixhub-primary bg-fixhub-mint/5' 
-                : 'border-fixhub-borderSoft'
-            }`}
-            onClick={() => setSelectedNotification(notification)}
-          >
-            <div className="flex items-start space-x-4">
-              {getNotificationIcon(notification.type)}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <h3 className={`text-lg font-semibold ${
-                      !notification.read ? 'text-fixhub-textDark' : 'text-fixhub-textMuted'
-                    }`}>
-                      {notification.title}
-                      {!notification.read && (
-                        <span className="ml-2 w-2 h-2 bg-fixhub-primary rounded-full inline-block"></span>
-                      )}
-                    </h3>
-                    <p className="text-fixhub-textMuted mt-1">{notification.message}</p>
+        {notifications.length > 0 ? (
+          notifications.map((notification) => (
+            <div
+              key={notification._id}
+              className={`bg-white rounded-lg shadow-md border p-6 transition-all hover:shadow-lg cursor-pointer ${
+                !notification.read 
+                  ? 'border-fixhub-primary bg-fixhub-mint/5' 
+                  : 'border-fixhub-borderSoft'
+              }`}
+              onClick={() => handleNotificationClick(notification)}
+            >
+              <div className="flex items-start space-x-4">
+                {getNotificationIcon(notification.type)}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <h3 className={`text-lg font-semibold ${
+                        !notification.read ? 'text-fixhub-textDark' : 'text-fixhub-textMuted'
+                      }`}>
+                        {notification.title}
+                        {!notification.read && (
+                          <span className="ml-2 w-2 h-2 bg-fixhub-primary rounded-full inline-block"></span>
+                        )}
+                      </h3>
+                      <p className="text-fixhub-textMuted mt-1">{notification.message}</p>
+                    </div>
+                    <span className="text-sm text-fixhub-textMuted whitespace-nowrap ml-4">
+                      {formatTimeAgo(notification.createdAt)}
+                    </span>
                   </div>
-                  <span className="text-sm text-fixhub-textMuted whitespace-nowrap ml-4">
-                    {notification.time}
-                  </span>
                 </div>
               </div>
             </div>
+          ))
+        ) : (
+          <div className="text-center py-12">
+            <div className="text-6xl mb-4">🔔</div>
+            <h3 className="text-lg font-medium text-fixhub-textDark mb-2">No notifications</h3>
+            <p className="text-fixhub-textMuted">You're all caught up! New notifications will appear here.</p>
           </div>
-        ))}
+        )}
       </div>
 
       {/* Notification Modal */}
@@ -158,22 +247,26 @@ const Notifications = () => {
                   </svg>
                 </button>
               </div>
-              <p className="text-sm text-fixhub-textMuted mt-1">{selectedNotification.time}</p>
+              <p className="text-sm text-fixhub-textMuted mt-1">
+                {formatTimeAgo(selectedNotification.createdAt)}
+              </p>
             </div>
             <div className="p-6">
               <p className="text-fixhub-textDark leading-relaxed">
-                {selectedNotification.details}
+                {selectedNotification.details || selectedNotification.message}
               </p>
+              
+              {/* Additional notification data */}
+              {selectedNotification.data && (
+                <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                  <h4 className="font-medium text-fixhub-textDark mb-2">Additional Details:</h4>
+                  <pre className="text-sm text-fixhub-textMuted whitespace-pre-wrap">
+                    {JSON.stringify(selectedNotification.data, null, 2)}
+                  </pre>
+                </div>
+              )}
             </div>
           </div>
-        </div>
-      )}
-
-      {notifications.length === 0 && (
-        <div className="text-center py-12">
-          <div className="text-6xl mb-4">🔔</div>
-          <h3 className="text-lg font-medium text-fixhub-textDark mb-2">No notifications</h3>
-          <p className="text-fixhub-textMuted">You're all caught up! New notifications will appear here.</p>
         </div>
       )}
     </div>

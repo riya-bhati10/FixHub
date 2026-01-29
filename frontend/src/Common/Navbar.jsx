@@ -122,10 +122,13 @@ const Navbar = ({
 
             {/* Notification Bell */}
             {showNotifications && (
-              <button className={`w-10 h-10 flex items-center justify-center ${textClass} hover:text-[#1F7F85] hover:bg-slate-50 rounded-full transition-all relative`}>
+              <Link 
+                to={`/${userType}/notifications`}
+                className={`w-10 h-10 flex items-center justify-center ${textClass} hover:text-[#1F7F85] hover:bg-slate-50 rounded-full transition-all relative`}
+              >
                 <span className="material-symbols-outlined text-2xl">notifications</span>
                 <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
-              </button>
+              </Link>
             )}
 
             {/* Avatar Dropdown */}
