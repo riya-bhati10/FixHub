@@ -1,6 +1,8 @@
 const Review = require("../models/Review.model");
 const Booking = require("../models/Booking.model");
 const Service = require("../models/Service.model");
+const Notification = require("../models/Notification.model");
+
 
 // add new review (customer)
 exports.createReview = async (req, res) => {
@@ -79,14 +81,18 @@ exports.getTechnicianReviews = async (req, res) => {
       );
     }
 
-    const formattedReviews = reviews.map((r) => ({
-      rating: r.rating,
-      review: r.review,
-      customerName:
-        r.customerId.fullname.firstname + " " + r.customerId.fullname.lastname,
-      serviceName: r.bookingId.serviceId.serviceName,
-      createdAt: r.createdAt,
-    }));
+const formattedReviews = reviews.map((r) => ({
+  rating: r.rating,
+  review: r.review,
+  customerName: r.customerId?.fullname
+    ? r.customerId.fullname.firstname +
+      " " +
+      (r.customerId.fullname.lastname || "")
+    : "N/A",
+  serviceName: r.bookingId?.serviceId?.serviceName || "N/A",
+  createdAt: r.createdAt,
+}));
+
 
     res.json({
       count: formattedReviews.length,

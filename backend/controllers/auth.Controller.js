@@ -36,7 +36,6 @@ exports.signup = async (req, res) => {
       role: role || "customer",
       location,
     });
-    // console.log(user);
 
 
     return res.status(201).json({
@@ -82,15 +81,10 @@ exports.login = async (req, res) => {
   }
 };
 
-// user profile
-module.exports.getUserProfile= async(req,res,next)=>{
-    res.status(200).json(req.user);
-    console.log(req.user);
-    
-}
+
 
 // user LogOut
-module.exports.logoutUser = async (req, res, next) => {
+module.exports.logoutUser = async (req, res) => {
   try {
     res.clearCookie('token')
     const authHeader = req.headers.authorization;
