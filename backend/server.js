@@ -10,7 +10,7 @@ const serviceRoutes = require("./routes/service.routes");
 const bookingRoutes = require("./routes/booking.routes");
 const notificationRoutes = require("./routes/notification.routes");
 const reviewRoutes = require("./routes/review.routes");
-
+const userRoutes = require("./routes/user.routes");
 
 dotenv.config();
 connectDB();
@@ -29,6 +29,7 @@ app.use("/api/services", serviceRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/reviews", reviewRoutes);
+app.use("/api/user", userRoutes);
 
 
 app.listen(process.env.PORT, () =>
