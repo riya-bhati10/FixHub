@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import logo from '/logo.png';
 
 const Navbar = ({ 
@@ -8,13 +8,11 @@ const Navbar = ({
   showProfile = false,
   showNotifications = false,
   userName = '',
-  onLogout = null,
-  isScrolled = false
+  onLogout = null
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const navigate = useNavigate();
-  const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
