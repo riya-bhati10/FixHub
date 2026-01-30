@@ -1,11 +1,77 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../../Common/Navbar';
+import { serviceApi } from '../../Services/serviceApi';
+import bookingService from '../../Services/bookingService';
+import Loader from '../../Common/Loader';
 
 const BookService = () => {
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [services, setServices] = useState([]);
+  const [technicians, setTechnicians] = useState([]);
   
+  useEffect(() => {
+    fetchServices();
+  }, []);
+
+  const fetchServices = async () => {
+    try {
+      setLoading(true);
+      const response = await serviceApi.getCategories();
+      const categories = response.data.categories || [];
+      
+      const formattedServices = categories.map((cat, idx) => ({
+        id: idx + 1,
+        title: cat,
+        description: `Professional ${cat} services`,
+        category: cat.toLowerCase().replace(/\s+/g, '_'),
+        icon: getServiceIcon(cat)
+      }));
+      
+      setServices(formattedServices);
+    } catch (error) {
+      console.error('Error fetching services:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchTechnicians = async (serviceName) => {
+    try {
+      const response = await serviceApi.getTechniciansByService(serviceName);
+      const techs = response.data.technicians || [];
+      
+      return techs.map(tech => ({
+        id: tech.technicianId,
+        serviceId: tech.serviceId,
+        name: tech.name,
+        rating: tech.avgRating || 4.5,
+        reviews: tech.totalReviews || 0,
+        specialty: 'Technician',
+        available: true,
+        serviceCharge: tech.serviceCharge,
+        avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(tech.name)}&background=1F7F85&color=fff`
+      }));
+    } catch (error) {
+      console.error('Error fetching technicians:', error);
+      return [];
+    }
+  };
+
+  const getServiceIcon = (serviceName) => {
+    const name = serviceName?.toLowerCase() || '';
+    if (name.includes('phone') || name.includes('smartphone')) return 'smartphone';
+    if (name.includes('laptop')) return 'laptop';
+    if (name.includes('tv')) return 'tv';
+    if (name.includes('refrigerator') || name.includes('fridge')) return 'kitchen';
+    if (name.includes('washing')) return 'local_laundry_service';
+    if (name.includes('ac') || name.includes('air')) return 'ac_unit';
+    if (name.includes('microwave')) return 'microwave';
+    return 'build';
+  };
+
   const customerNavLinks = [
     { path: '/dashboard', label: 'Dashboard' },
     { path: '/book-service', label: 'Book Service' },
@@ -33,129 +99,17 @@ const BookService = () => {
     address: ""
   });
 
-  const services = [
-    {
-      id: 1,
-      title: "Smartphone Repair",
-      description: "Expert screen replacement, battery swaps, and hardware fixes for all smartphone models.",
-      price: 49,
-      image: "https://images.unsplash.com/photo-1598327105666-5b89351aff70?w=800&h=600&fit=crop",
-      category: "phone",
-      rating: 4.9,
-      reviews: 328,
-      icon: "smartphone"
-    },
-    {
-      id: 2,
-      title: "Laptop Repair",
-      description: "Comprehensive diagnostics, component repair, and performance optimization for laptops.",
-      price: 79,
-      image: "https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=800&h=600&fit=crop",
-      category: "laptop",
-      rating: 4.8,
-      reviews: 215,
-      icon: "laptop"
-    },
-    {
-      id: 3,
-      title: "TV Repair",
-      description: "Professional repair services for LED, LCD, OLED, and Smart TVs of all sizes.",
-      price: 89,
-      image: "https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=400&h=300&fit=crop",
-      category: "tv",
-      rating: 4.7,
-      reviews: 156,
-      icon: "tv"
-    },
-    {
-      id: 4,
-      title: "Refrigerator Repair",
-      description: "Fast and reliable repair for cooling issues, compressors, and maintenance.",
-      price: 99,
-      image: "https://images.unsplash.com/photo-1584568694244-14fbdf83bd30?w=800&h=600&fit=crop",
-      category: "fridge",
-      rating: 4.8,
-      reviews: 182,
-      icon: "kitchen"
-    },
-    {
-      id: 5,
-      title: "Washing Machine Repair",
-      description: "Full-service repair for washers including motor, drum, and electronic issues.",
-      price: 85,
-      image: "https://images.unsplash.com/photo-1610557892470-55d9e80c0bce?w=800&h=600&fit=crop",
-      category: "washing_machine",
-      rating: 4.9,
-      reviews: 203,
-      icon: "local_laundry_service"
-    }
-  ];
-
-  const technicians = [
-    { 
-      id: 1, 
-      name: "Robert Fox", 
-      rating: 4.9, 
-      reviews: 124, 
-      specialty: "Senior Technician", 
-      available: true, 
-      avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=faces",
-      clientReviews: [
-         { id: 1, user: "Sarah M.", rating: 5, comment: "Fixed my phone in 30 mins! Highly recommended.", date: "2 days ago" },
-         { id: 2, user: "John D.", rating: 5, comment: "Very professional and polite.", date: "1 week ago" }
-      ]
-    },
-    { 
-      id: 2, 
-      name: "Sarah Connor", 
-      rating: 4.8, 
-      reviews: 98, 
-      specialty: "Appliance Expert", 
-      available: true, 
-      avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=faces",
-      clientReviews: [
-         { id: 1, user: "Mike R.", rating: 5, comment: "Saved my refrigerator. Thank you!", date: "3 days ago" }
-      ]
-    },
-    { 
-      id: 3, 
-      name: "Michael Chen", 
-      rating: 4.7, 
-      reviews: 85, 
-      specialty: "Electronics Specialist", 
-      available: false, 
-      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=faces",
-      clientReviews: []
-    },
-    { 
-      id: 4, 
-      name: "Emily Davis", 
-      rating: 4.9, 
-      reviews: 215, 
-      specialty: "Master Repairman", 
-      available: true, 
-      avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=faces",
-      clientReviews: [
-         { id: 1, user: "David K.", rating: 5, comment: "Best service ever.", date: "Yesterday" },
-         { id: 2, user: "Lisa P.", rating: 4, comment: "Good work but arrived slightly late.", date: "2 weeks ago" }
-      ]
-    },
-  ];
-
   const categories = [
-    { id: 'all', label: 'All Services' },
-    { id: 'phone', label: 'Phones' },
-    { id: 'laptop', label: 'Laptops' },
-    { id: 'tv', label: 'TVs' },
-    { id: 'fridge', label: 'Refrigerators' },
-    { id: 'washing_machine', label: 'Washing Machines' }
+    { id: 'all', label: 'All Services' }
   ];
 
-  // Function to handle card click
-  const handleCardClick = (service) => {
+  const handleCardClick = async (service) => {
     setSelectedService(service);
+    setLoading(true);
+    const techs = await fetchTechnicians(service.title);
+    setTechnicians(techs);
+    setLoading(false);
     setIsTechnicianViewOpen(true);
-    // Reset form data
     setFormData({
       issue: "",
       serviceDate: "",
@@ -328,21 +282,31 @@ const BookService = () => {
     }
   };
 
-  // Function to handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Booking Details:", {
-      service: selectedService,
-      technician: selectedTechnician,
-      formData: formData
-    });
-    navigate('/booking-success');
+    try {
+      await bookingService.createBooking({
+        serviceId: selectedTechnician.serviceId,
+        technicianId: selectedTechnician.id,
+        issue: formData.issue,
+        serviceDate: formData.serviceDate,
+        timeSlot: formData.timeSlot,
+        serviceLocation: formData.address
+      });
+      alert('Booking created successfully!');
+      navigate('/booking-success');
+    } catch (error) {
+      console.error('Booking failed:', error);
+      alert(error.response?.data?.message || 'Booking failed. Please try again.');
+    }
   };
+
+  if (loading) return <Loader />;
 
   const filteredServices = services.filter(service => {
     const matchesCategory = activeCategory === 'all' || service.category === activeCategory;
-    const matchesSearch = service.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          service.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = service.title?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          service.description?.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
@@ -355,7 +319,6 @@ const BookService = () => {
         navLinks={customerNavLinks}
         showProfile={true}
         showNotifications={true}
-        userName="Customer"
       />
       
       {/* Technician Selection Modal */}
@@ -402,7 +365,7 @@ const BookService = () => {
                           <span className="text-xs text-slate-500">({tech.reviews} reviews)</span>
                         </div>
                         <p className="text-sm font-bold text-[#1F7F85] mt-1">
-                          Service Charge: ${selectedService.price}
+                          Service Charge: ${tech.serviceCharge || 0}
                         </p>
                         <button
                           onClick={(e) => {
@@ -664,11 +627,11 @@ const BookService = () => {
                   <div className="flex items-center justify-between mb-6">
                     <div>
                       <p className="text-sm text-slate-500">Service Charge</p>
-                      <p className="text-2xl font-bold text-[#0F4C5C]">${selectedService.price}</p>
+                      <p className="text-2xl font-bold text-[#0F4C5C]">${selectedTechnician.serviceCharge || 0}</p>
                     </div>
                     <div>
                       <p className="text-sm text-slate-500">Total Amount</p>
-                      <p className="text-2xl font-bold text-[#0F4C5C]">${selectedService.price}</p>
+                      <p className="text-2xl font-bold text-[#0F4C5C]">${selectedTechnician.serviceCharge || 0}</p>
                     </div>
                   </div>
 
@@ -741,12 +704,9 @@ const BookService = () => {
                   onClick={() => handleCardClick(service)}
                 >
                   <div className="h-56 overflow-hidden relative">
-                    <img 
-                      alt={service.title} 
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
-                      src={service.image}
-                    />
-                   
+                    <div className="w-full h-full bg-gradient-to-br from-[#1F7F85] to-[#0F4C5C] flex items-center justify-center">
+                      <span className="material-symbols-outlined text-white text-6xl">{service.icon}</span>
+                    </div>
                     <div className="absolute bottom-4 left-4 bg-[#1F7F85]/90 backdrop-blur-sm p-2 text-white shadow-sm">
                       <span className="material-symbols-outlined text-xl block">{service.icon}</span>
                     </div>
@@ -792,26 +752,12 @@ const BookService = () => {
                 className="w-[280px] h-[380px] flex-shrink-0 group relative overflow-hidden cursor-pointer"
                 onClick={() => handleCardClick(service)}
               >
-                <img 
-                  alt={service.title} 
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
-                  src={service.image}
-                />
+                <div className="w-full h-full bg-gradient-to-br from-[#1F7F85] to-[#0F4C5C] flex items-center justify-center">
+                  <span className="material-symbols-outlined text-white text-8xl">{service.icon}</span>
+                </div>
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/20 to-transparent"></div>
                 <div className="absolute bottom-6 left-6 text-white">
-                  <span className={`text-xs font-bold uppercase tracking-widest px-2 py-1 mb-2 inline-block
-                    ${service.category === 'pro' ? 'bg-blue-500/20 text-blue-300' :
-                      service.category === 'popular' ? 'bg-purple-500/20 text-purple-300' :
-                      service.category === 'essential' ? 'bg-green-500/20 text-green-300' :
-                      service.category === 'trending' ? 'bg-pink-500/20 text-pink-300' :
-                      'bg-yellow-500/20 text-yellow-300'}`}>
-                    {service.category === 'pro' ? 'Pro Choice' :
-                     service.category === 'popular' ? 'Popular' :
-                     service.category === 'essential' ? 'Essential' :
-                     service.category === 'trending' ? 'Trending' : 'Best Value'}
-                  </span>
                   <h3 className="text-xl font-bold">{service.title}</h3>
-                 
                 </div>
               </div>
             ))}

@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import bgImage from '../../assets/repair-bg.png';
 import authService from './auth.service';
+import { useUser } from '../../context/UserContext';
 
 const LoginPage = () => {
   const navigate = useNavigate();
+  const { setUser } = useUser();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -21,6 +23,7 @@ const LoginPage = () => {
     e.preventDefault();
     try {
       const data = await authService.login(formData.email, formData.password);
+      setUser(data.user);
       if (data.role === 'technician') {
         navigate('/technician/dashboard');
       } else {

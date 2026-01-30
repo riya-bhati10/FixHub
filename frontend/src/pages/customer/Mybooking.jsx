@@ -1,495 +1,396 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import logo from '../../../public/logo.png';
 import Navbar from '../../Common/Navbar';
+import bookingService from '../../Services/bookingService';
+import Loader from '../../Common/Loader';
 
 const MyBooking = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('all');
-  const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [animatingBookingId, setAnimatingBookingId] = useState(null);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Tab items with icons
-  const tabItems = [
-    { id: 'all', label: 'All Booking', icon: 'list_alt' },
-    { id: 'active', label: 'Active', icon: 'home_repair_service' },
-    { id: 'completed', label: 'Completed', icon: 'task_alt' },
-    { id: 'cancelled', label: 'Cancelled', icon: 'cancel' }
+  const customerNavLinks = [
+    { path: '/dashboard', label: 'Dashboard' },
+    { path: '/book-service', label: 'Book Service' },
+    { path: '/my-booking', label: 'My Bookings' },
   ];
 
-  // Stat cards data
-  const statCards = [
-    {
-      icon: 'build',
-      title: 'Total Repairs',
-      value: '1,284',
-      iconColor: 'text-[#1F7F85]',
-      bgColor: 'bg-[#DCEBEC]',
-      borderColor: 'border-[#1F7F85]/10',
-      textColor: 'text-[#0F4C5C]',
-      titleColor: 'text-[#1F7F85]/70'
-    },
-    {
-      icon: 'home_repair_service',
-      title: 'Active Repairs',
-      value: '42',
-      iconColor: 'text-[#1F7F85]',
-      bgColor: 'bg-[#DCEBEC]',
-      borderColor: 'border-[#1F7F85]/10',
-      textColor: 'text-[#0F4C5C]',
-      titleColor: 'text-[#1F7F85]/70'
-    },
-    {
-      icon: 'pending_actions',
-      title: 'Pending Repairs',
-      value: '8',
-      iconColor: 'text-orange-500',
-      bgColor: 'bg-[#DCEBEC]',
-      borderColor: 'border-[#1F7F85]/10',
-      textColor: 'text-[#0F4C5C]',
-      titleColor: 'text-[#1F7F85]/70'
-    },
-    {
-      icon: 'payments',
-      title: "Total Spent",
-      value: '$2,450.00',
-      iconColor: 'text-teal-100',
-      bgColor: 'bg-[#1F7F85]',
-      borderColor: '',
-      textColor: 'text-white',
-      titleColor: 'text-teal-100/80',
-      isPrimary: true
+  useEffect(() => {
+    fetchBookings();
+  }, []);
+
+  const fetchBookings = async () => {
+    try {
+      setLoading(true);
+      const response = await bookingService.getCustomerBookings();
+      setBookings(response.bookings || []);
+    } catch (error) {
+      console.error('Error fetching bookings:', error);
+    } finally {
+      setLoading(false);
     }
-  ];
-
-  // Booking cards data with icons
-  const bookingCards = [
-    {
-      id: 'BK-9284',
-      date: 'Oct 24, 2023',
-      serviceName: 'iPhone Screen Repair',
-      technician: 'Alex Chen',
-      status: 'active',
-      statusText: 'Active',
-      statusColor: 'bg-blue-500',
-      statusIcon: 'home_repair_service',
-      serviceIcon: 'smartphone',
-      imageUrl: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400&h=300&fit=crop',
-      location: '123 Tech Avenue, San Francisco, CA',
-      serviceCharge: '$120.00'
-    },
-    {
-      id: 'BK-9285',
-      date: 'Oct 25, 2023',
-      serviceName: 'Laptop Keyboard Replacement',
-      technician: null,
-      status: 'active',
-      statusText: 'Active',
-      statusColor: 'bg-blue-500',
-      statusIcon: 'home_repair_service',
-      serviceIcon: 'laptop',
-      imageUrl: 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400&h=300&fit=crop',
-      location: '456 Innovation Dr, Palo Alto, CA',
-      serviceCharge: '$85.00'
-    },
-    {
-      id: 'BK-9286',
-      date: 'Oct 23, 2023',
-      serviceName: 'TV LED Panel Repair',
-      technician: 'Sarah Johnson',
-      status: 'completed',
-      statusText: 'Completed',
-      statusColor: 'bg-emerald-500',
-      statusIcon: 'task_alt',
-      serviceIcon: 'tv',
-      imageUrl: 'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=400&h=300&fit=crop',
-      location: '789 Screen Blvd, San Jose, CA',
-      serviceCharge: '$200.00'
-    },
-    {
-      id: 'BK-9287',
-      date: 'Oct 26, 2023',
-      serviceName: 'PlayStation Controller Fix',
-      technician: 'Marcus Rodriguez',
-      status: 'completed',
-      statusText: 'Completed',
-      statusColor: 'bg-emerald-500',
-      statusIcon: 'task_alt',
-      serviceIcon: 'sports_esports',
-      imageUrl: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400&h=300&fit=crop',
-      location: '321 Gamer Lane, Los Angeles, CA',
-      serviceCharge: '$45.00'
-    },
-    {
-      id: 'BK-9288',
-      date: 'Oct 22, 2023',
-      serviceName: 'MacBook Battery Replacement',
-      technician: null,
-      status: 'cancelled',
-      statusText: 'Cancelled',
-      statusColor: 'bg-red-500',
-      statusIcon: 'cancel',
-      serviceIcon: 'laptop_mac',
-      imageUrl: 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400&h=300&fit=crop',
-      location: '555 Apple Way, Cupertino, CA',
-      serviceCharge: '$150.00'
-    }
-  ];
-
-  // Pagination buttons
-  const paginationButtons = [1, 2, 3];
-
-  // Filtered bookings based on search
-  const filteredBookings = bookingCards.filter(booking =>
-    booking.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    booking.serviceName.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  // Status mapping for tabs
-  const statusMap = {
-    'all': 'all',
-    'active': 'active',
-    'completed': 'completed',
-    'cancelled': 'cancelled'
   };
 
-  // Further filter by active tab
-  const tabFilteredBookings = filteredBookings.filter(booking => {
-    if (activeTab === 'all') return true;
-    return booking.status === statusMap[activeTab];
+  const tabItems = [
+    { id: 'all', label: 'All Bookings', icon: 'list_alt', count: bookings.length },
+    { id: 'active', label: 'Active', icon: 'home_repair_service', count: bookings.filter(b => b.status === 'accepted' || b.status === 'in_progress').length },
+    { id: 'completed', label: 'Completed', icon: 'task_alt', count: bookings.filter(b => b.status === 'completed').length },
+    { id: 'cancelled', label: 'Cancelled', icon: 'cancel', count: bookings.filter(b => b.status === 'cancelled').length }
+  ];
+
+  const getStatusInfo = (status) => {
+    const statusMap = {
+      'pending': { text: 'Pending', color: 'bg-amber-500', textColor: 'text-amber-700', bgLight: 'bg-amber-50', icon: 'schedule' },
+      'accepted': { text: 'Accepted', color: 'bg-blue-500', textColor: 'text-blue-700', bgLight: 'bg-blue-50', icon: 'check_circle' },
+      'in_progress': { text: 'In Progress', color: 'bg-[#1F7F85]', textColor: 'text-[#1F7F85]', bgLight: 'bg-[#E0F2F1]', icon: 'settings' },
+      'completed': { text: 'Completed', color: 'bg-emerald-500', textColor: 'text-emerald-700', bgLight: 'bg-emerald-50', icon: 'check_circle' },
+      'cancelled': { text: 'Cancelled', color: 'bg-red-500', textColor: 'text-red-700', bgLight: 'bg-red-50', icon: 'cancel' }
+    };
+    return statusMap[status] || { text: status, color: 'bg-slate-500', textColor: 'text-slate-700', bgLight: 'bg-slate-50', icon: 'info' };
+  };
+
+  const getServiceIcon = (serviceName) => {
+    const name = serviceName?.toLowerCase() || '';
+    if (name.includes('phone') || name.includes('smartphone')) return 'smartphone';
+    if (name.includes('laptop')) return 'laptop';
+    if (name.includes('tv')) return 'tv';
+    if (name.includes('camera')) return 'photo_camera';
+    if (name.includes('refrigerator') || name.includes('fridge')) return 'kitchen';
+    if (name.includes('washing')) return 'local_laundry_service';
+    return 'build';
+  };
+
+  const tabFilteredBookings = bookings.filter(booking => {
+    const matchesTab = activeTab === 'all' || 
+      (activeTab === 'active' && (booking.status === 'accepted' || booking.status === 'in_progress')) ||
+      booking.status === activeTab;
+    
+    const matchesSearch = !searchTerm || 
+      booking.bookingId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      booking.service?.name?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    return matchesTab && matchesSearch;
   });
 
+  if (loading) return <Loader />;
+
   return (
-    <div className="min-h-screen bg-[#F7FBFC] text-slate-900 overflow-x-hidden">
-      {/* Tailwind Config and Fonts */}
-      <style>
-        {`
-          @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap');
-          @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
+    <div className="min-h-screen bg-[#F7FBFC] text-slate-800 font-['Manrope']">
+      <Navbar 
+        userType="customer"
+        navLinks={customerNavLinks}
+        showProfile={true}
+        showNotifications={true}
+      />
+      
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-24">
+        {/* Header Section */}
+        <div className="relative bg-gradient-to-r from-[#1F7F85] to-[#0F4C5C] shadow-xl shadow-[#1F7F85]/20 p-8 md:p-10 mb-10 overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 -mr-16 -mt-16 blur-3xl"></div>
+          <div className="absolute bottom-0 left-0 w-40 h-40 bg-white/10 -ml-10 -mb-10 blur-2xl"></div>
           
-          body {
-            font-family: 'Manrope', sans-serif;
-          }
-          
-          .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-          }
-          
-          .scrollbar-hide::-webkit-scrollbar {
-            display: none;
-          }
-          
-          .scrollbar-hide {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-          }
-          
-          @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-          }
-          
-          .animate-pulse {
-            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-          }
-          
-          @keyframes wave {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-          }
-          
-          .animate-wave {
-            animation: wave 0.5s ease-in-out;
-          }
-        `}
-      </style>
-
-      <div className="flex flex-col min-h-screen">
-
-        {/* Navbar */}
-        <Navbar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
-
-        {/* Sub-header */}
-        <div className="bg-white border-b border-slate-200 sticky top-20 z-30">
-          <div className="max-w-[1400px] mx-auto px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="w-full sm:w-auto">
-              <h2 className="text-xl font-bold text-slate-900 tracking-tight">Repair Bookings Overview</h2>
+          <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div className="text-center md:text-left">
+              <h1 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight mb-2">
+                My Bookings
+              </h1>
+              <p className="text-teal-100 text-lg font-medium">
+                Track and manage all your service requests
+              </p>
             </div>
-            <div className="flex items-center gap-3 w-full sm:w-auto">
-              <div className="relative w-full sm:w-80">
-                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xl">search</span>
-                <input
-                  className="w-full bg-slate-50 border border-slate-200 pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-[#1F7F85] focus:border-[#1F7F85]"
-                  placeholder="Search repairs..."
-                  type="text"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-              <button className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-[#1F7F85] bg-[#DCEBEC] border border-[#1F7F85]/20 hover:bg-[#1F7F85] hover:text-white transition-all whitespace-nowrap">
-                <span className="material-symbols-outlined text-lg">search</span>
-                Search
-              </button>
+            
+            {/* Search Bar */}
+            <div className="relative w-full md:w-96">
+              <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+              <input
+                className="w-full bg-white/95 backdrop-blur-sm border-0 pl-12 pr-4 py-3 text-sm focus:ring-2 focus:ring-white/50 shadow-lg"
+                placeholder="Search by ID or service..."
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
             </div>
           </div>
         </div>
 
-        {/* Main Content */}
-        <main className="flex-1 w-full max-w-[1400px] mx-auto p-8 space-y-8">
-          {/* MyBooking Heading */}
-          <h1 className="text-2xl font-bold text-slate-900">My Repair Bookings</h1>
-          {/* Stats Cards */}
-
-
-          {/* Tabs with Icons */}
-          <div className="bg-white border border-slate-200 overflow-hidden">
-            <div className="px-8 flex items-center gap-8 border-b border-slate-100 overflow-x-auto scrollbar-hide">
-              {tabItems.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`py-4 text-sm font-bold transition-all whitespace-nowrap flex items-center gap-2 ${activeTab === tab.id
-                      ? 'text-[#1F7F85] border-b-2 border-[#1F7F85]'
-                      : 'text-slate-500 hover:text-[#1F7F85] border-b-2 border-transparent hover:border-[#1F7F85]/30'
-                    }`}
-                >
-                  <span className="material-symbols-outlined text-base">
-                    {tab.icon}
+        {/* Tabs */}
+        <div className="bg-white shadow-sm border border-slate-200 mb-8 overflow-hidden">
+          <div className="flex overflow-x-auto scrollbar-hide">
+            {tabItems.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex-1 min-w-[140px] py-5 px-6 text-sm font-bold transition-all relative group ${
+                  activeTab === tab.id
+                    ? 'text-[#1F7F85] bg-[#F7FBFC]'
+                    : 'text-slate-500 hover:text-[#1F7F85] hover:bg-slate-50'
+                }`}
+              >
+                <div className="flex flex-col items-center gap-2">
+                  <span className="material-symbols-outlined text-2xl">{tab.icon}</span>
+                  <span>{tab.label}</span>
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${
+                    activeTab === tab.id ? 'bg-[#1F7F85] text-white' : 'bg-slate-200 text-slate-600'
+                  }`}>
+                    {tab.count}
                   </span>
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Booking Rows */}
-          {tabFilteredBookings.length > 0 ? (
-            <div className="bg-white border border-slate-200 overflow-hidden shadow-sm">
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-slate-50 border-b border-slate-200">
-                    <tr>
-                      <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Booking ID</th>
-                      <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Service</th>
-                      <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Technician</th>
-                      <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Date</th>
-                      <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Status</th>
-                      <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-200">
-                    {tabFilteredBookings.map((booking) => (
-                      <tr key={booking.id} className="hover:bg-slate-50 transition-colors">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-bold text-slate-900">{booking.id}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center gap-3">
-                            <span className="material-symbols-outlined text-[#1F7F85]">{booking.serviceIcon}</span>
-                            <div>
-                              <div className="text-sm font-bold text-slate-900">{booking.serviceName}</div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center gap-3">
-                            <div className={`w-8 h-8 flex items-center justify-center border ${booking.technician ? 'bg-[#DCEBEC] text-[#1F7F85] border-[#1F7F85]/20' : 'bg-slate-100 text-slate-400 border-slate-200'}`}>
-                              <span className="material-symbols-outlined text-sm">
-                                {booking.technician ? 'engineering' : 'person_off'}
-                              </span>
-                            </div>
-                            <div>
-                              <div className={`text-sm font-medium ${booking.technician ? 'text-slate-700' : 'text-slate-400 italic'}`}>
-                                {booking.technician || 'Unassigned'}
-                              </div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-slate-900">{booking.date}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-bold ${booking.statusColor} text-white`}>
-                            <span className="material-symbols-outlined text-xs">{booking.statusIcon}</span>
-                            {booking.statusText}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center gap-2">
-                            {booking.status === 'completed' && (
-                              <button
-                                className="px-4 py-2 bg-amber-500 text-white font-bold hover:bg-amber-600 transition-colors flex items-center gap-2 text-sm"
-                                onClick={() => navigate('/review')}
-                              >
-                                <span className="material-symbols-outlined text-sm">rate_review</span>
-                                Review
-                              </button>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          ) : (
-            <div className="text-center py-12">
-              <span className="material-symbols-outlined text-6xl text-slate-300">search_off</span>
-              <p className="text-slate-500 mt-4 text-lg">No repairs found matching your search.</p>
-              <p className="text-slate-400 mt-2">Try adjusting your search terms.</p>
-            </div>
-          )}
-
-          {/* Show All Button */}
-          <div className="flex justify-center pt-8">
-            <button className="px-6 py-3 bg-white border border-slate-200 text-slate-600 font-bold hover:bg-slate-50 hover:text-[#1F7F85] hover:border-[#1F7F85] transition-all shadow-sm flex items-center gap-2">
-              Show All
-              <span className="material-symbols-outlined text-lg">expand_more</span>
-            </button>
-          </div>
-        </main>
-
-        {/* Modal */}
-        {showModal && selectedBooking && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0F4C5C]/40 backdrop-blur-sm">
-            <div className="bg-white shadow-2xl w-full max-w-lg overflow-hidden max-h-[90vh] flex flex-col animate-wave">
-              {/* Header */}
-              <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-                <div>
-                  <h3 className="text-xl font-bold text-slate-900">Booking Details</h3>
-                  <p className="text-xs text-slate-500 font-medium mt-1">View complete information about your service</p>
                 </div>
-                <button
-                  onClick={() => setShowModal(false)}
-                  className="w-8 h-8 flex items-center justify-center bg-white border border-slate-200 text-slate-400 hover:text-[#1F7F85] hover:border-[#1F7F85] transition-all"
+                {activeTab === tab.id && (
+                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-[#1F7F85] to-[#0F4C5C]"></div>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Bookings Grid */}
+        {tabFilteredBookings.length > 0 ? (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {tabFilteredBookings.map((booking) => {
+              const statusInfo = getStatusInfo(booking.status);
+              const serviceIcon = getServiceIcon(booking.service?.name);
+              
+              return (
+                <div 
+                  key={booking.bookingId} 
+                  className="bg-white border border-slate-200 shadow-sm hover:shadow-xl hover:shadow-[#1F7F85]/10 transition-all duration-300 overflow-hidden group cursor-pointer"
+                  onClick={() => {
+                    setSelectedBooking(booking);
+                    setShowModal(true);
+                  }}
                 >
-                  <span className="material-symbols-outlined text-lg">close</span>
-                </button>
-              </div>
-
-              {/* Scrollable Content */}
-              <div className="overflow-y-auto p-6 space-y-6">
-                {/* Service Image & Status */}
-                <div className="relative h-48 overflow-hidden group shadow-sm">
-                  <img
-                    src={selectedBooking.imageUrl}
-                    alt="Service"
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
-                  <div className="absolute top-4 right-4">
-                     <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold shadow-sm ${selectedBooking.statusColor} text-white backdrop-blur-md bg-opacity-90`}>
-                        <span className="material-symbols-outlined text-[16px]">{selectedBooking.statusIcon}</span>
-                        {selectedBooking.statusText}
-                      </span>
-                  </div>
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4">
-                    <h4 className="text-white font-bold text-lg flex items-center gap-2">
-                       <span className="material-symbols-outlined text-[#AEE3E6]">{selectedBooking.serviceIcon}</span>
-                       {selectedBooking.serviceName}
-                    </h4>
-                  </div>
-                </div>
-
-                {/* Info Grid */}
-                <div className="grid grid-cols-2 gap-4">
-                   {/* Booking ID */}
-                   <div className="p-4 bg-slate-50 border border-slate-100 hover:border-[#1F7F85]/20 transition-colors">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1 flex items-center gap-1">
-                        <span className="material-symbols-outlined text-sm">tag</span>
-                        Booking ID
-                      </p>
-                      <p className="text-sm font-bold text-slate-900">{selectedBooking.id}</p>
-                   </div>
-                   {/* Date */}
-                   <div className="p-4 bg-slate-50 border border-slate-100 hover:border-[#1F7F85]/20 transition-colors">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1 flex items-center gap-1">
-                        <span className="material-symbols-outlined text-sm">event</span>
-                        Date
-                      </p>
-                      <p className="text-sm font-bold text-slate-900">{selectedBooking.date}</p>
-                   </div>
-                </div>
-
-                {/* Technician */}
-                <div className="p-4 border border-slate-100 flex items-center gap-4 hover:border-[#1F7F85]/30 transition-colors bg-white shadow-sm">
-                    <div className={`w-12 h-12 flex items-center justify-center border-2 ${selectedBooking.technician ? 'bg-[#DCEBEC] text-[#1F7F85] border-white shadow-md' : 'bg-slate-100 text-slate-400 border-slate-50'}`}>
-                      <span className="material-symbols-outlined text-xl">
-                        {selectedBooking.technician ? 'engineering' : 'person_off'}
-                      </span>
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-0.5">Technician</p>
-                      <p className={`text-sm font-bold ${selectedBooking.technician ? 'text-slate-900' : 'text-slate-400 italic'}`}>
-                        {selectedBooking.technician || 'Unassigned'}
-                      </p>
-                    </div>
-                </div>
-
-                {/* Location & Cost Details */}
-                <div className="space-y-4">
-                    <div className="flex items-start gap-3">
-                        <div className="w-8 h-8 bg-[#1F7F85]/10 flex items-center justify-center text-[#1F7F85] shrink-0">
-                            <span className="material-symbols-outlined text-lg">location_on</span>
+                  {/* Card Header */}
+                  <div className="relative h-28 bg-gradient-to-br from-[#1F7F85] to-[#0F4C5C] p-6">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 -mr-8 -mt-8 blur-2xl"></div>
+                    <div className="relative z-10 flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="w-14 h-14 bg-white/20 backdrop-blur-md flex items-center justify-center shadow-lg">
+                          <span className="material-symbols-outlined text-white text-2xl">{serviceIcon}</span>
                         </div>
                         <div>
-                            <h5 className="text-sm font-bold text-slate-900">Service Location</h5>
-                            <p className="text-sm text-slate-500 mt-0.5 leading-relaxed">
-                                {selectedBooking.location || "123, Tech Park, Silicon Valley, CA 94043"}
-                            </p>
+                          <h3 className="text-lg font-bold text-white">{booking.service?.name || 'N/A'}</h3>
+                          <p className="text-teal-100 text-xs font-medium">#{booking.bookingId?.slice(-8) || 'N/A'}</p>
                         </div>
+                      </div>
+                      <span className={`px-3 py-1 text-xs font-bold ${statusInfo.color} text-white shadow-md flex items-center gap-1`}>
+                        <span className="material-symbols-outlined text-sm">{statusInfo.icon}</span>
+                        {statusInfo.text}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Card Body */}
+                  <div className="p-6 space-y-4">
+                    {/* Technician */}
+                    <div className="flex items-center gap-4 p-4 bg-slate-50 border border-slate-100">
+                      <div className={`w-12 h-12 flex items-center justify-center ${booking.technician?.name ? 'bg-[#DCEBEC] text-[#1F7F85]' : 'bg-slate-200 text-slate-400'}`}>
+                        <span className="material-symbols-outlined text-xl">
+                          {booking.technician?.name ? 'engineering' : 'person_off'}
+                        </span>
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-xs font-bold text-slate-400 uppercase">Technician</p>
+                        <p className={`text-sm font-bold ${booking.technician?.name ? 'text-slate-900' : 'text-slate-400 italic'}`}>
+                          {booking.technician?.name || 'Not Assigned Yet'}
+                        </p>
+                      </div>
                     </div>
 
-                    <div className="border-t border-dashed border-slate-200 pt-4 space-y-3">
-                        <div className="flex justify-between items-center">
-                            <span className="text-sm text-slate-500 font-medium flex items-center gap-2">
-                                <span className="material-symbols-outlined text-slate-400 text-lg">payments</span>
-                                Service Charge
-                            </span>
-                            <span className="text-xl font-black text-[#1F7F85]">{selectedBooking.serviceCharge || "$120.00"}</span>
-                        </div>
+                    {/* Info Grid */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="p-4 bg-slate-50 border border-slate-100">
+                        <p className="text-xs font-bold text-slate-400 uppercase mb-1 flex items-center gap-1">
+                          <span className="material-symbols-outlined text-sm">event</span>
+                          Date
+                        </p>
+                        <p className="text-sm font-bold text-slate-900">{new Date(booking.serviceDate).toLocaleDateString()}</p>
+                      </div>
+                      <div className="p-4 bg-gradient-to-br from-[#E0F2F1] to-[#DCEBEC] border border-[#1F7F85]/20">
+                        <p className="text-xs font-bold text-[#0F4C5C] uppercase mb-1 flex items-center gap-1">
+                          <span className="material-symbols-outlined text-sm">payments</span>
+                          Charge
+                        </p>
+                        <p className="text-lg font-black text-[#1F7F85]">${booking.service?.charge || 0}</p>
+                      </div>
                     </div>
+
+                    {/* Actions */}
+                    <div className="pt-2 flex gap-3">
+                      {booking.status === 'completed' ? (
+                        <button
+                          className="flex-1 py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-white font-bold hover:shadow-lg hover:shadow-amber-500/30 transition-all flex items-center justify-center gap-2"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate('/review');
+                          }}
+                        >
+                          <span className="material-symbols-outlined">rate_review</span>
+                          Write Review
+                        </button>
+                      ) : (
+                        <button
+                          className="flex-1 py-3 bg-white border-2 border-slate-200 text-slate-600 font-bold hover:border-[#1F7F85] hover:text-[#1F7F85] hover:bg-[#F7FBFC] transition-all flex items-center justify-center gap-2"
+                        >
+                          <span className="material-symbols-outlined">visibility</span>
+                          View Details
+                        </button>
+                      )}
+                    </div>
+                  </div>
                 </div>
-
+              );
+            })}
+          </div>
+        ) : (
+          <div className="text-center py-20 bg-white border-2 border-dashed border-slate-200">
+            <div className="max-w-md mx-auto">
+              <div className="w-24 h-24 mx-auto mb-6 bg-slate-100 flex items-center justify-center">
+                <span className="material-symbols-outlined text-6xl text-slate-300">search_off</span>
               </div>
-              
-              {/* Footer Actions */}
-              <div className="p-4 border-t border-slate-100 bg-slate-50/50 flex gap-3">
-                 <button 
-                    onClick={() => setShowModal(false)}
-                    className="flex-1 py-3 font-bold text-slate-600 hover:bg-white hover:shadow-sm hover:text-slate-800 border border-transparent hover:border-slate-200 transition-all"
-                 >
-                    Close
-                 </button>
-                 {selectedBooking.status === 'completed' ? (
-                    <button 
-                        onClick={() => navigate('/review')}
-                        className="flex-1 py-3 font-bold text-white bg-[#1F7F85] hover:bg-[#0F4C5C] shadow-lg shadow-[#1F7F85]/20 transition-all flex items-center justify-center gap-2"
-                    >
-                        <span className="material-symbols-outlined text-lg">rate_review</span>
-                        Write Review
-                    </button>
-                 ) : (
-                    <button className="flex-1 py-3 font-bold text-white bg-[#1F7F85] hover:bg-[#0F4C5C] shadow-lg shadow-[#1F7F85]/20 transition-all flex items-center justify-center gap-2">
-                        <span className="material-symbols-outlined text-lg">support_agent</span>
-                        Contact Support
-                    </button>
-                 )}
-              </div>
+              <h3 className="text-2xl font-bold text-slate-700 mb-2">No Bookings Found</h3>
+              <p className="text-slate-500 text-lg mb-6">
+                {searchTerm ? 'No bookings match your search.' : 'You haven\'t made any bookings yet.'}
+              </p>
+              <button 
+                onClick={() => navigate('/book-service')}
+                className="px-8 py-4 bg-gradient-to-r from-[#1F7F85] to-[#0F4C5C] text-white font-bold hover:shadow-xl hover:shadow-[#1F7F85]/30 transition-all inline-flex items-center gap-2"
+              >
+                <span className="material-symbols-outlined">add_circle</span>
+                Book New Service
+              </button>
             </div>
           </div>
         )}
+      </main>
 
-        {/* Footer */}
-        <footer className="mt-auto p-8 border-t border-slate-200 text-center">
-          <p className="text-slate-400 text-xs font-medium">© 2023 ServicePortal Admin Dashboard. All rights reserved.</p>
-        </footer>
-      </div>
+      {/* Modal */}
+      {showModal && selectedBooking && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-white shadow-2xl w-full max-w-2xl overflow-hidden max-h-[90vh] flex flex-col">
+            {/* Modal Header */}
+            <div className="relative bg-gradient-to-r from-[#1F7F85] to-[#0F4C5C] p-6">
+              <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 -mr-12 -mt-12 blur-2xl"></div>
+              <div className="relative z-10 flex justify-between items-start">
+                <div>
+                  <h3 className="text-2xl font-bold text-white mb-1">Booking Details</h3>
+                  <p className="text-teal-100 text-sm">Complete information about your service</p>
+                </div>
+                <button
+                  onClick={() => setShowModal(false)}
+                  className="w-10 h-10 flex items-center justify-center bg-white/20 backdrop-blur-md text-white hover:bg-white/30 transition-all"
+                >
+                  <span className="material-symbols-outlined">close</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Body */}
+            <div className="overflow-y-auto p-6 space-y-6 bg-[#F7FBFC]">
+              {/* Service Card */}
+              <div className="bg-white p-6 border border-slate-200 shadow-sm">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-16 h-16 bg-gradient-to-br from-[#1F7F85] to-[#0F4C5C] flex items-center justify-center shadow-md">
+                    <span className="material-symbols-outlined text-white text-3xl">{getServiceIcon(selectedBooking.service?.name)}</span>
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="text-xl font-bold text-slate-900">{selectedBooking.service?.name || 'N/A'}</h4>
+                    <p className="text-sm text-slate-500">Booking ID: #{selectedBooking.bookingId?.slice(-8) || 'N/A'}</p>
+                  </div>
+                  <span className={`px-3 py-1.5 text-xs font-bold ${getStatusInfo(selectedBooking.status).color} text-white`}>
+                    {getStatusInfo(selectedBooking.status).text}
+                  </span>
+                </div>
+              </div>
+
+              {/* Info Grid */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-white p-5 border border-slate-200 shadow-sm">
+                  <p className="text-xs font-bold uppercase text-slate-400 mb-2 flex items-center gap-1">
+                    <span className="material-symbols-outlined text-sm">event</span>
+                    Service Date
+                  </p>
+                  <p className="text-lg font-bold text-slate-900">{new Date(selectedBooking.serviceDate).toLocaleDateString()}</p>
+                </div>
+                <div className="bg-white p-5 border border-slate-200 shadow-sm">
+                  <p className="text-xs font-bold uppercase text-slate-400 mb-2 flex items-center gap-1">
+                    <span className="material-symbols-outlined text-sm">schedule</span>
+                    Time Slot
+                  </p>
+                  <p className="text-lg font-bold text-slate-900">{selectedBooking.timeSlot || 'N/A'}</p>
+                </div>
+              </div>
+
+              {/* Technician */}
+              <div className="bg-white p-6 border border-slate-200 shadow-sm">
+                <p className="text-xs font-bold uppercase text-slate-400 mb-4">Assigned Technician</p>
+                <div className="flex items-center gap-4">
+                  <div className={`w-14 h-14 flex items-center justify-center ${selectedBooking.technician?.name ? 'bg-[#DCEBEC] text-[#1F7F85]' : 'bg-slate-200 text-slate-400'}`}>
+                    <span className="material-symbols-outlined text-2xl">
+                      {selectedBooking.technician?.name ? 'engineering' : 'person_off'}
+                    </span>
+                  </div>
+                  <div>
+                    <p className={`text-lg font-bold ${selectedBooking.technician?.name ? 'text-slate-900' : 'text-slate-400 italic'}`}>
+                      {selectedBooking.technician?.name || 'Not Assigned Yet'}
+                    </p>
+                    <p className="text-sm text-slate-500">Professional Technician</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Issue Description */}
+              <div className="bg-white p-6 border border-slate-200 shadow-sm">
+                <p className="text-xs font-bold uppercase text-slate-400 mb-3 flex items-center gap-1">
+                  <span className="material-symbols-outlined text-sm">description</span>
+                  Issue Description
+                </p>
+                <p className="text-sm text-slate-700 leading-relaxed">
+                  {selectedBooking.issue || 'No description provided'}
+                </p>
+              </div>
+
+              {/* Pricing */}
+              <div className="bg-gradient-to-br from-[#E0F2F1] to-[#DCEBEC] p-6 border-2 border-[#1F7F85]/20">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="text-sm font-bold text-[#0F4C5C] uppercase mb-1">Service Charge</p>
+                    <p className="text-3xl font-black text-[#1F7F85]">${selectedBooking.service?.charge || 0}</p>
+                  </div>
+                  <span className="material-symbols-outlined text-5xl text-[#1F7F85]/20">payments</span>
+                </div>
+              </div>
+            </div>
+            
+            {/* Modal Footer */}
+            <div className="p-6 border-t border-slate-200 bg-white flex gap-3">
+              <button 
+                onClick={() => setShowModal(false)}
+                className="flex-1 py-3 font-bold text-slate-600 hover:bg-slate-50 border-2 border-slate-200 hover:border-slate-300 transition-all"
+              >
+                Close
+              </button>
+              {selectedBooking.status === 'completed' ? (
+                <button 
+                  onClick={() => navigate('/review')}
+                  className="flex-1 py-3 font-bold text-white bg-gradient-to-r from-[#1F7F85] to-[#0F4C5C] hover:shadow-xl hover:shadow-[#1F7F85]/30 transition-all flex items-center justify-center gap-2"
+                >
+                  <span className="material-symbols-outlined">rate_review</span>
+                  Write Review
+                </button>
+              ) : (
+                <button className="flex-1 py-3 font-bold text-white bg-gradient-to-r from-[#1F7F85] to-[#0F4C5C] hover:shadow-xl hover:shadow-[#1F7F85]/30 transition-all flex items-center justify-center gap-2">
+                  <span className="material-symbols-outlined">support_agent</span>
+                  Contact Support
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

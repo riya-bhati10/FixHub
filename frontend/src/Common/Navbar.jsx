@@ -1,19 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { useUser } from '../context/UserContext';
 import logo from '/logo.png';
 
 const Navbar = ({ 
-  userType = 'landing', // 'landing', 'customer', 'technician', 'admin'
+  userType = 'landing',
   navLinks = [],
   showProfile = false,
   showNotifications = false,
-  userName = '',
   onLogout = null
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
+  const { user, clearUser } = useUser();
+
+  useEffect(() => {
+    console.log('Navbar - Current user:', user);
+  }, [user]);
 
   useEffect(() => {
     if (userType === 'landing') {
@@ -33,6 +38,7 @@ const Navbar = ({
   const shadowClass = shouldShowTransparent ? '' : 'shadow-sm border-b border-slate-200';
 
   const handleLogout = () => {
+    clearUser();
     if (onLogout) {
       onLogout();
     } else {
@@ -43,10 +49,19 @@ const Navbar = ({
   };
 
   const getUserInitial = () => {
-    if (userName) return userName.charAt(0).toUpperCase();
+    if (user?.fullname?.firstname) {
+      return user.fullname.firstname.charAt(0).toUpperCase();
+    }
     if (userType === 'technician') return 'T';
     if (userType === 'admin') return 'A';
     return 'U';
+  };
+
+  const getUserName = () => {
+    if (user?.fullname) {
+      return `${user.fullname.firstname} ${user.fullname.lastname}`;
+    }
+    return 'User';
   };
 
   return (
@@ -122,13 +137,12 @@ const Navbar = ({
 
             {/* Notification Bell */}
             {showNotifications && (
-              <Link 
-                to={`/${userType}/notifications`}
+              <button
                 className={`w-10 h-10 flex items-center justify-center ${textClass} hover:text-[#1F7F85] hover:bg-slate-50 rounded-full transition-all relative`}
               >
                 <span className="material-symbols-outlined text-2xl">notifications</span>
                 <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
-              </Link>
+              </button>
             )}
 
             {/* Avatar Dropdown */}
@@ -144,7 +158,7 @@ const Navbar = ({
                 {isProfileOpen && (
                   <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-slate-100 py-2 z-50">
                     <Link
-                      to={`/${userType}/profile`}
+                      to="/profile"
                       className="block px-4 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-[#1F7F85] transition-colors flex items-center gap-2"
                       onClick={() => setIsProfileOpen(false)}
                     >

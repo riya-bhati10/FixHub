@@ -6,9 +6,10 @@ export const authApi = {
   login: (data) => axiosInstance.post("/auth/login", data),
 };
 
-/* ============ SERVICES / PETROL PUMPS ============ */
+/* ============ SERVICES ============ */
 export const serviceApi = {
-  getAll: () => axiosInstance.get("/services"),
+  getCategories: () => axiosInstance.get("/services/categories"),
+  getTechniciansByService: (serviceName) => axiosInstance.get(`/services/${serviceName}/technicians`),
   create: (data) => axiosInstance.post("/services", data),
   update: (id, data) => axiosInstance.put(`/services/${id}`, data),
   delete: (id) => axiosInstance.delete(`/services/${id}`),

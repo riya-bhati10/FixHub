@@ -26,11 +26,11 @@ const AddService = ({ onClose, onServiceAdded }) => {
   ];
 
   const experienceOptions = [
-    "Less than 1 year",
-    "1-3 years",
-    "3-5 years",
-    "5-10 years",
-    "More than 10 years"
+    { label: "Less than 1 year", value: 0 },
+    { label: "1-3 years", value: 2 },
+    { label: "3-5 years", value: 4 },
+    { label: "5-10 years", value: 7 },
+    { label: "More than 10 years", value: 10 }
   ];
 
   const handleChange = (e) => {
@@ -57,7 +57,7 @@ const AddService = ({ onClose, onServiceAdded }) => {
       const serviceData = {
         serviceName: formData.serviceName.trim(),
         serviceCharge: parseFloat(formData.serviceCharge),
-        experience: formData.experience,
+        experience: parseInt(formData.experience),
         description: formData.description.trim() || ""
       };
 
@@ -149,7 +149,7 @@ const AddService = ({ onClose, onServiceAdded }) => {
             >
               <option value="">Select experience</option>
               {experienceOptions.map((exp, index) => (
-                <option key={index} value={exp}>{exp}</option>
+                <option key={index} value={exp.value}>{exp.label}</option>
               ))}
             </select>
           </div>

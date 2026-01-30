@@ -4,6 +4,10 @@ const API_URL = '/auth';
 
 const register = async (userData) => {
   const response = await axiosInstance.post(`${API_URL}/signup`, userData);
+  if (response.data.token) {
+    localStorage.setItem('token', response.data.token);
+    localStorage.setItem('role', response.data.role);
+  }
   return response.data;
 };
 
@@ -26,8 +30,14 @@ const logout = async () => {
   localStorage.removeItem('role');
 };
 
+const getCurrentUser = async () => {
+  const response = await axiosInstance.get(`${API_URL}/me`);
+  return response.data;
+};
+
 export default {
   register,
   login,
   logout,
+  getCurrentUser,
 };
