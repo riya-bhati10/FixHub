@@ -8,10 +8,26 @@ exports.createService = async (req, res) => {
     const technicianId = req.user.userId;
     const { serviceName, description, serviceCharge, experience } = req.body;
     console.log("Received data:", req.body);
+    console.log("Technician ID:", technicianId);
+    console.log("User object:", req.user);
+    console.log("User ID type:", typeof technicianId);
 
     if (!serviceName || !serviceCharge) {
       return res.status(400).json({ message: "Required fields missing" });
     }
+
+    if (!technicianId) {
+      console.log("ERROR: Technician ID is missing!");
+      return res.status(400).json({ message: "Technician ID missing" });
+    }
+
+    console.log("About to create service with data:", {
+      technicianId,
+      serviceName,
+      description,
+      serviceCharge,
+      experience,
+    });
 
     const service = await Service.create({
       technicianId,
@@ -21,11 +37,15 @@ exports.createService = async (req, res) => {
       experience,
     });
 
+    console.log("Service created successfully:", service);
+
     res.status(201).json({
       message: "Service created successfully",
       service,
     });
   } catch (err) {
+    console.error("Service creation error:", err);
+    console.error("Error details:", err.message);
     res.status(500).json({ message: err.message });
   }
 };
@@ -34,7 +54,7 @@ exports.createService = async (req, res) => {
 exports.updateService = async (req, res) => {
   try {
     const serviceId = req.params.id;
-    const technicianId = req.user.userId;
+    const technicianId = req.user._id; // Changed from req.user.userId to req.user._id
 
     const service = await Service.findOne({
       _id: serviceId,
@@ -70,7 +90,7 @@ exports.updateService = async (req, res) => {
 exports.deleteService = async (req, res) => {
   try {
     const serviceId = req.params.id;
-    const technicianId = req.user.userId;
+    const technicianId = req.user._id; // Changed from req.user.userId to req.user._id
 
     const service = await Service.findOne({
       _id: serviceId,
@@ -98,7 +118,7 @@ exports.deleteService = async (req, res) => {
 // View services (technician)
 exports.getMyServices = async (req, res) => {
   try {
-    const technicianId = req.user.userId;
+    const technicianId = req.user._id; // Changed from req.user.userId to req.user._id
 
     const services = await Service.find({
       technicianId,
@@ -129,6 +149,37 @@ exports.getServiceCategories = async (req, res) => {
   }
 };
 
+
+// View all services (customer)
+exports.getAllServices = async (req, res) => {
+  try {
+    const services = await Service.find({
+      isActive: true,
+    }).populate("technicianId", "fullname phone location");
+
+    const formattedServices = services.map(service => ({
+      id: service._id,
+      title: service.serviceName,
+      description: service.description,
+      price: service.serviceCharge,
+      experience: service.experience,
+      completedJobs: service.completedJobs,
+      technician: {
+        id: service.technicianId._id,
+        name: service.technicianId.fullname.firstname + " " + service.technicianId.fullname.lastname,
+        phone: service.technicianId.phone,
+        location: service.technicianId.location
+      }
+    }));
+
+    res.json({
+      count: formattedServices.length,
+      services: formattedServices,
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
 
 // View technicians by service (customer)
 exports.getTechniciansByService = async (req, res) => {

@@ -6,7 +6,9 @@ const {
   updateService,
   deleteService,
   getMyServices,
-  getServiceCategories,getTechniciansByService
+  getServiceCategories,
+  getTechniciansByService,
+  getAllServices
 } = require("../controllers/service.Controller");
 const { verifyToken } = require("../middleware/auth.middleware");
 const { checkRole } = require("../middleware/role.middleware");
@@ -16,6 +18,7 @@ router.post("/", verifyToken, checkRole("technician"), createService);
 router.put("/:id", verifyToken, checkRole("technician"), updateService);
 router.delete("/:id", verifyToken, checkRole("technician"), deleteService);
 router.get("/", verifyToken, checkRole("technician"), getMyServices);
+router.get("/all", getAllServices); // For customers to view all services
 router.get("/categories", getServiceCategories);
 router.get("/:serviceName/technicians", getTechniciansByService);
 

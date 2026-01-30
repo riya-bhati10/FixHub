@@ -15,7 +15,15 @@ module.exports.verifyToken = async (req ,res, next)=>{
       try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET) 
         const user = await UserModel.findById(decoded.userId)
-        req.user = user;
+        if (!user) {
+          return res.status(401).json({ message: 'User not found' })
+        }
+        req.user = {
+            userId: user._id,
+            _id: user._id,
+            role: user.role,
+            email: user.email
+        };
         return next();
 
     } catch (error) {

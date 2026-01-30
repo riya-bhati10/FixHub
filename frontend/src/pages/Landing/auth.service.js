@@ -1,10 +1,10 @@
 import api from './api';
 
 // Adjust the base path '/users' if your backend routes are different (e.g., '/auth')
-const API_URL = '/users'; 
+const API_URL = '/auth'; 
 
 const register = async (userData) => {
-  const response = await api.post(`${API_URL}/register`, userData);
+  const response = await api.post(`${API_URL}/signup`, userData);
   return response.data;
 };
 

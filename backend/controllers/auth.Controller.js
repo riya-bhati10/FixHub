@@ -28,7 +28,7 @@ exports.signup = async (req, res) => {
     const user = await User.create({
       fullname: {
         firstname: fullname.firstname,
-        lastname: fullname.lastname
+        lastname: fullname.lastname || ''
       },
       email: email.toLowerCase(),
       password: hashedPassword,
@@ -36,13 +36,26 @@ exports.signup = async (req, res) => {
       role: role || "customer",
       location,
     });
-    // console.log(user);
 
+    // Generate token for automatic login after signup
+    const token = generateToken({
+      userId: user._id,
+      role: user.role,
+    });
 
     return res.status(201).json({
       message: "Registration successful",
+      token,
       userId: user._id,
       role: user.role,
+      user: {
+        id: user._id,
+        email: user.email,
+        fullname: user.fullname,
+        phone: user.phone,
+        location: user.location,
+        role: user.role
+      }
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -52,17 +65,22 @@ exports.signup = async (req, res) => {
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
+    console.log('Login attempt:', { email, password: '***' });
 
     if (!email || !password) {
       return res.status(400).json({ message: "Email & password required" });
     }
 
-    const user = await User.findOne({ email }).select("+password");
+    const user = await User.findOne({ email: email.toLowerCase() }).select("+password");
+    console.log('User found:', user ? 'Yes' : 'No');
+    
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
     const isMatch = await comparePassword(password, user.password);
+    console.log('Password match:', isMatch);
+    
     if (!isMatch) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
@@ -76,17 +94,37 @@ exports.login = async (req, res) => {
       message: "Login successful",
       token,
       role: user.role,
+      user: {
+        id: user._id,
+        email: user.email,
+        fullname: user.fullname,
+        role: user.role
+      }
     });
   } catch (err) {
+    console.error('Login error:', err);
     res.status(500).json({ message: err.message });
   }
 };
 
 // user profile
-module.exports.getUserProfile= async(req,res,next)=>{
-    res.status(200).json(req.user);
-    console.log(req.user);
-    
+module.exports.getUserProfile = async(req, res, next) => {
+  try {
+    const user = await User.findById(req.user.userId).select('-password');
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json({
+      id: user._id,
+      email: user.email,
+      fullname: user.fullname,
+      phone: user.phone,
+      location: user.location,
+      role: user.role
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 }
 
 // user LogOut

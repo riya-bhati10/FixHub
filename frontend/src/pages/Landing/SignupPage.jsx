@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import bgImage from '../../assets/repair-bg.png';
-import authService from '../../services/auth.service';
+import authService from './auth.service';
 
 const SignupPage = () => {
   const navigate = useNavigate();
@@ -103,9 +103,21 @@ const SignupPage = () => {
         location: formData.location
       };
 
-      await authService.register(userData);
-      alert('Registration successful! Please login.');
-      navigate('/login');
+      const response = await authService.register(userData);
+      
+      // Store token and user data for automatic login
+      if (response.token) {
+        localStorage.setItem('token', response.token);
+        localStorage.setItem('role', response.role);
+        localStorage.setItem('user', JSON.stringify(response.user));
+        
+        // Redirect based on role
+        if (response.role === 'technician') {
+          navigate('/technician/dashboard');
+        } else {
+          navigate('/dashboard');
+        }
+      }
     } catch (error) {
       console.error('Signup failed:', error.response?.data?.message || error.message);
       alert(error.response?.data?.message || 'Signup failed');

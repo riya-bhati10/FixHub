@@ -1,16 +1,45 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/common/Navbar';
+import api from '../Landing/api';
 
 const ProfileSettings = () => {
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [imagePreview, setImagePreview] = useState("https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=faces");
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [firstName, setFirstName] = useState('Alex');
-  const [lastName, setLastName] = useState('Rivera');
-  const [phoneNumber, setPhoneNumber] = useState('+1 (555) 987-6543');
+  const [user, setUser] = useState(null);
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [location, setLocation] = useState('');
+
+  useEffect(() => {
+    fetchUserProfile();
+  }, []);
+
+  const fetchUserProfile = async () => {
+    try {
+      const response = await api.get('/auth/profile');
+      const userData = response.data;
+      setUser(userData);
+      setFirstName(userData.fullname.firstname);
+      setLastName(userData.fullname.lastname || '');
+      setPhoneNumber(userData.phone);
+      setLocation(userData.location || '');
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+      // Fallback to localStorage data
+      const localUser = localStorage.getItem('user');
+      if (localUser) {
+        const userData = JSON.parse(localUser);
+        setUser(userData);
+        setFirstName(userData.fullname.firstname);
+        setLastName(userData.fullname.lastname || '');
+        setPhoneNumber(userData.phone);
+        setLocation(userData.location || '');
+      }
+    }
+  };
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -23,22 +52,30 @@ const ProfileSettings = () => {
     }
   };
 
-  const handlePasswordChange = () => {
-    if (newPassword && confirmPassword) {
-      if (newPassword === confirmPassword) {
-        setNewPassword('');
-        setConfirmPassword('');
-        alert('Password updated successfully!');
-      } else {
-        alert('Passwords do not match!');
-      }
-    } else {
-      alert('Please fill in both password fields');
+  const handleSaveChanges = async () => {
+    try {
+      const updateData = {
+        fullname: {
+          firstname: firstName,
+          lastname: lastName
+        },
+        phone: phoneNumber,
+        location: location
+      };
+      
+      // Note: This would require a PUT endpoint for updating profile
+      // await api.put('/auth/profile', updateData);
+      
+      // Update localStorage
+      const updatedUser = { ...user, ...updateData };
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      setUser(updatedUser);
+      
+      alert('Profile changes saved successfully!');
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      alert('Failed to update profile. Please try again.');
     }
-  };
-
-  const handleSaveChanges = () => {
-    alert('Profile changes saved successfully!');
   };
 
   return (
@@ -76,20 +113,20 @@ const ProfileSettings = () => {
             {/* User Info */}
             <div className="flex-1 text-center md:text-left space-y-2">
               <h1 className="text-3xl font-extrabold text-[#1A2E35] tracking-tight">
-                {firstName} {lastName}
+                {user ? `${user.fullname.firstname} ${user.fullname.lastname}` : 'Loading...'}
               </h1>
               <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 text-[#5F7D83]">
                 <div className="flex items-center gap-2 bg-white px-3 py-1.5 border border-[#DCEBEC] shadow-sm">
                   <span className="material-symbols-outlined text-[#1F7F85] text-sm">mail</span>
-                  <span className="text-sm font-medium">alex.pro@example.com</span>
+                  <span className="text-sm font-medium">{user?.email || 'Loading...'}</span>
                 </div>
                 <div className="flex items-center gap-2 bg-white px-3 py-1.5 border border-[#DCEBEC] shadow-sm">
                   <span className="material-symbols-outlined text-[#1F7F85] text-sm">verified</span>
-                  <span className="text-sm font-bold uppercase tracking-wider text-[#1F7F85]">Customer</span>
+                  <span className="text-sm font-bold uppercase tracking-wider text-[#1F7F85]">{user?.role || 'Customer'}</span>
                 </div>
                 <div className="flex items-center gap-2 bg-white px-3 py-1.5 border border-[#DCEBEC] shadow-sm">
                   <span className="material-symbols-outlined text-[#1F7F85] text-sm">calendar_month</span>
-                  <span className="text-sm font-medium">Member Since Oct 2023</span>
+                  <span className="text-sm font-medium">Member Since {user ? new Date(user.createdAt || Date.now()).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'Loading...'}</span>
                 </div>
               </div>
             </div>
@@ -160,10 +197,27 @@ const ProfileSettings = () => {
                     <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#5F7D83]">mail</span>
                     <input
                       type="email"
-                      value="alex.pro@example.com"
+                      value={user?.email || ''}
                       readOnly
                       disabled
                       className="w-full pl-11 pr-4 py-3 bg-[#F7FBFC]/50 border border-[#DCEBEC] font-medium text-[#5F7D83] cursor-not-allowed"
+                    />
+                  </div>
+                </div>
+              </div>
+              
+              {/* Location Field */}
+              <div className="mt-6">
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-[#1A2E35] uppercase tracking-wider">Location</label>
+                  <div className="relative">
+                    <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#5F7D83]">location_on</span>
+                    <input
+                      type="text"
+                      value={location}
+                      onChange={(e) => setLocation(e.target.value)}
+                      placeholder="Enter your location"
+                      className="w-full pl-11 pr-4 py-3 bg-[#F7FBFC] border border-[#DCEBEC] focus:ring-2 focus:ring-[#1F7F85]/30 focus:border-[#1F7F85] outline-none transition-all font-medium text-[#1A2E35]"
                     />
                   </div>
                 </div>

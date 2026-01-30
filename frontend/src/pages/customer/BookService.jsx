@@ -1,6 +1,7 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/common/Navbar';
+import api from '../Landing/api';
 
 const BookService = () => {
   const navigate = useNavigate();
@@ -13,6 +14,10 @@ const BookService = () => {
   const [selectedTechnician, setSelectedTechnician] = useState(null);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [viewingReviewsFor, setViewingReviewsFor] = useState(null);
+  const [services, setServices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showCategoryView, setShowCategoryView] = useState(true);
+  const [availableCategories, setAvailableCategories] = useState([]);
   const addressInputRef = useRef(null);
   const [isLocating, setIsLocating] = useState(false);
   const [addressSuggestions, setAddressSuggestions] = useState([]);
@@ -27,123 +32,138 @@ const BookService = () => {
     address: ""
   });
 
-  const services = [
-    {
-      id: 1,
-      title: "Smartphone Repair",
-      description: "Expert screen replacement, battery swaps, and hardware fixes for all smartphone models.",
-      price: 49,
-      image: "https://images.unsplash.com/photo-1598327105666-5b89351aff70?w=800&h=600&fit=crop",
-      category: "phone",
-      rating: 4.9,
-      reviews: 328,
-      icon: "smartphone"
-    },
-    {
-      id: 2,
-      title: "Laptop Repair",
-      description: "Comprehensive diagnostics, component repair, and performance optimization for laptops.",
-      price: 79,
-      image: "https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=800&h=600&fit=crop",
-      category: "laptop",
-      rating: 4.8,
-      reviews: 215,
-      icon: "laptop"
-    },
-    {
-      id: 3,
-      title: "TV Repair",
-      description: "Professional repair services for LED, LCD, OLED, and Smart TVs of all sizes.",
-      price: 89,
-      image: "https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=400&h=300&fit=crop",
-      category: "tv",
-      rating: 4.7,
-      reviews: 156,
-      icon: "tv"
-    },
-    {
-      id: 4,
-      title: "Refrigerator Repair",
-      description: "Fast and reliable repair for cooling issues, compressors, and maintenance.",
-      price: 99,
-      image: "https://images.unsplash.com/photo-1584568694244-14fbdf83bd30?w=800&h=600&fit=crop",
-      category: "fridge",
-      rating: 4.8,
-      reviews: 182,
-      icon: "kitchen"
-    },
-    {
-      id: 5,
-      title: "Washing Machine Repair",
-      description: "Full-service repair for washers including motor, drum, and electronic issues.",
-      price: 85,
-      image: "https://images.unsplash.com/photo-1610557892470-55d9e80c0bce?w=800&h=600&fit=crop",
-      category: "washing_machine",
-      rating: 4.9,
-      reviews: 203,
-      icon: "local_laundry_service"
+  useEffect(() => {
+    fetchServices();
+  }, []);
+
+  const fetchServices = async () => {
+    try {
+      const response = await api.get('/services/all');
+      const servicesData = response.data.services || [];
+      
+      // Transform backend data to match frontend format
+      const transformedServices = servicesData.map(service => ({
+        id: service.id,
+        title: service.title,
+        description: service.description,
+        price: service.price,
+        image: service.image || 'https://images.unsplash.com/photo-1598327105666-5b89351aff70?w=800&h=600&fit=crop',
+        category: getCategoryFromTitle(service.title),
+        rating: 4.8, // Default rating
+        reviews: service.technician?.completedJobs || 0,
+        icon: getIconFromTitle(service.title),
+        technician: service.technician
+      }));
+      
+      setServices(transformedServices);
+      
+      // Get unique categories from services
+      const uniqueCategories = [...new Set(transformedServices.map(service => service.category))];
+      const categoryData = uniqueCategories.map(cat => {
+        const categoryInfo = categories.find(c => c.id === cat);
+        const serviceCount = transformedServices.filter(s => s.category === cat).length;
+        return {
+          ...categoryInfo,
+          count: serviceCount,
+          icon: getIconFromCategory(cat)
+        };
+      }).filter(cat => cat.id); // Remove undefined categories
+      
+      setAvailableCategories(categoryData);
+    } catch (error) {
+      console.error('Error fetching services:', error);
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+
+  const getCategoryFromTitle = (title) => {
+    const lowerTitle = title.toLowerCase();
+    if (lowerTitle.includes('smartphone') || lowerTitle.includes('phone') || lowerTitle.includes('mobile')) return 'smartphone';
+    if (lowerTitle.includes('laptop') || lowerTitle.includes('computer') || lowerTitle.includes('notebook')) return 'laptop';
+    if (lowerTitle.includes('tv') || lowerTitle.includes('television')) return 'tv';
+    if (lowerTitle.includes('ac') || lowerTitle.includes('air conditioner') || lowerTitle.includes('cooling')) return 'ac';
+    if (lowerTitle.includes('refrigerator') || lowerTitle.includes('fridge')) return 'refrigerator';
+    if (lowerTitle.includes('washing machine') || lowerTitle.includes('washer')) return 'washing_machine';
+    if (lowerTitle.includes('microwave')) return 'microwave';
+    if (lowerTitle.includes('audio') || lowerTitle.includes('speaker') || lowerTitle.includes('sound')) return 'audio';
+    if (lowerTitle.includes('camera') || lowerTitle.includes('photography')) return 'camera';
+    if (lowerTitle.includes('gaming') || lowerTitle.includes('console') || lowerTitle.includes('playstation') || lowerTitle.includes('xbox')) return 'gaming';
+    return 'other';
+  };
+
+  const getIconFromTitle = (title) => {
+    const lowerTitle = title.toLowerCase();
+    if (lowerTitle.includes('smartphone') || lowerTitle.includes('phone') || lowerTitle.includes('mobile')) return 'smartphone';
+    if (lowerTitle.includes('laptop') || lowerTitle.includes('computer') || lowerTitle.includes('notebook')) return 'laptop';
+    if (lowerTitle.includes('tv') || lowerTitle.includes('television')) return 'tv';
+    if (lowerTitle.includes('ac') || lowerTitle.includes('air conditioner') || lowerTitle.includes('cooling')) return 'ac_unit';
+    if (lowerTitle.includes('refrigerator') || lowerTitle.includes('fridge')) return 'kitchen';
+    if (lowerTitle.includes('washing machine') || lowerTitle.includes('washer')) return 'local_laundry_service';
+    if (lowerTitle.includes('microwave')) return 'microwave';
+    if (lowerTitle.includes('audio') || lowerTitle.includes('speaker') || lowerTitle.includes('sound')) return 'speaker';
+    if (lowerTitle.includes('camera') || lowerTitle.includes('photography')) return 'photo_camera';
+    if (lowerTitle.includes('gaming') || lowerTitle.includes('console') || lowerTitle.includes('playstation') || lowerTitle.includes('xbox')) return 'sports_esports';
+    return 'build';
+  };
+
+  const getIconFromCategory = (category) => {
+    switch(category) {
+      case 'smartphone': return 'smartphone';
+      case 'laptop': return 'laptop';
+      case 'tv': return 'tv';
+      case 'ac': return 'ac_unit';
+      case 'refrigerator': return 'kitchen';
+      case 'washing_machine': return 'local_laundry_service';
+      case 'microwave': return 'microwave';
+      case 'audio': return 'speaker';
+      case 'camera': return 'photo_camera';
+      case 'gaming': return 'sports_esports';
+      default: return 'build';
+    }
+  };
 
   const technicians = [
     { 
-      id: 1, 
-      name: "Robert Fox", 
+      id: selectedService?.technician?.id || 1, 
+      name: selectedService?.technician?.name || "Available Technician", 
       rating: 4.9, 
-      reviews: 124, 
+      reviews: selectedService?.technician?.completedJobs || 0, 
       specialty: "Senior Technician", 
       available: true, 
       avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=faces",
       clientReviews: [
-         { id: 1, user: "Sarah M.", rating: 5, comment: "Fixed my phone in 30 mins! Highly recommended.", date: "2 days ago" },
+         { id: 1, user: "Sarah M.", rating: 5, comment: "Fixed my device quickly! Highly recommended.", date: "2 days ago" },
          { id: 2, user: "John D.", rating: 5, comment: "Very professional and polite.", date: "1 week ago" }
       ]
-    },
-    { 
-      id: 2, 
-      name: "Sarah Connor", 
-      rating: 4.8, 
-      reviews: 98, 
-      specialty: "Appliance Expert", 
-      available: true, 
-      avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=faces",
-      clientReviews: [
-         { id: 1, user: "Mike R.", rating: 5, comment: "Saved my refrigerator. Thank you!", date: "3 days ago" }
-      ]
-    },
-    { 
-      id: 3, 
-      name: "Michael Chen", 
-      rating: 4.7, 
-      reviews: 85, 
-      specialty: "Electronics Specialist", 
-      available: false, 
-      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=faces",
-      clientReviews: []
-    },
-    { 
-      id: 4, 
-      name: "Emily Davis", 
-      rating: 4.9, 
-      reviews: 215, 
-      specialty: "Master Repairman", 
-      available: true, 
-      avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=faces",
-      clientReviews: [
-         { id: 1, user: "David K.", rating: 5, comment: "Best service ever.", date: "Yesterday" },
-         { id: 2, user: "Lisa P.", rating: 4, comment: "Good work but arrived slightly late.", date: "2 weeks ago" }
-      ]
-    },
+    }
   ];
 
   const categories = [
     { id: 'all', label: 'All Services' },
-    { id: 'phone', label: 'Phones' },
+    { id: 'smartphone', label: 'Smartphones' },
     { id: 'laptop', label: 'Laptops' },
     { id: 'tv', label: 'TVs' },
-    { id: 'fridge', label: 'Refrigerators' },
-    { id: 'washing_machine', label: 'Washing Machines' }
+    { id: 'ac', label: 'AC Service' },
+    { id: 'refrigerator', label: 'Refrigerators' },
+    { id: 'washing_machine', label: 'Washing Machines' },
+    { id: 'microwave', label: 'Microwaves' },
+    { id: 'audio', label: 'Home Audio' },
+    { id: 'camera', label: 'Cameras' },
+    { id: 'gaming', label: 'Gaming Consoles' },
+    { id: 'other', label: 'Other' }
   ];
+
+  const handleCategoryClick = (categoryId) => {
+    setActiveCategory(categoryId);
+    setShowCategoryView(false);
+  };
+
+  const handleBackToCategories = () => {
+    setShowCategoryView(true);
+    setActiveCategory('all');
+    setSearchTerm('');
+  };
 
   // Function to handle card click
   const handleCardClick = (service) => {
@@ -323,14 +343,29 @@ const BookService = () => {
   };
 
   // Function to handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Booking Details:", {
-      service: selectedService,
-      technician: selectedTechnician,
-      formData: formData
-    });
-    navigate('/booking-success');
+    try {
+      const bookingData = {
+        serviceId: selectedService.id,
+        technicianId: selectedService.technician.id,
+        issue: formData.issue,
+        serviceDate: formData.serviceDate,
+        timeSlot: formData.timeSlot,
+        serviceLocation: formData.address
+      };
+      
+      console.log('Sending booking data:', bookingData);
+      const response = await api.post('/bookings', bookingData);
+      console.log('Booking response:', response.data);
+      
+      navigate('/booking-success');
+    } catch (error) {
+      console.error('Booking failed:', error);
+      console.error('Error response:', error.response?.data);
+      const errorMessage = error.response?.data?.message || 'Booking failed. Please try again.';
+      alert(errorMessage);
+    }
   };
 
   const filteredServices = services.filter(service => {
@@ -584,11 +619,10 @@ const BookService = () => {
                       required
                     >
                       <option value="">Select time slot</option>
-                      <option value="9:00 AM - 11:00 AM">9:00 AM - 11:00 AM</option>
-                      <option value="11:00 AM - 1:00 PM">11:00 AM - 1:00 PM</option>
-                      <option value="1:00 PM - 3:00 PM">1:00 PM - 3:00 PM</option>
-                      <option value="3:00 PM - 5:00 PM">3:00 PM - 5:00 PM</option>
-                      <option value="5:00 PM - 7:00 PM">5:00 PM - 7:00 PM</option>
+                      <option value="9AM-12PM">9:00 AM - 12:00 PM</option>
+                      <option value="12PM-3PM">12:00 PM - 3:00 PM</option>
+                      <option value="3PM-6PM">3:00 PM - 6:00 PM</option>
+                      <option value="6PM-9PM">6:00 PM - 9:00 PM</option>
                     </select>
                   </div>
                 </div>
@@ -681,90 +715,143 @@ const BookService = () => {
       {/* Main Content */}
       <main className="max-w-[1440px] mx-auto px-6 py-10 pt-24">
 
-        {/* Services Catalog */}
-        <div className="space-y-8">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div>
-              <h2 className="text-2xl font-bold text-slate-900">Select a Service</h2>
-              <p className="text-slate-500 mt-1">Choose the device you need help with</p>
+        {/* Category View */}
+        {showCategoryView ? (
+          <div className="space-y-8">
+            <div className="text-center">
+              <h2 className="text-3xl font-bold text-slate-900 mb-4">Select a Service Category</h2>
+              <p className="text-slate-500">Choose the type of device you need help with</p>
             </div>
             
-            <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
-              <div className="relative">
-                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
-                <input
-                  type="text"
-                  placeholder="Search for a service..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full sm:w-64 pl-10 pr-4 py-3 border border-slate-200 focus:ring-2 focus:ring-[#1F7F85] focus:border-[#1F7F85] outline-none transition-all"
-                />
-              </div>
-              
-              <button className="px-6 py-3 bg-[#1F7F85] text-white font-bold hover:bg-[#0F4C5C] transition-all shadow-lg shadow-[#1F7F85]/20 flex items-center gap-2">
-                <span className="material-symbols-outlined">search</span>
-                
-              </button>
-              
-              <div className="relative">
-                <select
-                  value={activeCategory}
-                  onChange={(e) => setActiveCategory(e.target.value)}
-                  className="w-full sm:w-48 pl-4 pr-10 py-3 border border-slate-200 focus:ring-2 focus:ring-[#1F7F85] focus:border-[#1F7F85] outline-none appearance-none bg-white cursor-pointer transition-all font-bold text-slate-600"
-                >
-                  {categories.map(category => (
-                    <option key={category.id} value={category.id}>{category.label}</option>
-                  ))}
-                </select>
-                <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none">expand_more</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex gap-6 overflow-x-auto pb-8 custom-scrollbar scroll-smooth">
-            {filteredServices.map(service => (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {availableCategories.map(category => (
                 <div 
-                  key={service.id} 
-                  className="min-w-[300px] w-[300px] group flex flex-col bg-white overflow-hidden border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-[#1F7F85]/10 transition-all duration-300 hover:-translate-y-1 cursor-pointer"
-                  onClick={() => handleCardClick(service)}
+                  key={category.id}
+                  onClick={() => handleCategoryClick(category.id)}
+                  className="bg-white p-8 border border-slate-200 hover:border-[#1F7F85] hover:shadow-xl transition-all duration-300 cursor-pointer group hover:-translate-y-1"
                 >
-                  <div className="h-56 overflow-hidden relative">
-                    <img 
-                      alt={service.title} 
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
-                      src={service.image}
-                    />
-                   
-                    <div className="absolute bottom-4 left-4 bg-[#1F7F85]/90 backdrop-blur-sm p-2 text-white shadow-sm">
-                      <span className="material-symbols-outlined text-xl block">{service.icon}</span>
+                  <div className="text-center">
+                    <div className="w-16 h-16 bg-[#1F7F85]/10 group-hover:bg-[#1F7F85] rounded-full flex items-center justify-center mx-auto mb-4 transition-colors">
+                      <span className="material-symbols-outlined text-2xl text-[#1F7F85] group-hover:text-white transition-colors">
+                        {category.icon}
+                      </span>
                     </div>
-                  </div>
-                  
-                  <div className="p-6 flex flex-col flex-grow gap-4">
-                    <div>
-                      <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-[#1F7F85] transition-colors">{service.title}</h3>
-                      <p className="text-sm text-slate-500 line-clamp-2 leading-relaxed">
-                        {service.description}
-                      </p>
-                    </div>
-                    
-                    <div className="mt-auto pt-4 border-t border-slate-100 flex items-center justify-between gap-4">
-                      <button 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleCardClick(service);
-                        }}
-                        className="px-6 py-3 bg-[#1F7F85] text-white text-sm font-bold hover:bg-[#0F4C5C] transition-all shadow-lg shadow-[#1F7F85]/20 flex items-center gap-2"
-                      >
-                        Book Now
-                        <span className="material-symbols-outlined text-sm">arrow_forward</span>
-                      </button>
+                    <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-[#1F7F85] transition-colors">
+                      {category.label}
+                    </h3>
+                    <p className="text-slate-500 text-sm mb-4">
+                      {category.count} service{category.count !== 1 ? 's' : ''} available
+                    </p>
+                    <div className="flex items-center justify-center text-[#1F7F85] font-medium text-sm">
+                      <span>View Services</span>
+                      <span className="material-symbols-outlined text-sm ml-1">arrow_forward</span>
                     </div>
                   </div>
                 </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
+        ) : (
+          /* Services List View */
+          <div className="space-y-8">
+            <div className="flex items-center gap-4 mb-6">
+              <button
+                onClick={handleBackToCategories}
+                className="flex items-center gap-2 text-[#1F7F85] hover:text-[#0F4C5C] font-medium transition-colors"
+              >
+                <span className="material-symbols-outlined">arrow_back</span>
+                Back to Categories
+              </button>
+            </div>
+            
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <div>
+                <h2 className="text-2xl font-bold text-slate-900">
+                  {categories.find(cat => cat.id === activeCategory)?.label || 'Services'}
+                </h2>
+                <p className="text-slate-500 mt-1">Available services in this category</p>
+              </div>
+              
+              <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+                <div className="relative">
+                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+                  <input
+                    type="text"
+                    placeholder="Search for a service..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full sm:w-64 pl-10 pr-4 py-3 border border-slate-200 focus:ring-2 focus:ring-[#1F7F85] focus:border-[#1F7F85] outline-none transition-all"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {loading ? (
+                <div className="col-span-full flex items-center justify-center py-20">
+                  <div className="text-center">
+                    <span className="material-symbols-outlined text-4xl text-[#1F7F85] animate-spin mb-4">progress_activity</span>
+                    <p className="text-slate-500">Loading services...</p>
+                  </div>
+                </div>
+              ) : filteredServices.length > 0 ? (
+                filteredServices.map(service => (
+                  <div 
+                    key={service.id} 
+                    className="bg-white border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-[#1F7F85]/10 transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden"
+                    onClick={() => handleCardClick(service)}
+                  >
+                    <div className="h-48 overflow-hidden relative">
+                      <img 
+                        alt={service.title} 
+                        className="w-full h-full object-cover transition-transform duration-500 hover:scale-105" 
+                        src={service.image}
+                      />
+                      <div className="absolute bottom-4 left-4 bg-[#1F7F85]/90 backdrop-blur-sm p-2 text-white shadow-sm">
+                        <span className="material-symbols-outlined text-lg">{service.icon}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="p-6">
+                      <h3 className="text-lg font-bold text-slate-900 mb-2 hover:text-[#1F7F85] transition-colors">
+                        {service.title}
+                      </h3>
+                      <p className="text-sm text-slate-500 line-clamp-2 leading-relaxed mb-3">
+                        {service.description}
+                      </p>
+                      <p className="text-sm text-[#1F7F85] font-semibold mb-4">
+                        By: {service.technician.name}
+                      </p>
+                      
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-lg font-bold text-[#0F4C5C]">${service.price}</p>
+                        </div>
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCardClick(service);
+                          }}
+                          className="px-4 py-2 bg-[#1F7F85] text-white text-sm font-bold hover:bg-[#0F4C5C] transition-all flex items-center gap-2"
+                        >
+                          Book Now
+                          <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="col-span-full flex items-center justify-center py-20">
+                  <div className="text-center">
+                    <span className="material-symbols-outlined text-4xl text-slate-400 mb-4">search_off</span>
+                    <p className="text-slate-500">No services found in this category</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Featured Services */}
         {!searchTerm && (

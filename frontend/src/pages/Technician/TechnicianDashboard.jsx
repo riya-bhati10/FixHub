@@ -6,6 +6,7 @@ import MySchedules from './MySchedules';
 import History from './History';
 import Reviews from './Reviews';
 import Notifications from './Notifications';
+import Profile from './Profile';
 import { TechnicianProvider } from './context/TechnicianContext';
 
 const TechnicianDashboard = () => {
@@ -21,6 +22,7 @@ const TechnicianDashboard = () => {
             <Route path="/history" element={<History />} />
             <Route path="/reviews" element={<Reviews />} />
             <Route path="/notifications" element={<Notifications />} />
+            <Route path="/profile" element={<Profile />} />
           </Routes>
         </div>
       </div>

@@ -16,10 +16,18 @@ exports.createBooking = async (req, res) => {
       serviceLocation, 
     } = req.body;
 
+    console.log("Booking data:", req.body);
+    console.log("Customer ID:", customerId);
+    console.log("User object:", req.user);
+
     if (!serviceId || !technicianId || !issue || !serviceDate || !timeSlot) {
       return res.status(400).json({
         message: "All required booking fields must be provided",
       });
+    }
+
+    if (!customerId) {
+      return res.status(400).json({ message: "Customer ID missing" });
     }
 
     let finalServiceLocation = serviceLocation;
@@ -57,6 +65,8 @@ exports.createBooking = async (req, res) => {
       ],
     });
 
+    console.log("Booking created successfully:", booking);
+
     res.status(201).json({
       message: "Booking created successfully",
       bookingId: booking._id,
@@ -68,6 +78,8 @@ exports.createBooking = async (req, res) => {
     });
 
   } catch (err) {
+    console.error("Booking creation error:", err);
+    console.error("Error details:", err.message);
     res.status(500).json({ message: err.message });
   }
 };
