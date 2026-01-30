@@ -1,38 +1,35 @@
-import React, { useState } from 'react';
-import { useTechnician } from './context/TechnicianContext';
+import React, { useState, useEffect } from 'react';
+import api from '../Landing/api';
 
 const History = () => {
-  const { schedules } = useTechnician();
+  const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [selectedReview, setSelectedReview] = useState(null);
   
-  const completedServices = schedules.filter(schedule => schedule.status === 'completed');
-  
-  const mockReviews = {
-    3: {
-      rating: 5,
-      comment: "Excellent service! Fixed my laptop quickly and professionally. Highly recommended!",
-      date: "2024-01-21"
-    },
-    5: {
-      rating: 4,
-      comment: "Good work on the refrigerator repair. Technician was punctual and knowledgeable.",
-      date: "2024-01-19"
-    },
-    6: {
-      rating: 5,
-      comment: "Amazing service! My washing machine works like new. Very satisfied with the repair.",
-      date: "2024-01-18"
+  useEffect(() => {
+    fetchCompletedBookings();
+  }, []);
+
+  const fetchCompletedBookings = async () => {
+    try {
+      setLoading(true);
+      const response = await api.get('/bookings/technician?status=completed');
+      const bookingsData = response.data.bookings || [];
+      setBookings(bookingsData);
+      console.log('Completed bookings:', bookingsData);
+    } catch (error) {
+      console.error('Error fetching completed bookings:', error);
+    } finally {
+      setLoading(false);
     }
   };
-
-  const getRatingStars = (rating) => {
-    return Array.from({ length: 5 }, (_, i) => (
-      <span key={i} className={`text-lg ${i < rating ? 'text-yellow-400' : 'text-gray-300'}`}>
-        ★
-      </span>
-    ));
-  };
-
+  
+  const completedServices = bookings;
+  
+  // Calculate stats from real data
+  const totalEarned = completedServices.reduce((sum, booking) => sum + (booking.service?.charge || 0), 0);
+  const avgRating = 4.7; // This would come from reviews API in real implementation
+  
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -72,7 +69,7 @@ const History = () => {
               </svg>
             </div>
             <div className="ml-4">
-              <p className="text-2xl font-bold text-fixhub-textDark">4.7</p>
+              <p className="text-2xl font-bold text-fixhub-textDark">{avgRating}</p>
               <p className="text-fixhub-textMuted">Avg Rating</p>
             </div>
           </div>
@@ -86,7 +83,7 @@ const History = () => {
               </svg>
             </div>
             <div className="ml-4">
-              <p className="text-2xl font-bold text-fixhub-textDark">₹15,800</p>
+              <p className="text-2xl font-bold text-fixhub-textDark">${totalEarned}</p>
               <p className="text-fixhub-textMuted">Total Earned</p>
             </div>
           </div>
@@ -94,89 +91,58 @@ const History = () => {
       </div>
 
       {/* History List */}
-      <div className="space-y-4">
-        {completedServices.length > 0 ? (
-          completedServices.map((service) => (
-            <div key={service.id} className="bg-white rounded-lg shadow-md border border-fixhub-borderSoft p-6">
-              <div className="flex items-start justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-fixhub-primary rounded-full flex items-center justify-center">
-                    <span className="text-white font-medium text-lg">{service.customer.charAt(0)}</span>
+      {loading ? (
+        <div className="flex items-center justify-center py-20">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fixhub-primary mx-auto mb-4"></div>
+            <p className="text-fixhub-textMuted">Loading history...</p>
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {completedServices.length > 0 ? (
+            completedServices.map((booking) => (
+              <div key={booking.bookingId} className="bg-white rounded-lg shadow-md border border-fixhub-borderSoft p-6">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center space-x-4">
+                    <div className="w-12 h-12 bg-fixhub-primary rounded-full flex items-center justify-center">
+                      <span className="text-white font-medium text-lg">{booking.customer.name.charAt(0)}</span>
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-fixhub-textDark text-lg">{booking.customer.name}</h3>
+                      <p className="text-fixhub-primary font-medium">{booking.service.name}</p>
+                      <p className="text-sm text-fixhub-textMuted">{formatDate(booking.serviceDate)} • {booking.timeSlot}</p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-semibold text-fixhub-textDark text-lg">{service.customer}</h3>
-                    <p className="text-fixhub-primary font-medium">{service.service}</p>
-                    <p className="text-sm text-fixhub-textMuted">{formatDate(service.date)} • {service.scheduledTime}</p>
+                  
+                  <div className="flex items-center space-x-3">
+                    <div className="text-right">
+                      <p className="font-semibold text-fixhub-primary text-lg">${booking.service.charge}</p>
+                      <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">
+                        Completed
+                      </span>
+                    </div>
                   </div>
                 </div>
                 
-                <div className="flex items-center space-x-3">
-                  <div className="text-right">
-                    <p className="font-semibold text-fixhub-primary text-lg">{service.serviceCharge}</p>
-                    <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">
-                      Completed
-                    </span>
-                  </div>
-                  
-                  {mockReviews[service.id] && (
-                    <button
-                      onClick={() => setSelectedReview(mockReviews[service.id])}
-                      className="bg-fixhub-primary hover:bg-fixhub-dark text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                    >
-                      View Review
-                    </button>
-                  )}
+                <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                  <p className="text-sm text-fixhub-textDark">{booking.issue}</p>
+                </div>
+                
+                <div className="mt-4 flex items-center justify-between text-sm text-fixhub-textMuted">
+                  <span>📍 {booking.serviceLocation}</span>
+                  <span>📞 {booking.customer.phone}</span>
+                  <span>💰 Earned: ${booking.service.charge}</span>
                 </div>
               </div>
-              
-              <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-                <p className="text-sm text-fixhub-textDark">{service.description}</p>
-              </div>
-              
-              <div className="mt-4 flex items-center justify-between text-sm text-fixhub-textMuted">
-                <span>📍 {service.address}</span>
-                <span>⏱️ Duration: {service.estimatedDuration}</span>
-                <span>📞 {service.phone}</span>
-              </div>
+            ))
+          ) : (
+            <div className="bg-white rounded-lg shadow-md p-8 text-center">
+              <div className="text-6xl mb-4">📋</div>
+              <h3 className="text-lg font-medium text-fixhub-textDark mb-2">No Completed Services</h3>
+              <p className="text-fixhub-textMuted">Your completed service history will appear here.</p>
             </div>
-          ))
-        ) : (
-          <div className="bg-white rounded-lg shadow-md p-8 text-center">
-            <div className="text-6xl mb-4">📋</div>
-            <h3 className="text-lg font-medium text-fixhub-textDark mb-2">No Completed Services</h3>
-            <p className="text-fixhub-textMuted">Your completed service history will appear here.</p>
-          </div>
-        )}
-      </div>
-
-      {/* Review Modal */}
-      {selectedReview && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-fixhub-textDark">Customer Review</h3>
-              <button
-                onClick={() => setSelectedReview(null)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            
-            <div className="mb-4">
-              <div className="flex items-center space-x-2 mb-2">
-                <div className="flex">{getRatingStars(selectedReview.rating)}</div>
-                <span className="text-sm text-fixhub-textMuted">({selectedReview.rating}/5)</span>
-              </div>
-              <p className="text-fixhub-textDark">{selectedReview.comment}</p>
-            </div>
-            
-            <div className="text-sm text-fixhub-textMuted">
-              Reviewed on {formatDate(selectedReview.date)}
-            </div>
-          </div>
+          )}
         </div>
       )}
     </div>

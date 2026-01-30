@@ -1,34 +1,59 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { reviewService } from '../../Services/reviewService';
 
 const Reviews = () => {
-  const reviews = [
-    {
-      id: 1,
-      customer: 'John Doe',
-      service: 'AC Repair',
-      rating: 5,
-      comment: 'Excellent service! Fixed my AC quickly and professionally.',
-      date: '2024-01-15'
-    },
-    {
-      id: 2,
-      customer: 'Jane Smith',
-      service: 'Plumbing Fix',
-      rating: 4,
-      comment: 'Good work, arrived on time and solved the problem.',
-      date: '2024-01-14'
-    },
-    {
-      id: 3,
-      customer: 'Mike Johnson',
-      service: 'Electrical Work',
-      rating: 5,
-      comment: 'Very knowledgeable and efficient. Highly recommended!',
-      date: '2024-01-13'
-    }
-  ];
+  const [reviews, setReviews] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [averageRating, setAverageRating] = useState(0);
 
-  const averageRating = (reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length).toFixed(1);
+  useEffect(() => {
+    fetchReviews();
+  }, []);
+
+  const fetchReviews = async () => {
+    try {
+      // Get current technician ID from localStorage or context
+      const user = JSON.parse(localStorage.getItem('user'));
+      if (!user || user.role !== 'technician') {
+        setError('Unauthorized access');
+        return;
+      }
+
+      // Use either userId or _id depending on your user object structure
+      const technicianId = user.userId || user._id || user.id;
+      if (!technicianId) {
+        setError('Technician ID not found');
+        return;
+      }
+
+      const response = await reviewService.getTechnicianReviews(technicianId);
+      const reviewsData = response.reviews || [];
+      
+      // Transform the data to match the component format
+      const transformedReviews = reviewsData.map((review, index) => ({
+        id: index + 1,
+        customer: review.customerName,
+        service: review.serviceName,
+        rating: review.rating,
+        comment: review.review,
+        date: new Date(review.createdAt).toLocaleDateString()
+      }));
+      
+      setReviews(transformedReviews);
+      
+      // Calculate average rating
+      if (transformedReviews.length > 0) {
+        const avg = transformedReviews.reduce((sum, review) => sum + review.rating, 0) / transformedReviews.length;
+        setAverageRating(avg);
+      }
+    } catch (error) {
+      console.error('Error fetching reviews:', error);
+      setError('Failed to load reviews: ' + (error.message || 'Unknown error'));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const renderStars = (rating) => {
     return (
@@ -47,6 +72,28 @@ const Reviews = () => {
     );
   };
 
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="text-center py-12">
+          <span className="material-symbols-outlined text-6xl text-slate-300 animate-spin">progress_activity</span>
+          <p className="text-slate-500 mt-4 text-lg">Loading reviews...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="text-center py-12">
+          <span className="material-symbols-outlined text-6xl text-red-300">error</span>
+          <p className="text-red-500 mt-4 text-lg">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
@@ -61,7 +108,7 @@ const Reviews = () => {
           <div>
             <h2 className="text-2xl font-bold text-fixhub-textDark mb-2">Overall Rating</h2>
             <div className="flex items-center space-x-2">
-              <span className="text-4xl font-bold text-fixhub-primary">{averageRating}</span>
+              <span className="text-4xl font-bold text-fixhub-primary">{averageRating.toFixed(1)}</span>
               {renderStars(Math.round(averageRating))}
               <span className="text-fixhub-textMuted">({reviews.length} reviews)</span>
             </div>

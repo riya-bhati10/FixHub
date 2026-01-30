@@ -29,6 +29,7 @@ const MySchedules = () => {
     { key: 'all', label: 'All', count: bookings.length },
     { key: 'pending', label: 'Pending', count: bookings.filter(s => s.status === 'pending').length },
     { key: 'accepted', label: 'Accepted', count: bookings.filter(s => s.status === 'accepted').length },
+    { key: 'in_progress', label: 'In Progress', count: bookings.filter(s => s.status === 'in_progress').length },
     { key: 'completed', label: 'Completed', count: bookings.filter(s => s.status === 'completed').length },
     { key: 'cancelled', label: 'Cancelled', count: bookings.filter(s => s.status === 'cancelled').length }
   ];
@@ -43,6 +44,8 @@ const MySchedules = () => {
         return 'bg-blue-100 text-blue-800 border-blue-200';
       case 'pending':
         return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'in_progress':
+        return 'bg-purple-100 text-purple-800 border-purple-200';
       case 'completed':
         return 'bg-green-100 text-green-800 border-green-200';
       case 'cancelled':
@@ -67,8 +70,24 @@ const MySchedules = () => {
 
   const handleStatusChange = async (bookingId, newStatus) => {
     try {
-      const endpoint = newStatus === 'accepted' ? 'accept' : 'cancel';
-      await api.patch(`/bookings/${bookingId}/${endpoint}`);
+      let endpoint, method;
+      
+      if (newStatus === 'accepted') {
+        endpoint = `accept`;
+        method = 'patch';
+      } else if (newStatus === 'cancelled') {
+        endpoint = `cancel`;
+        method = 'patch';
+      } else if (newStatus === 'in_progress' || newStatus === 'completed') {
+        endpoint = `status`;
+        method = 'patch';
+      }
+      
+      if (endpoint === 'status') {
+        await api.patch(`/bookings/${bookingId}/${endpoint}`, { status: newStatus });
+      } else {
+        await api[method](`/bookings/${bookingId}/${endpoint}`);
+      }
       
       // Update local state
       setBookings(prev => prev.map(booking => 
@@ -77,10 +96,11 @@ const MySchedules = () => {
           : booking
       ));
       
-      alert(`Booking ${newStatus} successfully!`);
+      const statusText = newStatus === 'in_progress' ? 'marked as in progress' : newStatus;
+      alert(`Booking ${statusText} successfully!`);
     } catch (error) {
       console.error(`Error updating booking status:`, error);
-      alert(`Failed to ${newStatus} booking`);
+      alert(`Failed to update booking status`);
     }
   };
 
@@ -214,6 +234,19 @@ const MySchedules = () => {
                   </>
                 )}
                 {booking.status === 'accepted' && (
+                  <>
+                    <button
+                      onClick={() => handleStatusChange(booking.bookingId, 'in_progress')}
+                      className="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-2 px-3 rounded text-sm font-medium transition-colors"
+                    >
+                      Start Work
+                    </button>
+                    <button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-3 rounded text-sm font-medium transition-colors">
+                      Contact Customer
+                    </button>
+                  </>
+                )}
+                {booking.status === 'in_progress' && (
                   <>
                     <button
                       onClick={() => handleStatusChange(booking.bookingId, 'completed')}

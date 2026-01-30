@@ -235,7 +235,7 @@ const MyBooking = () => {
                             {booking.status === 'completed' && (
                               <button
                                 className="px-4 py-2 bg-amber-500 text-white font-bold hover:bg-amber-600 transition-colors flex items-center gap-2 text-sm"
-                                onClick={() => navigate('/review')}
+                                onClick={() => navigate('/review', { state: { booking } })}
                               >
                                 <span className="material-symbols-outlined text-sm">rate_review</span>
                                 Review
