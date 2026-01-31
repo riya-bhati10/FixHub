@@ -14,6 +14,10 @@ const Dashboard = () => {
     cancelled: 0
   });
   const navigate = useNavigate();
+  const [activeBookings, setActiveBookings] = useState([]);
+  const [stats, setStats] = useState({ total: 0, pending: 0, completed: 0, cancelled: 0 });
+  const [loading, setLoading] = useState(true);
+  const { user } = useUser();
 
   useEffect(() => {
     // Get user data from localStorage
@@ -73,7 +77,12 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-[#F7FBFC] text-slate-800 font-['Manrope']">
-      <Navbar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
+      <Navbar 
+        userType="customer"
+        navLinks={customerNavLinks}
+        showProfile={true}
+        showNotifications={true}
+      />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header Section */}

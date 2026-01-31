@@ -50,41 +50,38 @@ const ServicesSection = () => {
   ];
 
   return (
-    <section className="py-16 bg-fixhub-bgWhite">
+    <section className="py-12 sm:py-16 lg:py-20 bg-fixhub-bgWhite">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-fixhub-textDark mb-4">
+        <div className="text-center mb-8 sm:mb-10 lg:mb-12">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-fixhub-textDark mb-3 sm:mb-4">
             Our Services at Your Doorstep
           </h2>
-          <p className="text-lg text-fixhub-textMuted max-w-2xl mx-auto">
+          <p className="text-sm sm:text-base lg:text-lg text-fixhub-textMuted max-w-3xl mx-auto leading-relaxed">
             Professional repair services delivered right to your home with certified technicians and genuine parts
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 sm:gap-6 lg:gap-8">
           {services.map((service, index) => (
             <div
               key={index}
-              className="bg-fixhub-bgCard rounded-xl p-6 text-center shadow-sm border border-fixhub-borderSoft hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group"
+              className="bg-fixhub-bgCard rounded-xl p-4 sm:p-6 text-center shadow-sm border border-fixhub-borderSoft hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group"
             >
-              <div className="text-fixhub-primary mb-4 group-hover:text-fixhub-dark transition-colors">
-                {service.icon}
+              <div className="text-fixhub-primary mb-3 sm:mb-4 group-hover:text-fixhub-dark transition-colors flex justify-center">
+                <svg className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12" fill="currentColor" viewBox="0 0 24 24">
+                  {service.icon}
+                </svg>
               </div>
-              <h3 className="text-xl font-semibold text-fixhub-textDark mb-3">
+              <h3 className="text-base sm:text-lg lg:text-xl font-semibold text-fixhub-textDark mb-2 sm:mb-3">
                 {service.title}
               </h3>
-              <p className="text-fixhub-textMuted text-sm leading-relaxed">
+              <p className="text-fixhub-textMuted text-xs sm:text-sm leading-relaxed">
                 {service.description}
               </p>
             </div>
           ))}
         </div>
 
-        <div className="text-center mt-12">
-          <button className="bg-fixhub-primary text-fixhub-textWhite px-8 py-3 rounded-lg font-semibold hover:bg-fixhub-dark transition-colors">
-            View All Services
-          </button>
-        </div>
       </div>
     </section>
   );

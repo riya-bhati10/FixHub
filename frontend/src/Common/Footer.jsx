@@ -9,7 +9,7 @@ const Footer = () => {
           {/* Logo and Description */}
           <div className="col-span-1 md:col-span-2">
             <div className="flex items-center space-x-2 mb-4">
-              <img src="../assets/Logo.png" alt="FixHub" className="h-8 w-8" />
+              <img src="/logo.png" alt="FixHub" className="h-8 w-8" />
               <span className="text-xl font-bold">FixHub</span>
             </div>
             <p className="text-fixhub-light mb-4 max-w-md">
@@ -54,14 +54,6 @@ const Footer = () => {
               <li>123 Tech Street, Digital City</li>
             </ul>
             
-            <div className="mt-6">
-              <Link 
-                to="/technician-login" 
-                className="text-sm text-fixhub-light hover:text-fixhub-mint transition-colors underline"
-              >
-                Technician Login
-              </Link>
-            </div>
           </div>
         </div>
 

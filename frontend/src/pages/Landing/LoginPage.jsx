@@ -5,6 +5,7 @@ import authService from './auth.service';
 
 const LoginPage = () => {
   const navigate = useNavigate();
+  const { setUser } = useUser();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -21,12 +22,16 @@ const LoginPage = () => {
     e.preventDefault();
     try {
       const data = await authService.login(formData.email, formData.password);
+<<<<<<< HEAD
       
       // Store user data
       if (data.user) {
         localStorage.setItem('user', JSON.stringify(data.user));
       }
       
+=======
+      setUser(data.user);
+>>>>>>> fixhub-check
       if (data.role === 'technician') {
         navigate('/technician/dashboard');
       } else {

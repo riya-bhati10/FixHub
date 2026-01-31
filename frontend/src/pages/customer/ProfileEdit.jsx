@@ -79,34 +79,44 @@ const ProfileSettings = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#F7FBFC] via-white to-[#E8F3F4] text-[#1A2E35] font-['Manrope']">
-      {/* Material Icons Link */}
-      <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <div className="min-h-screen bg-[#F7FBFC] text-slate-800 font-['Manrope']">
+      <Navbar 
+        userType="customer"
+        navLinks={customerNavLinks}
+        showProfile={true}
+        showNotifications={true}
+      />
       
-      <Navbar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
-      
-      <main className="max-w-7xl mx-auto p-4 md:p-8">
-        <div className="bg-white border border-[#AEE3E6] shadow-xl shadow-[#1F7F85]/5 overflow-hidden">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-24">
+        {/* Header Section */}
+        <div className="relative bg-gradient-to-r from-[#1F7F85] to-[#0F4C5C] shadow-xl shadow-[#1F7F85]/20 p-8 md:p-10 mb-10 overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 -mr-16 -mt-16 blur-3xl"></div>
+          <div className="absolute bottom-0 left-0 w-40 h-40 bg-white/10 -ml-10 -mb-10 blur-2xl"></div>
           
-          {/* Merged Header Section (Profile Card + Actions) */}
-          <div className="p-6 md:p-10 border-b border-[#AEE3E6] bg-gradient-to-r from-[#F7FBFC] to-white flex flex-col md:flex-row items-center gap-8">
+          <div className="relative z-10 flex flex-col md:flex-row items-center gap-8">
             {/* Profile Image */}
             <div className="relative group cursor-pointer shrink-0">
               <div className="w-32 h-32 overflow-hidden border-4 border-white shadow-xl shadow-[#1F7F85]/20">
-                <img 
-                  src={imagePreview} 
-                  alt="Profile" 
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                />
+                {imagePreview ? (
+                  <img 
+                    src={imagePreview} 
+                    alt="Profile" 
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-[#DCEBEC] flex items-center justify-center text-[#1F7F85] text-5xl font-bold">
+                    {getUserInitial()}
+                  </div>
+                )}
               </div>
               <label className="absolute bottom-2 right-2 bg-[#1F7F85] text-white p-2.5 shadow-lg cursor-pointer hover:bg-[#0F4C5C] transition-colors border-2 border-white">
                 <input
-                  type="text"
+                  type="file"
                   className="hidden"
                   accept="image/*"
                   onChange={handleImageChange}
                 />
-               
+                <span className="material-symbols-outlined text-sm">photo_camera</span>
               </label>
             </div>
 
@@ -130,21 +140,16 @@ const ProfileSettings = () => {
                 </div>
               </div>
             </div>
-
           </div>
+        </div>
 
-          {/* Form Content */}
-          <div className="p-6 md:p-10 space-y-10">
-            {/* Personal Information */}
-            <section>
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-[#1F7F85]/10 flex items-center justify-center text-[#1F7F85]">
-                  <span className="material-symbols-outlined text-2xl">person</span>
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold text-[#1A2E35]">Personal Information</h3>
-                  <p className="text-sm text-[#5F7D83]">Update your personal details and contact information</p>
-                </div>
+        {/* Form Content */}
+        <div className="bg-white shadow-sm border border-slate-200 p-6 md:p-10 space-y-10">
+          {/* Personal Information */}
+          <section>
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 bg-[#1F7F85]/10 flex items-center justify-center text-[#1F7F85]">
+                <span className="material-symbols-outlined text-2xl">person</span>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -243,8 +248,101 @@ const ProfileSettings = () => {
                 Save Changes
               </button>
             </div>
-       
-            
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* First Name */}
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">First Name</label>
+                <div className="relative">
+                  <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">badge</span>
+                  <input
+                    type="text"
+                    name="firstname"
+                    value={formData.firstname}
+                    onChange={handleChange}
+                    className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-[#1F7F85]/30 focus:border-[#1F7F85] outline-none transition-all font-medium text-slate-900"
+                  />
+                </div>
+              </div>
+
+              {/* Last Name */}
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Last Name</label>
+                <div className="relative">
+                  <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">badge</span>
+                  <input
+                    type="text"
+                    name="lastname"
+                    value={formData.lastname}
+                    onChange={handleChange}
+                    className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-[#1F7F85]/30 focus:border-[#1F7F85] outline-none transition-all font-medium text-slate-900"
+                  />
+                </div>
+              </div>
+
+              {/* Phone */}
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Phone Number</label>
+                <div className="relative">
+                  <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">call</span>
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-[#1F7F85]/30 focus:border-[#1F7F85] outline-none transition-all font-medium text-slate-900"
+                  />
+                </div>
+              </div>
+
+              {/* Email */}
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
+                  Email Address
+                  <span className="text-[10px] text-red-500 bg-red-50 px-1.5 py-0.5 border border-red-100">Locked</span>
+                </label>
+                <div className="relative">
+                  <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">mail</span>
+                  <input
+                    type="email"
+                    value={formData.email}
+                    readOnly
+                    disabled
+                    className="w-full pl-11 pr-4 py-3 bg-slate-100 border border-slate-200 font-medium text-slate-500 cursor-not-allowed"
+                  />
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <div className="h-px bg-slate-200"></div>
+
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row justify-end gap-4 pt-2">
+            <button 
+              onClick={() => navigate('/dashboard')}
+              className="px-8 py-4 bg-white text-slate-600 font-bold border-2 border-slate-200 hover:bg-slate-50 hover:text-slate-900 hover:border-slate-300 transition-all flex items-center justify-center gap-2 shadow-sm"
+            >
+              <span className="material-symbols-outlined">close</span>
+              Cancel
+            </button>
+            <button
+              onClick={handleSaveChanges}
+              disabled={loading}
+              className="px-8 py-4 bg-gradient-to-r from-[#1F7F85] to-[#0F4C5C] text-white font-bold hover:shadow-xl hover:shadow-[#1F7F85]/30 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? (
+                <>
+                  <span className="material-symbols-outlined animate-spin">progress_activity</span>
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <span className="material-symbols-outlined">save</span>
+                  Save Changes
+                </>
+              )}
+            </button>
           </div>
         </div>
       </main>

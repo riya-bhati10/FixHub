@@ -1,9 +1,9 @@
 import React from "react";
 
 import FixHubDashboard from "./pages/customer/Mybooking";
-import BookService from "./pages/customer/BookService"
+import BookService from "./pages/customer/BookServiceNew"
 import ProfileEdi from "./pages/customer/ProfileEdit"
-import BookServiceForm from "./pages/customer/Bookingform";
+import BookServiceForm from "./pages/customer/BookingformNew";
 import Dashboard from "./pages/customer/Dashbaord";
 import ReviewPage from "./pages/customer/ReviewPage";
 import BookingSuccess from "./pages/customer/BookingSuccess";

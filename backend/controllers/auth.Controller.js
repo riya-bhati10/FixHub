@@ -95,10 +95,12 @@ exports.login = async (req, res) => {
       token,
       role: user.role,
       user: {
-        id: user._id,
-        email: user.email,
+        _id: user._id,
         fullname: user.fullname,
-        role: user.role
+        email: user.email,
+        phone: user.phone,
+        role: user.role,
+        createdAt: user.createdAt
       }
     });
   } catch (err) {
@@ -128,7 +130,7 @@ module.exports.getUserProfile = async(req, res, next) => {
 }
 
 // user LogOut
-module.exports.logoutUser = async (req, res, next) => {
+module.exports.logoutUser = async (req, res) => {
   try {
     res.clearCookie('token')
     const authHeader = req.headers.authorization;
@@ -145,3 +147,51 @@ module.exports.logoutUser = async (req, res, next) => {
     res.status(500).json({ message: error.message });
   }
 }
+
+// Get current user
+exports.getCurrentUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.userId).select('-password');
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json({ user });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// Update profile
+exports.updateProfile = async (req, res) => {
+  try {
+    const { fullname, phone } = req.body;
+    const user = await User.findById(req.user.userId);
+    
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (fullname) {
+      user.fullname = fullname;
+    }
+    if (phone) {
+      user.phone = phone;
+    }
+
+    await user.save();
+
+    res.json({
+      message: "Profile updated successfully",
+      user: {
+        _id: user._id,
+        fullname: user.fullname,
+        email: user.email,
+        phone: user.phone,
+        role: user.role,
+        createdAt: user.createdAt
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};

@@ -6,6 +6,75 @@ import api from '../Landing/api';
 const BookService = () => {
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [services, setServices] = useState([]);
+  const [technicians, setTechnicians] = useState([]);
+  
+  useEffect(() => {
+    fetchServices();
+  }, []);
+
+  const fetchServices = async () => {
+    try {
+      setLoading(true);
+      const response = await serviceApi.getCategories();
+      const categories = response.data.categories || [];
+      
+      const formattedServices = categories.map((cat, idx) => ({
+        id: idx + 1,
+        title: cat,
+        description: `Professional ${cat} services`,
+        category: cat.toLowerCase().replace(/\s+/g, '_'),
+        icon: getServiceIcon(cat)
+      }));
+      
+      setServices(formattedServices);
+    } catch (error) {
+      console.error('Error fetching services:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchTechnicians = async (serviceName) => {
+    try {
+      const response = await serviceApi.getTechniciansByService(serviceName);
+      const techs = response.data.technicians || [];
+      
+      return techs.map(tech => ({
+        id: tech.technicianId,
+        serviceId: tech.serviceId,
+        name: tech.name,
+        rating: tech.avgRating || 4.5,
+        reviews: tech.totalReviews || 0,
+        specialty: 'Technician',
+        available: true,
+        serviceCharge: tech.serviceCharge,
+        avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(tech.name)}&background=1F7F85&color=fff`
+      }));
+    } catch (error) {
+      console.error('Error fetching technicians:', error);
+      return [];
+    }
+  };
+
+  const getServiceIcon = (serviceName) => {
+    const name = serviceName?.toLowerCase() || '';
+    if (name.includes('phone') || name.includes('smartphone')) return 'smartphone';
+    if (name.includes('laptop')) return 'laptop';
+    if (name.includes('tv')) return 'tv';
+    if (name.includes('refrigerator') || name.includes('fridge')) return 'kitchen';
+    if (name.includes('washing')) return 'local_laundry_service';
+    if (name.includes('ac') || name.includes('air')) return 'ac_unit';
+    if (name.includes('microwave')) return 'microwave';
+    return 'build';
+  };
+
+  const customerNavLinks = [
+    { path: '/dashboard', label: 'Dashboard' },
+    { path: '/book-service', label: 'Book Service' },
+    { path: '/my-booking', label: 'My Bookings' },
+  ];
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedService, setSelectedService] = useState(null);
@@ -168,8 +237,11 @@ const BookService = () => {
   // Function to handle card click
   const handleCardClick = (service) => {
     setSelectedService(service);
+    setLoading(true);
+    const techs = await fetchTechnicians(service.title);
+    setTechnicians(techs);
+    setLoading(false);
     setIsTechnicianViewOpen(true);
-    // Reset form data
     setFormData({
       issue: "",
       serviceDate: "",
@@ -368,10 +440,12 @@ const BookService = () => {
     }
   };
 
+  if (loading) return <Loader />;
+
   const filteredServices = services.filter(service => {
     const matchesCategory = activeCategory === 'all' || service.category === activeCategory;
-    const matchesSearch = service.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          service.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = service.title?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          service.description?.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
@@ -379,7 +453,12 @@ const BookService = () => {
 
   return (
     <div className="min-h-screen bg-[#F7FBFC] text-slate-800 font-['Manrope'] relative">
-      <Navbar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
+      <Navbar 
+        userType="customer"
+        navLinks={customerNavLinks}
+        showProfile={true}
+        showNotifications={true}
+      />
       
       {/* Technician Selection Modal */}
       {isTechnicianViewOpen && selectedService && (
@@ -425,7 +504,7 @@ const BookService = () => {
                           <span className="text-xs text-slate-500">({tech.reviews} reviews)</span>
                         </div>
                         <p className="text-sm font-bold text-[#1F7F85] mt-1">
-                          Service Charge: ${selectedService.price}
+                          Service Charge: ${tech.serviceCharge || 0}
                         </p>
                         <button
                           onClick={(e) => {
@@ -686,11 +765,11 @@ const BookService = () => {
                   <div className="flex items-center justify-between mb-6">
                     <div>
                       <p className="text-sm text-slate-500">Service Charge</p>
-                      <p className="text-2xl font-bold text-[#0F4C5C]">${selectedService.price}</p>
+                      <p className="text-2xl font-bold text-[#0F4C5C]">${selectedTechnician.serviceCharge || 0}</p>
                     </div>
                     <div>
                       <p className="text-sm text-slate-500">Total Amount</p>
-                      <p className="text-2xl font-bold text-[#0F4C5C]">${selectedService.price}</p>
+                      <p className="text-2xl font-bold text-[#0F4C5C]">${selectedTechnician.serviceCharge || 0}</p>
                     </div>
                   </div>
 
@@ -867,26 +946,12 @@ const BookService = () => {
                 className="w-[280px] h-[380px] flex-shrink-0 group relative overflow-hidden cursor-pointer"
                 onClick={() => handleCardClick(service)}
               >
-                <img 
-                  alt={service.title} 
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
-                  src={service.image}
-                />
+                <div className="w-full h-full bg-gradient-to-br from-[#1F7F85] to-[#0F4C5C] flex items-center justify-center">
+                  <span className="material-symbols-outlined text-white text-8xl">{service.icon}</span>
+                </div>
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/20 to-transparent"></div>
                 <div className="absolute bottom-6 left-6 text-white">
-                  <span className={`text-xs font-bold uppercase tracking-widest px-2 py-1 mb-2 inline-block
-                    ${service.category === 'pro' ? 'bg-blue-500/20 text-blue-300' :
-                      service.category === 'popular' ? 'bg-purple-500/20 text-purple-300' :
-                      service.category === 'essential' ? 'bg-green-500/20 text-green-300' :
-                      service.category === 'trending' ? 'bg-pink-500/20 text-pink-300' :
-                      'bg-yellow-500/20 text-yellow-300'}`}>
-                    {service.category === 'pro' ? 'Pro Choice' :
-                     service.category === 'popular' ? 'Popular' :
-                     service.category === 'essential' ? 'Essential' :
-                     service.category === 'trending' ? 'Trending' : 'Best Value'}
-                  </span>
                   <h3 className="text-xl font-bold">{service.title}</h3>
-                 
                 </div>
               </div>
             ))}

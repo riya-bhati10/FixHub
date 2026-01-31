@@ -196,6 +196,7 @@ exports.getTechniciansByService = async (req, res) => {
         const ratingData = await getTechnicianRating(service.technicianId._id);
 
         return {
+          serviceId: service._id,
           technicianId: service.technicianId._id,
           name:
             service.technicianId.fullname.firstname +

@@ -1,24 +1,30 @@
 import React, { useState, useEffect } from 'react';
-import api from '../Landing/api';
+import technicianService from '../../Services/technicianService';
 
 const History = () => {
-  const [bookings, setBookings] = useState([]);
+  const [historyData, setHistoryData] = useState([]);
+  const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [selectedReview, setSelectedReview] = useState(null);
-  
+
   useEffect(() => {
-    fetchCompletedBookings();
+    fetchHistoryData();
   }, []);
 
-  const fetchCompletedBookings = async () => {
+  const fetchHistoryData = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/bookings/technician?status=completed');
-      const bookingsData = response.data.bookings || [];
-      setBookings(bookingsData);
-      console.log('Completed bookings:', bookingsData);
+      const [history, statsData] = await Promise.all([
+        technicianService.getTechnicianBookingHistory(),
+        technicianService.getTechnicianStats()
+      ]);
+      
+      setHistoryData(history);
+      setStats(statsData);
     } catch (error) {
-      console.error('Error fetching completed bookings:', error);
+      console.error('Error fetching history data:', error);
+      setError('Failed to load history data');
     } finally {
       setLoading(false);
     }
@@ -38,6 +44,38 @@ const History = () => {
     });
   };
 
+  const calculateTotalEarned = () => {
+    return historyData
+      .filter(item => item.status === 'completed')
+      .reduce((total, item) => total + (item.estimatedPrice || 0), 0);
+  };
+
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fixhub-primary"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="text-center">
+          <p className="text-red-500">{error}</p>
+          <button 
+            onClick={fetchHistoryData}
+            className="mt-4 bg-fixhub-primary text-white px-4 py-2 rounded-lg"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8">
@@ -55,7 +93,7 @@ const History = () => {
               </svg>
             </div>
             <div className="ml-4">
-              <p className="text-2xl font-bold text-fixhub-textDark">{completedServices.length}</p>
+              <p className="text-2xl font-bold text-fixhub-textDark">{stats?.completedJobs || 0}</p>
               <p className="text-fixhub-textMuted">Completed Jobs</p>
             </div>
           </div>
@@ -69,7 +107,7 @@ const History = () => {
               </svg>
             </div>
             <div className="ml-4">
-              <p className="text-2xl font-bold text-fixhub-textDark">{avgRating}</p>
+              <p className="text-2xl font-bold text-fixhub-textDark">{stats?.averageRating || 'N/A'}</p>
               <p className="text-fixhub-textMuted">Avg Rating</p>
             </div>
           </div>
@@ -83,7 +121,7 @@ const History = () => {
               </svg>
             </div>
             <div className="ml-4">
-              <p className="text-2xl font-bold text-fixhub-textDark">${totalEarned}</p>
+              <p className="text-2xl font-bold text-fixhub-textDark">₹{calculateTotalEarned().toLocaleString()}</p>
               <p className="text-fixhub-textMuted">Total Earned</p>
             </div>
           </div>
@@ -91,58 +129,117 @@ const History = () => {
       </div>
 
       {/* History List */}
-      {loading ? (
-        <div className="flex items-center justify-center py-20">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fixhub-primary mx-auto mb-4"></div>
-            <p className="text-fixhub-textMuted">Loading history...</p>
-          </div>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {completedServices.length > 0 ? (
-            completedServices.map((booking) => (
-              <div key={booking.bookingId} className="bg-white rounded-lg shadow-md border border-fixhub-borderSoft p-6">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center space-x-4">
-                    <div className="w-12 h-12 bg-fixhub-primary rounded-full flex items-center justify-center">
-                      <span className="text-white font-medium text-lg">{booking.customer.name.charAt(0)}</span>
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-fixhub-textDark text-lg">{booking.customer.name}</h3>
-                      <p className="text-fixhub-primary font-medium">{booking.service.name}</p>
-                      <p className="text-sm text-fixhub-textMuted">{formatDate(booking.serviceDate)} • {booking.timeSlot}</p>
-                    </div>
+      <div className="space-y-4">
+        {historyData.length > 0 ? (
+          historyData.map((service) => (
+            <div key={service._id} className="bg-white rounded-lg shadow-md border border-fixhub-borderSoft p-6">
+              <div className="flex items-start justify-between">
+                <div className="flex items-center space-x-4">
+                  <div className="w-12 h-12 bg-fixhub-primary rounded-full flex items-center justify-center">
+                    <span className="text-white font-medium text-lg">
+                      {service.customer?.fullname?.firstname?.charAt(0) || 'C'}
+                    </span>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-fixhub-textDark text-lg">
+                      {service.customer?.fullname?.firstname} {service.customer?.fullname?.lastname}
+                    </h3>
+                    <p className="text-fixhub-primary font-medium">{service.serviceType}</p>
+                    <p className="text-sm text-fixhub-textMuted">
+                      {formatDate(service.preferredDate)} • {service.preferredTime}
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center space-x-3">
+                  <div className="text-right">
+                    <p className="font-semibold text-fixhub-primary text-lg">₹{service.estimatedPrice}</p>
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                      service.status === 'completed' 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-red-100 text-red-800'
+                    }`}>
+                      {service.status.charAt(0).toUpperCase() + service.status.slice(1)}
+                    </span>
                   </div>
                   
-                  <div className="flex items-center space-x-3">
-                    <div className="text-right">
-                      <p className="font-semibold text-fixhub-primary text-lg">${booking.service.charge}</p>
-                      <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">
-                        Completed
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-                  <p className="text-sm text-fixhub-textDark">{booking.issue}</p>
-                </div>
-                
-                <div className="mt-4 flex items-center justify-between text-sm text-fixhub-textMuted">
-                  <span>📍 {booking.serviceLocation}</span>
-                  <span>📞 {booking.customer.phone}</span>
-                  <span>💰 Earned: ${booking.service.charge}</span>
+                  {service.rating && service.review && (
+                    <button
+                      onClick={() => setSelectedReview({
+                        rating: service.rating,
+                        comment: service.review,
+                        date: service.updatedAt
+                      })}
+                      className="bg-fixhub-primary hover:bg-fixhub-dark text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                    >
+                      View Review
+                    </button>
+                  )}
                 </div>
               </div>
-            ))
-          ) : (
-            <div className="bg-white rounded-lg shadow-md p-8 text-center">
-              <div className="text-6xl mb-4">📋</div>
-              <h3 className="text-lg font-medium text-fixhub-textDark mb-2">No Completed Services</h3>
-              <p className="text-fixhub-textMuted">Your completed service history will appear here.</p>
+              
+              <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                <p className="text-sm text-fixhub-textDark">{service.description}</p>
+              </div>
+              
+              <div className="mt-4 flex items-center justify-between text-sm text-fixhub-textMuted">
+                <div className="flex items-center">
+                  <svg className="w-4 h-4 mr-2 text-fixhub-textMuted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  <span>{service.location}</span>
+                </div>
+                <div className="flex items-center">
+                  <svg className="w-4 h-4 mr-2 text-fixhub-textMuted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                  </svg>
+                  <span>{service.customer?.phone}</span>
+                </div>
+              </div>
             </div>
-          )}
+          ))
+        ) : (
+          <div className="bg-white rounded-lg shadow-md p-8 text-center">
+            <div className="w-16 h-16 bg-fixhub-mint rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-fixhub-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-medium text-fixhub-textDark mb-2">No Completed Services</h3>
+            <p className="text-fixhub-textMuted">Your completed service history will appear here.</p>
+          </div>
+        )}
+      </div>
+
+      {/* Review Modal */}
+      {selectedReview && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-fixhub-textDark">Customer Review</h3>
+              <button
+                onClick={() => setSelectedReview(null)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <div className="mb-4">
+              <div className="flex items-center space-x-2 mb-2">
+                <div className="flex">{getRatingStars(selectedReview.rating)}</div>
+                <span className="text-sm text-fixhub-textMuted">({selectedReview.rating}/5)</span>
+              </div>
+              <p className="text-fixhub-textDark">{selectedReview.comment}</p>
+            </div>
+            
+            <div className="text-sm text-fixhub-textMuted">
+              Reviewed on {formatDate(selectedReview.date)}
+            </div>
+          </div>
         </div>
       )}
     </div>

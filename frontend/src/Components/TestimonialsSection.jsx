@@ -46,7 +46,7 @@ const TestimonialsSection = () => {
         {[...Array(5)].map((_, index) => (
           <svg
             key={index}
-            className={`w-4 h-4 ${
+            className={`w-3 h-3 sm:w-4 sm:h-4 ${
               index < rating ? 'text-yellow-400' : 'text-fixhub-borderSoft'
             }`}
             fill="currentColor"
@@ -60,37 +60,37 @@ const TestimonialsSection = () => {
   };
 
   return (
-    <section className="py-16 bg-fixhub-bgCard">
+    <section className="py-12 sm:py-16 lg:py-20 bg-fixhub-bgCard">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-fixhub-textDark mb-4">
+        <div className="text-center mb-8 sm:mb-10 lg:mb-12">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-fixhub-textDark mb-3 sm:mb-4">
             What Our Customers Say
           </h2>
-          <p className="text-lg text-fixhub-textMuted">
+          <p className="text-sm sm:text-base lg:text-lg text-fixhub-textMuted">
             Real experiences from satisfied customers
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {testimonials.map((testimonial, index) => (
             <div
               key={index}
-              className="bg-fixhub-bgWhite rounded-xl p-6 shadow-sm border border-fixhub-borderSoft hover:shadow-md transition-shadow"
+              className="bg-fixhub-bgWhite rounded-xl p-4 sm:p-6 shadow-sm border border-fixhub-borderSoft hover:shadow-md transition-shadow"
             >
-              <div className="flex items-start space-x-4">
+              <div className="flex items-start space-x-3 sm:space-x-4">
                 <img
                   src={testimonial.avatar}
                   alt={testimonial.name}
-                  className="w-12 h-12 rounded-full object-cover"
+                  className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover flex-shrink-0"
                 />
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-semibold text-fixhub-textDark">
+                    <h4 className="font-semibold text-fixhub-textDark text-sm sm:text-base truncate">
                       {testimonial.name}
                     </h4>
                     <StarRating rating={testimonial.rating} />
                   </div>
-                  <p className="text-fixhub-textMuted text-sm leading-relaxed">
+                  <p className="text-fixhub-textMuted text-xs sm:text-sm leading-relaxed">
                     "{testimonial.text}"
                   </p>
                 </div>

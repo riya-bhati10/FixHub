@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import api from '../Landing/api';
+import technicianService from '../../Services/technicianService';
 
 const AddService = ({ onClose, onServiceAdded }) => {
   const [formData, setFormData] = useState({
@@ -9,6 +10,7 @@ const AddService = ({ onClose, onServiceAdded }) => {
     description: "",
   });
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const serviceTypes = [
     "Smartphone Repair",
@@ -35,6 +37,7 @@ const AddService = ({ onClose, onServiceAdded }) => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+    if (error) setError(null);
   };
 
   const handleSubmit = async (e) => {
@@ -73,15 +76,22 @@ const AddService = ({ onClose, onServiceAdded }) => {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-md p-6 w-full max-w-md border border-fixhub-borderSoft">
+    <div className="bg-white rounded-xl shadow-md p-6 w-full max-w-lg border border-fixhub-borderSoft">
       {/* Header */}
-      <div className="mb-6">
+      <div className="mb-4">
         <h2 className="text-xl font-bold text-fixhub-textDark">Add Your Service</h2>
         <p className="text-fixhub-textMuted text-sm mt-1">Fill in your service details</p>
       </div>
 
+      {/* Error Message */}
+      {error && (
+        <div className="mb-4 p-3 bg-fixhub-danger bg-opacity-10 border border-fixhub-danger rounded-lg">
+          <p className="text-fixhub-danger text-sm">{error}</p>
+        </div>
+      )}
+
       {/* Form */}
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={handleSubmit} className="space-y-4">
         {/* Service Type */}
         <div>
           <label className="block text-sm font-medium text-fixhub-textDark mb-1">
@@ -92,7 +102,7 @@ const AddService = ({ onClose, onServiceAdded }) => {
             value={formData.serviceName}
             onChange={handleChange}
             required
-            className="w-full border border-fixhub-borderSoft rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-fixhub-primary bg-white text-fixhub-textDark"
+            className="w-full border border-fixhub-borderSoft rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-fixhub-primary bg-white text-fixhub-textDark"
           >
             <option value="">Select your service</option>
             {serviceTypes.map((type, index) => (
@@ -117,8 +127,8 @@ const AddService = ({ onClose, onServiceAdded }) => {
               onChange={handleChange}
               required
               min="0"
-              className="w-full border border-fixhub-borderSoft rounded-lg pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-fixhub-primary text-fixhub-textDark"
-              placeholder="Enter amount"
+              className="w-full border border-fixhub-borderSoft rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-fixhub-primary text-fixhub-textDark"
+              placeholder="500"
             />
           </div>
           <p className="text-xs text-fixhub-textMuted mt-1">Enter your service charge in USD</p>
@@ -152,16 +162,14 @@ const AddService = ({ onClose, onServiceAdded }) => {
             name="description"
             value={formData.description}
             onChange={handleChange}
-            rows="3"
-            className="w-full border border-fixhub-borderSoft rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-fixhub-primary text-fixhub-textDark"
-            placeholder="Briefly describe the service you offer (e.g., 'Screen replacement for all major smartphone brands')."
+            rows="2"
+            className="w-full border border-fixhub-borderSoft rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-fixhub-primary text-fixhub-textDark"
+            placeholder="Briefly describe the service you offer..."
           />
         </div>
 
-      
-
         {/* Buttons */}
-        <div className="flex gap-3 pt-4">
+        <div className="flex gap-3 pt-3">
           <button
             type="submit"
             disabled={loading}
@@ -172,7 +180,8 @@ const AddService = ({ onClose, onServiceAdded }) => {
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 border border-fixhub-borderSoft hover:bg-gray-50 text-fixhub-textDark font-medium py-3 rounded-lg transition-colors"
+            disabled={loading}
+            className="flex-1 border border-fixhub-borderSoft hover:bg-fixhub-borderSoft text-fixhub-textDark font-medium py-2 rounded-lg transition-colors"
           >
             Cancel
           </button>

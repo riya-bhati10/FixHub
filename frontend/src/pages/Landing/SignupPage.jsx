@@ -5,6 +5,7 @@ import authService from './auth.service';
 
 const SignupPage = () => {
   const navigate = useNavigate();
+  const { setUser } = useUser();
   const [searchParams] = useSearchParams();
   const [formData, setFormData] = useState({
     firstName: '',
@@ -90,7 +91,6 @@ const SignupPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Format data to match backend expectation
       const userData = {
         fullname: {
           firstname: formData.firstName,
@@ -103,6 +103,7 @@ const SignupPage = () => {
         location: formData.location
       };
 
+<<<<<<< HEAD
       const response = await authService.register(userData);
       
       // Store token and user data for automatic login
@@ -117,6 +118,15 @@ const SignupPage = () => {
         } else {
           navigate('/dashboard');
         }
+=======
+      const data = await authService.register(userData);
+      setUser(data.user);
+      alert('Registration successful!');
+      if (data.role === 'technician') {
+        navigate('/technician/dashboard');
+      } else {
+        navigate('/dashboard');
+>>>>>>> fixhub-check
       }
     } catch (error) {
       console.error('Signup failed:', error.response?.data?.message || error.message);

@@ -55,18 +55,15 @@ const MySchedules = () => {
     }
   };
 
-  const getPriorityColor = (priority) => {
-    switch (priority) {
-      case 'high':
-        return 'text-red-600';
-      case 'medium':
-        return 'text-yellow-600';
-      case 'low':
-        return 'text-green-600';
-      default:
-        return 'text-gray-600';
-    }
-  };
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fixhub-primary"></div>
+        </div>
+      </div>
+    );
+  }
 
   const handleStatusChange = async (bookingId, newStatus) => {
     try {
@@ -106,15 +103,12 @@ const MySchedules = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-fixhub-textDark mb-2">My Schedules</h1>
         <p className="text-fixhub-textMuted">Manage your service appointments and track job progress.</p>
       </div>
 
-      {/* Filters and Date Selector */}
       <div className="mb-6 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-        {/* Status Filters */}
         <div className="flex flex-wrap gap-2">
           {filters.map((filter) => (
             <button
@@ -131,7 +125,6 @@ const MySchedules = () => {
           ))}
         </div>
 
-        {/* Date Selector */}
         <div className="flex items-center space-x-2">
           <label className="text-sm font-medium text-fixhub-textDark">Filter by Date:</label>
           <input
@@ -277,9 +270,11 @@ const MySchedules = () => {
 
       {filteredSchedules.length === 0 && (
         <div className="text-center py-12">
-          <div className="text-6xl mb-4">📅</div>
-          <h3 className="text-lg font-medium text-fixhub-textDark mb-2">No schedules found</h3>
-          <p className="text-fixhub-textMuted">No appointments match the selected filter.</p>
+          <svg className="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3a1 1 0 011-1h6a1 1 0 011 1v4h3a1 1 0 011 1v9a2 2 0 01-2 2H5a2 2 0 01-2-2V8a1 1 0 011-1h3z" />
+          </svg>
+          <h3 className="text-lg font-medium text-fixhub-textDark mb-2">No Schedules Available</h3>
+          <p className="text-fixhub-textMuted">You don't have any {activeFilter === 'all' ? '' : activeFilter} appointments at the moment.</p>
         </div>
       )}
     </div>
