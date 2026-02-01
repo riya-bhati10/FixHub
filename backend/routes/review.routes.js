@@ -5,8 +5,10 @@ const {
   createReview,
   getTechnicianReviews,
 } = require("../controllers/review.Controller");
+const { checkBlocked } = require("../middleware/block.middleware");
 
-router.post("/", verifyToken, checkRole("customer"), createReview);
+
+router.post("/", verifyToken, checkBlocked,checkRole("customer"), createReview);
 
 router.get("/technician/:technicianId", getTechnicianReviews);
 

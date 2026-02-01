@@ -1,12 +1,17 @@
 const router = require("express").Router();
 const { verifyToken } = require("../middleware/auth.middleware");
 const {
-  getMyNotifications, markAsRead, getUnreadCount
+  getMyNotifications,
+  getTechnicianNotifications,
+  markAsRead,
+  markAllAsRead,
+  getUnreadCount,
 } = require("../controllers/notification.Controller");
 
 router.get("/", verifyToken, getMyNotifications);
+router.get("/technician", verifyToken, getTechnicianNotifications);
 router.patch("/:id/read", verifyToken, markAsRead);
+router.patch("/mark-all-read", verifyToken, markAllAsRead);
 router.get("/unread-count", verifyToken, getUnreadCount);
-
 
 module.exports = router;

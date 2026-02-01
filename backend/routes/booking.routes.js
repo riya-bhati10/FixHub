@@ -9,9 +9,10 @@ const {
   updateBookingStatus,
   getCustomerBookings,
 } = require("../controllers/booking.Controller");
+const { checkBlocked } = require("../middleware/block.middleware");
 
 
-router.post("/", verifyToken, checkRole("customer"), createBooking);
+router.post("/", verifyToken, checkBlocked,checkRole("customer"), createBooking);
 
 router.get(
   "/technician",
@@ -20,11 +21,11 @@ router.get(
   getTechnicianBookings,
 );
 
-router.patch("/:id/accept", verifyToken, checkRole("technician"), acceptBooking);
+router.patch("/:id/accept", verifyToken,checkBlocked, checkRole("technician"), acceptBooking);
 
 router.patch(
   "/:id/cancel",
-  verifyToken,
+  verifyToken,checkBlocked,
   checkRole("technician", "customer"),
   cancelBooking,
 );

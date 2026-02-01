@@ -5,7 +5,8 @@ const connectDB = require("./config/db");
 const app = express();
 
 
-const authRoutes = require("./routes/auth.routes");
+const authRoutes = require("./routes/auth.Routes");
+const adminRoutes = require("./routes/admin.routes");
 const serviceRoutes = require("./routes/service.routes");
 const bookingRoutes = require("./routes/booking.routes");
 const notificationRoutes = require("./routes/notification.routes");
@@ -25,6 +26,7 @@ app.use(express.json());
 
 
 app.use("/api/auth", authRoutes);
+app.use("/api/admin",adminRoutes);
 app.use("/api/services", serviceRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/notifications", notificationRoutes);
