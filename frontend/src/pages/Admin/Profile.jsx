@@ -12,8 +12,7 @@ const AdminProfile = () => {
     email: 'admin@fixhub.com',
     phone: '+1 (555) 123-4567',
     role: 'Super Admin',
-    joinDate: 'Jan 2023',
-    lastLogin: 'Oct 24, 2023 - 10:30 AM'
+    joinDate: 'Jan 2023'
   });
 
   const handleSave = () => {
@@ -27,32 +26,33 @@ const AdminProfile = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F7FBFC] text-slate-800 font-['Manrope']">
+    <div className="min-h-screen bg-slate-900 font-['Inter']">
       <Navbar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
 
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-4xl mx-auto px-6 py-8">
         {/* Profile Card */}
-        <div className="bg-white shadow-xl shadow-[#1F7F85]/5 border border-[#AEE3E6]/50 overflow-hidden">
-          {/* Header Section */}
-          <div className="px-8 py-6 border-b border-[#DCEBEC] bg-gradient-to-r from-white to-[#F7FBFC]">
+        <div className="bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden">
+          {/* Header */}
+          <div className="px-8 py-6 border-b border-slate-700 bg-slate-800">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <div className="w-16 h-16 bg-[#1F7F85]/10 text-[#1F7F85] flex items-center justify-center rounded-full">
-                  <span className="material-symbols-outlined text-2xl">account_circle</span>
+                <div className="w-16 h-16 bg-slate-700 rounded-full flex items-center justify-center">
+                  <svg className="w-8 h-8 text-slate-300" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                  </svg>
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-[#0F4C5C]">{adminData.firstName} {adminData.lastName}</h2>
-                  <p className="text-slate-500 text-sm">{adminData.role}</p>
+                  <h2 className="text-xl font-semibold text-white">{adminData.firstName} {adminData.lastName}</h2>
+                  <p className="text-slate-400">{adminData.role}</p>
                 </div>
               </div>
-              <div>
-                <h1 className="text-2xl font-bold text-[#0F4C5C]">Admin Profile</h1>
-                <p className="text-slate-500 text-sm mt-1">Manage your account settings and preferences</p>
+              <div className="text-right">
+                <h1 className="text-2xl font-bold text-white mb-1">Admin Profile</h1>
+                <p className="text-slate-400 text-sm mb-3">Manage your account settings</p>
                 <button
                   onClick={() => setIsEditing(!isEditing)}
-                  className="mt-3 px-4 py-2 bg-[#1F7F85] text-white font-bold hover:bg-[#0F4C5C] transition-all rounded text-sm flex items-center gap-2"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all text-sm font-medium"
                 >
-                  <span className="material-symbols-outlined text-sm">{isEditing ? 'close' : 'edit'}</span>
                   {isEditing ? 'Cancel Edit' : 'Edit Profile'}
                 </button>
               </div>
@@ -61,113 +61,95 @@ const AdminProfile = () => {
 
           {/* Profile Details */}
           <div className="p-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {/* Personal Information */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-bold text-[#0F4C5C] mb-4">Personal Information</h3>
-
-                <div className="p-4 bg-slate-50 border border-slate-100 rounded">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="material-symbols-outlined text-slate-400 text-sm">person</span>
-                    <p className="text-xs font-bold text-slate-500 uppercase">First Name</p>
+              <div>
+                <h3 className="text-lg font-semibold text-white mb-6">Personal Information</h3>
+                <div className="space-y-4">
+                  <div className="bg-slate-700 border border-slate-600 rounded-lg p-4">
+                    <label className="block text-slate-400 text-sm font-medium mb-2">First Name</label>
+                    {isEditing ? (
+                      <input
+                        type="text"
+                        value={adminData.firstName}
+                        onChange={(e) => setAdminData({ ...adminData, firstName: e.target.value })}
+                        className="w-full bg-slate-600 border border-slate-500 rounded-lg px-3 py-2 text-white focus:border-blue-500 focus:outline-none"
+                      />
+                    ) : (
+                      <p className="text-white font-medium">{adminData.firstName}</p>
+                    )}
                   </div>
-                  {isEditing ? (
-                    <input
-                      type="text"
-                      value={adminData.firstName}
-                      onChange={(e) => setAdminData({ ...adminData, firstName: e.target.value })}
-                      className="w-full p-2 border border-slate-200 rounded text-sm font-semibold"
-                    />
-                  ) : (
-                    <p className="text-sm font-semibold text-slate-900">{adminData.firstName}</p>
-                  )}
-                </div>
 
-                <div className="p-4 bg-slate-50 border border-slate-100 rounded">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="material-symbols-outlined text-slate-400 text-sm">person</span>
-                    <p className="text-xs font-bold text-slate-500 uppercase">Last Name</p>
+                  <div className="bg-slate-700 border border-slate-600 rounded-lg p-4">
+                    <label className="block text-slate-400 text-sm font-medium mb-2">Last Name</label>
+                    {isEditing ? (
+                      <input
+                        type="text"
+                        value={adminData.lastName}
+                        onChange={(e) => setAdminData({ ...adminData, lastName: e.target.value })}
+                        className="w-full bg-slate-600 border border-slate-500 rounded-lg px-3 py-2 text-white focus:border-blue-500 focus:outline-none"
+                      />
+                    ) : (
+                      <p className="text-white font-medium">{adminData.lastName}</p>
+                    )}
                   </div>
-                  {isEditing ? (
-                    <input
-                      type="text"
-                      value={adminData.lastName}
-                      onChange={(e) => setAdminData({ ...adminData, lastName: e.target.value })}
-                      className="w-full p-2 border border-slate-200 rounded text-sm font-semibold"
-                    />
-                  ) : (
-                    <p className="text-sm font-semibold text-slate-900">{adminData.lastName}</p>
-                  )}
-                </div>
 
-                <div className="p-4 bg-slate-50 border border-slate-100 rounded">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="material-symbols-outlined text-slate-400 text-sm">mail</span>
-                    <p className="text-xs font-bold text-slate-500 uppercase">Email</p>
+                  <div className="bg-slate-700 border border-slate-600 rounded-lg p-4">
+                    <label className="block text-slate-400 text-sm font-medium mb-2">Email</label>
+                    {isEditing ? (
+                      <input
+                        type="email"
+                        value={adminData.email}
+                        onChange={(e) => setAdminData({ ...adminData, email: e.target.value })}
+                        className="w-full bg-slate-600 border border-slate-500 rounded-lg px-3 py-2 text-white focus:border-blue-500 focus:outline-none"
+                      />
+                    ) : (
+                      <p className="text-white font-medium">{adminData.email}</p>
+                    )}
                   </div>
-                  {isEditing ? (
-                    <input
-                      type="email"
-                      value={adminData.email}
-                      onChange={(e) => setAdminData({ ...adminData, email: e.target.value })}
-                      className="w-full p-2 border border-slate-200 rounded text-sm font-semibold"
-                    />
-                  ) : (
-                    <p className="text-sm font-semibold text-slate-900">{adminData.email}</p>
-                  )}
                 </div>
               </div>
 
               {/* Account Information */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-bold text-[#0F4C5C] mb-4">Account Information</h3>
-
-                <div className="p-4 bg-slate-50 border border-slate-100 rounded">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="material-symbols-outlined text-slate-400 text-sm">security</span>
-                    <p className="text-xs font-bold text-slate-500 uppercase">Role</p>
+              <div>
+                <h3 className="text-lg font-semibold text-white mb-6">Account Information</h3>
+                <div className="space-y-4">
+                  <div className="bg-slate-700 border border-slate-600 rounded-lg p-4">
+                    <label className="block text-slate-400 text-sm font-medium mb-2">Role</label>
+                    <p className="text-white font-medium">{adminData.role}</p>
                   </div>
-                  <p className="text-sm font-semibold text-slate-900">{adminData.role}</p>
-                </div>
 
-                <div className="p-4 bg-slate-50 border border-slate-100 rounded">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="material-symbols-outlined text-slate-400 text-sm">call</span>
-                    <p className="text-xs font-bold text-slate-500 uppercase">Phone</p>
+                  <div className="bg-slate-700 border border-slate-600 rounded-lg p-4">
+                    <label className="block text-slate-400 text-sm font-medium mb-2">Phone</label>
+                    {isEditing ? (
+                      <input
+                        type="tel"
+                        value={adminData.phone}
+                        onChange={(e) => setAdminData({ ...adminData, phone: e.target.value })}
+                        className="w-full bg-slate-600 border border-slate-500 rounded-lg px-3 py-2 text-white focus:border-blue-500 focus:outline-none"
+                      />
+                    ) : (
+                      <p className="text-white font-medium">{adminData.phone}</p>
+                    )}
                   </div>
-                  {isEditing ? (
-                    <input
-                      type="tel"
-                      value={adminData.phone}
-                      onChange={(e) => setAdminData({ ...adminData, phone: e.target.value })}
-                      className="w-full p-2 border border-slate-200 rounded text-sm font-semibold"
-                    />
-                  ) : (
-                    <p className="text-sm font-semibold text-slate-900">{adminData.phone}</p>
-                  )}
-                </div>
 
-                <div className="p-4 bg-slate-50 border border-slate-100 rounded">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="material-symbols-outlined text-slate-400 text-sm">calendar_month</span>
-                    <p className="text-xs font-bold text-slate-500 uppercase">Member Since</p>
+                  <div className="bg-slate-700 border border-slate-600 rounded-lg p-4">
+                    <label className="block text-slate-400 text-sm font-medium mb-2">Member Since</label>
+                    <p className="text-white font-medium">{adminData.joinDate}</p>
                   </div>
-                  <p className="text-sm font-semibold text-slate-900 mb-3">{adminData.joinDate}</p>
-                  <div className="border-t border-slate-200 mb-3"></div>
+
                   {isEditing && (
-                    <div className="flex gap-3">
+                    <div className="flex gap-3 pt-4">
                       <button
                         onClick={handleSave}
-                        className="px-6 py-2 bg-[#1F7F85] text-white font-bold hover:bg-[#0F4C5C] transition-all rounded text-sm flex items-center gap-2"
+                        className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all font-medium"
                       >
-                        <span className="material-symbols-outlined text-sm">save</span>
                         Save Changes
                       </button>
                       <button
                         onClick={handleCancel}
-                        className="px-6 py-2 bg-slate-200 text-slate-700 font-bold hover:bg-slate-300 transition-all rounded text-sm flex items-center gap-2"
+                        className="px-6 py-2 bg-slate-600 text-slate-300 rounded-lg hover:bg-slate-500 transition-all font-medium"
                       >
-                        <span className="material-symbols-outlined text-sm">close</span>
                         Cancel
                       </button>
                     </div>
@@ -176,7 +158,6 @@ const AdminProfile = () => {
               </div>
             </div>
           </div>
-
         </div>
       </main>
     </div>

@@ -6,15 +6,20 @@ const TotalCustomers = () => {
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCustomer, setSelectedCustomer] = useState(null);
-  const [showModal, setShowModal] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
 
   const customers = [
-    { id: 1, name: 'Alex Rivera', email: 'alex.pro@example.com', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=faces', bookings: 12, status: 'Active', memberSince: 'Oct 2023', phone: '+1 (555) 123-4567' },
-    { id: 2, name: 'Jane Doe', email: 'jane.doe@example.com', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=faces', bookings: 8, status: 'Active', memberSince: 'Nov 2023', phone: '+1 (555) 987-6543' },
-    { id: 3, name: 'John Smith', email: 'john.smith@example.com', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=faces', bookings: 5, status: 'Blocked', memberSince: 'Sep 2023', phone: '+1 (555) 246-8109' },
-    { id: 4, name: 'Emily White', email: 'emily.white@example.com', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=faces', bookings: 15, status: 'Active', memberSince: 'Jan 2023', phone: '+1 (555) 369-1234' },
-    { id: 5, name: 'Michael Brown', email: 'michael.brown@example.com', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=faces', bookings: 2, status: 'Active', memberSince: 'Dec 2023', phone: '+1 (555) 741-8529' },
+    { id: 1, name: 'Alex Rivera', email: 'alex.pro@example.com', status: 'Active', location: 'New York, NY' },
+    { id: 2, name: 'Jane Doe', email: 'jane.doe@example.com', status: 'Active', location: 'Los Angeles, CA' },
+    { id: 3, name: 'John Smith', email: 'john.smith@example.com', status: 'Blocked', location: 'Chicago, IL' },
+    { id: 4, name: 'Emily White', email: 'emily.white@example.com', status: 'Active', location: 'Houston, TX' },
+    { id: 5, name: 'Michael Brown', email: 'michael.brown@example.com', status: 'Active', location: 'Phoenix, AZ' },
+    { id: 6, name: 'Sarah Johnson', email: 'sarah.j@example.com', status: 'Active', location: 'Philadelphia, PA' },
+    { id: 7, name: 'David Wilson', email: 'david.w@example.com', status: 'Active', location: 'San Antonio, TX' },
+    { id: 8, name: 'Lisa Garcia', email: 'lisa.g@example.com', status: 'Blocked', location: 'San Diego, CA' },
+    { id: 9, name: 'Mark Davis', email: 'mark.d@example.com', status: 'Active', location: 'Dallas, TX' },
+    { id: 10, name: 'Anna Miller', email: 'anna.m@example.com', status: 'Active', location: 'San Jose, CA' }
   ];
 
   const filteredCustomers = customers.filter(customer =>
@@ -22,111 +27,121 @@ const TotalCustomers = () => {
     customer.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleViewCustomer = (customer) => {
-    setSelectedCustomer(customer);
-    setShowModal(true);
-  };
+  const totalPages = Math.ceil(filteredCustomers.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedCustomers = filteredCustomers.slice(startIndex, startIndex + itemsPerPage);
 
-  const handleCloseModal = () => {
-    setShowModal(false);
-    setSelectedCustomer(null);
-  };
-
-  const getStatusStyles = (status) => {
-    switch (status) {
-      case 'Active':
-        return 'bg-emerald-100 text-emerald-700 border border-emerald-200';
-      case 'Blocked':
-        return 'bg-red-100 text-red-700 border border-red-200';
-      default:
-        return 'bg-slate-100 text-slate-600';
-    }
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
   };
 
   return (
-    <div className="min-h-screen bg-[#F7FBFC] text-slate-800 font-['Manrope']">
+    <div className="min-h-screen bg-slate-900 font-['Inter']">
       <Navbar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-6 py-8">
         {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-10">
           <div>
-            <h1 className="text-2xl font-bold text-[#0F4C5C]">All Customers</h1>
-            <p className="text-slate-500 text-sm mt-1">Manage and view all registered customers</p>
+            <h1 className="text-3xl font-bold text-white mb-2">All Customers</h1>
+            <p className="text-slate-400">Manage and view all registered customers</p>
           </div>
-          <div className="relative w-full md:w-80 group">
-            <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#1F7F85] transition-colors">
-              search
-            </span>
+          <div className="relative w-full md:w-80">
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
             <input
               type="text"
-              placeholder="Search by name or email..."
+              placeholder="Search customers..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 focus:ring-2 focus:ring-[#1F7F85]/20 focus:border-[#1F7F85] outline-none transition-all shadow-sm"
+              className="w-full pl-10 pr-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-400 focus:border-blue-500 focus:outline-none"
             />
           </div>
         </div>
 
-        {/* Customers Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-          {filteredCustomers.map((customer) => (
-            <div key={customer.id} className="bg-white shadow-sm border border-slate-200 rounded-lg hover:shadow-md transition-all p-3">
-              {/* Profile & Basic Info */}
-              <div className="flex flex-col items-center text-center mb-3">
-                <div className="relative mb-2">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#1F7F85] to-[#0F4C5C] flex items-center justify-center">
-                    <span className="material-symbols-outlined text-white text-lg">person</span>
+        {/* Cards Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {paginatedCustomers.map((customer) => (
+            <div key={customer.id} className="bg-slate-800 border border-slate-700 rounded-xl p-6 hover:border-blue-500 transition-all">
+              <div className="flex flex-col items-center text-center">
+                {/* Avatar */}
+                <div className="relative mb-4">
+                  <div className="w-16 h-16 bg-emerald-600 rounded-full flex items-center justify-center">
+                    <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                    </svg>
                   </div>
-                  <div className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-white ${customer.status === 'Active' ? 'bg-emerald-500' : 'bg-red-500'}`}></div>
+                  <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-2 border-slate-800 ${customer.status === 'Active' ? 'bg-green-500' : 'bg-red-500'}`}></div>
                 </div>
-                <h3 className="text-sm font-bold text-slate-900 truncate w-full">{customer.name}</h3>
-                <p className="text-xs text-slate-500 truncate w-full">{customer.email}</p>
+                
+                {/* Name */}
+                <h3 className="text-lg font-semibold text-white mb-1">{customer.name}</h3>
+                
+                {/* Email */}
+                <p className="text-slate-400 text-sm mb-3">{customer.email}</p>
+                
+                {/* Location */}
+                <div className="flex items-center gap-1 text-slate-400 text-sm mb-4">
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                  </svg>
+                  {customer.location}
+                </div>
+                
+                {/* Status */}
+                <div className={`px-3 py-1 rounded-full text-sm font-medium mb-4 ${customer.status === 'Active' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+                  {customer.status}
+                </div>
+                
+                {/* Action Button */}
+                <button className={`w-full py-2 px-4 rounded-lg font-medium text-sm transition-all ${customer.status === 'Blocked' ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-red-600 hover:bg-red-700 text-white'}`}>
+                  {customer.status === 'Blocked' ? 'Unblock' : 'Block'}
+                </button>
               </div>
-              
-              {/* Info Grid */}
-              <div className="space-y-2 mb-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-slate-500">Bookings:</span>
-                  <span className="text-xs font-semibold">{customer.bookings}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-slate-500">Status:</span>
-                  <span className={`px-1.5 py-0.5 text-xs font-bold rounded ${getStatusStyles(customer.status)}`}>
-                    {customer.status}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-slate-500">Phone:</span>
-                  <span className="text-xs font-semibold truncate ml-1">{customer.phone}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-slate-500">Member:</span>
-                  <span className="text-xs font-semibold">{customer.memberSince}</span>
-                </div>
-              </div>
-              
-              {/* Action Button */}
-              <button
-                className={`w-full py-1.5 text-xs font-bold rounded flex items-center justify-center gap-1 transition-all ${
-                  customer.status === 'Blocked' 
-                    ? 'bg-emerald-500 text-white hover:bg-emerald-600' 
-                    : 'bg-red-500 text-white hover:bg-red-600'
-                }`}
-              >
-                <span className="material-symbols-outlined text-xs">
-                  {customer.status === 'Blocked' ? 'lock_open' : 'lock'}
-                </span>
-                {customer.status === 'Blocked' ? 'Unblock' : 'Block'}
-              </button>
             </div>
           ))}
         </div>
-        {/* No customers found */}
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center gap-2 mt-8">
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-300 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Previous
+            </button>
+            {[...Array(totalPages)].map((_, index) => (
+              <button
+                key={index + 1}
+                onClick={() => handlePageChange(index + 1)}
+                className={`w-10 h-10 rounded-lg font-medium ${currentPage === index + 1 ? 'bg-blue-600 text-white' : 'bg-slate-800 border border-slate-700 text-slate-300 hover:bg-slate-700'}`}
+              >
+                {index + 1}
+              </button>
+            ))}
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-300 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Next
+            </button>
+          </div>
+        )}
+
+        {/* No Results */}
         {filteredCustomers.length === 0 && (
-          <div className="text-center py-16">
-            <h3 className="text-lg font-bold text-slate-900">No customers found</h3>
-            <p className="text-slate-400 mt-2">Try adjusting your search term.</p>
+          <div className="text-center py-12">
+            <div className="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+            <h3 className="text-xl font-semibold text-white mb-2">No customers found</h3>
+            <p className="text-slate-400">Try adjusting your search term.</p>
           </div>
         )}
       </main>
