@@ -16,7 +16,10 @@ import HowItWorksPage from "./pages/Landing/HowItWorksPage";
 import AboutPage from "./pages/Landing/AboutPage";
 import { TechnicianDashboard } from "./pages/Technician";
 import ProtectedRoute from "./pages/Landing/ProtectedRoute";
-
+import AdminDashbaord from "./pages/Admin/Dashbaord";
+import Customer from "./pages/Admin/Customer";
+import Technician from "./pages/Admin/Technician";
+import AdminProfile from "./pages/Admin/Profile";
 const App = () => {
   return (
     <Routes>
@@ -42,6 +45,13 @@ const App = () => {
       {/* Technician Protected Routes */}
       <Route element={<ProtectedRoute allowedRoles={['technician']} />}>
         <Route path="/technician/*" element={<TechnicianDashboard />} />
+      </Route>
+      <Route path="/admin/*" element={<AdminDashbaord />} />
+      <Route path="/admin/customers" element={<Customer />} />
+      <Route path="/admin/technicians" element={<Technician />} />
+      <Route path="/admin/profile" element={<AdminProfile />} />
+      <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
+
       </Route>
     </Routes>
   );

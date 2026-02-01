@@ -150,15 +150,29 @@ const Navbar = ({
               <div className="hidden md:block relative">
                 <button
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
-                  className="w-10 h-10 rounded-full bg-[#1F7F85] flex items-center justify-center text-white hover:bg-[#1F7F85]/90 transition-colors focus:outline-none"
+                  className={`w-10 h-10 rounded-full flex items-center justify-center text-white transition-colors focus:outline-none ${
+                    userType === 'admin' 
+                      ? 'bg-gradient-to-br from-[#1F7F85] to-[#0F4C5C] hover:shadow-lg' 
+                      : 'bg-[#1F7F85] hover:bg-[#1F7F85]/90'
+                  }`}
                 >
-                  <span className="text-sm font-bold">{getUserInitial()}</span>
+                  {userType === 'admin' ? (
+                    <span className="material-symbols-outlined text-xl">admin_panel_settings</span>
+                  ) : (
+                    <span className="text-sm font-bold">{getUserInitial()}</span>
+                  )}
                 </button>
 
                 {isProfileOpen && (
                   <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-slate-100 py-2 z-50">
+                    {userType === 'admin' && (
+                      <div className="px-4 py-3 border-b border-slate-100">
+                        <p className="text-sm font-bold text-[#0F4C5C]">Admin User</p>
+                        <p className="text-xs text-slate-500">admin@fixhub.com</p>
+                      </div>
+                    )}
                     <Link
-                      to="/profile"
+                      to={userType === 'admin' ? '/admin/profile' : '/profile'}
                       className="block px-4 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-[#1F7F85] transition-colors flex items-center gap-2"
                       onClick={() => setIsProfileOpen(false)}
                     >
@@ -232,11 +246,13 @@ const Navbar = ({
                 <>
                   <div className="border-t border-slate-100 my-2"></div>
                   <Link
-                    to={`/${userType}/profile`}
+                    to={userType === 'admin' ? '/admin/profile' : `/${userType}/profile`}
                     className="px-4 py-3 rounded-lg text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-[#1F7F85] transition-colors flex items-center gap-3"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    <span className="material-symbols-outlined text-xl">person</span>
+                    <span className="material-symbols-outlined text-xl">
+                      {userType === 'admin' ? 'admin_panel_settings' : 'person'}
+                    </span>
                     Profile
                   </Link>
                   <button
