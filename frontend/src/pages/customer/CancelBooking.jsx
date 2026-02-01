@@ -6,6 +6,12 @@ const CancelBooking = () => {
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
+  const customerNavLinks = [
+    { path: '/dashboard', label: 'Dashboard' },
+    { path: '/book-service', label: 'Book Service' },
+    { path: '/my-booking', label: 'My Bookings' },
+  ];
+
   const handleConfirmCancel = () => {
     // Logic to cancel booking
     alert('Booking cancelled successfully');
@@ -14,7 +20,12 @@ const CancelBooking = () => {
 
   return (
     <div className="min-h-screen bg-[#F7FBFC] text-[#1A2E35] font-['Manrope']">
-      <Navbar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
+      <Navbar 
+        userType="customer"
+        navLinks={customerNavLinks}
+        showProfile={true}
+        showNotifications={true}
+      />
       
       <main className="max-w-xl mx-auto px-4 py-8 pt-24 flex flex-col justify-center min-h-[80vh]">
         <div className="bg-white p-8 md:p-12 border border-[#AEE3E6] shadow-xl shadow-[#1F7F85]/5 w-full relative overflow-hidden">

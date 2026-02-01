@@ -16,6 +16,12 @@ const ReviewPage = () => {
     }
   ]);
 
+  const customerNavLinks = [
+    { path: '/dashboard', label: 'Dashboard' },
+    { path: '/book-service', label: 'Book Service' },
+    { path: '/my-booking', label: 'My Bookings' },
+  ];
+
   const handleOverallRating = (rating) => {
     setOverallRating(rating);
   };
@@ -106,7 +112,12 @@ const ReviewPage = () => {
 
   return (
     <div className="min-h-screen bg-[#F7FBFC] text-[#1A2E35] font-['Manrope']">
-      <Navbar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
+      <Navbar 
+        userType="customer"
+        navLinks={customerNavLinks}
+        showProfile={true}
+        showNotifications={true}
+      />
       <div className="container mx-auto px-4 py-8 pt-0">
         <div className="max-w-6xl mx-auto">
         

@@ -4,7 +4,7 @@ import axiosInstance from '../../Services/axiosInstance';
 const API_URL = '/auth'; 
 
 const register = async (userData) => {
-  const response = await api.post(`${API_URL}/signup`, userData);
+  const response = await axiosInstance.post(`${API_URL}/signup`, userData);
   return response.data;
 };
 

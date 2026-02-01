@@ -1,14 +1,12 @@
 import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../Common/Navbar";
-import bookingService from "../../Services/bookingService";
 
 const BookServiceForm = () => {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
-    serviceId: "",
-    technicianId: "",
+    serviceType: "",
     issue: "",
     serviceDate: "",
     timeSlot: "",
@@ -133,25 +131,15 @@ const BookServiceForm = () => {
     });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
 
-    try {
-      await bookingService.createBooking({
-        serviceId: formData.serviceId,
-        technicianId: formData.technicianId,
-        issue: formData.issue,
-        serviceDate: formData.serviceDate,
-        timeSlot: formData.timeSlot,
-        serviceLocation: formData.address
-      });
-      
-      alert('Booking created successfully!');
-      navigate("/booking-success");
-    } catch (error) {
-      console.error('Booking failed:', error);
-      alert(error.response?.data?.message || 'Booking failed. Please try again.');
-    }
+    console.log("Booking Data:", formData);
+
+    // yahan backend API call kar sakte ho
+    // axios.post("/api/book-service", formData)
+
+    navigate("/booking-success");
   };
 
   return (

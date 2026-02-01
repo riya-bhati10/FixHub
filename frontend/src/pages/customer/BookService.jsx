@@ -1,80 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from '../../components/common/Navbar';
+import Navbar from '../../Common/Navbar';
 import api from '../Landing/api';
 
 const BookService = () => {
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [services, setServices] = useState([]);
-  const [technicians, setTechnicians] = useState([]);
-  
-  useEffect(() => {
-    fetchServices();
-  }, []);
-
-  const fetchServices = async () => {
-    try {
-      setLoading(true);
-      const response = await serviceApi.getCategories();
-      const categories = response.data.categories || [];
-      
-      const formattedServices = categories.map((cat, idx) => ({
-        id: idx + 1,
-        title: cat,
-        description: `Professional ${cat} services`,
-        category: cat.toLowerCase().replace(/\s+/g, '_'),
-        icon: getServiceIcon(cat)
-      }));
-      
-      setServices(formattedServices);
-    } catch (error) {
-      console.error('Error fetching services:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchTechnicians = async (serviceName) => {
-    try {
-      const response = await serviceApi.getTechniciansByService(serviceName);
-      const techs = response.data.technicians || [];
-      
-      return techs.map(tech => ({
-        id: tech.technicianId,
-        serviceId: tech.serviceId,
-        name: tech.name,
-        rating: tech.avgRating || 4.5,
-        reviews: tech.totalReviews || 0,
-        specialty: 'Technician',
-        available: true,
-        serviceCharge: tech.serviceCharge,
-        avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(tech.name)}&background=1F7F85&color=fff`
-      }));
-    } catch (error) {
-      console.error('Error fetching technicians:', error);
-      return [];
-    }
-  };
-
-  const getServiceIcon = (serviceName) => {
-    const name = serviceName?.toLowerCase() || '';
-    if (name.includes('phone') || name.includes('smartphone')) return 'smartphone';
-    if (name.includes('laptop')) return 'laptop';
-    if (name.includes('tv')) return 'tv';
-    if (name.includes('refrigerator') || name.includes('fridge')) return 'kitchen';
-    if (name.includes('washing')) return 'local_laundry_service';
-    if (name.includes('ac') || name.includes('air')) return 'ac_unit';
-    if (name.includes('microwave')) return 'microwave';
-    return 'build';
-  };
-
-  const customerNavLinks = [
-    { path: '/dashboard', label: 'Dashboard' },
-    { path: '/book-service', label: 'Book Service' },
-    { path: '/my-booking', label: 'My Bookings' },
-  ];
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedService, setSelectedService] = useState(null);
@@ -176,6 +107,32 @@ const BookService = () => {
     return 'build';
   };
 
+  const getCategoryImage = (categoryId) => {
+    // Map category IDs to actual image filenames in assets
+    const imageMap = {
+      'smartphone': 'smartphone.jpg',
+      'laptop': 'laptop.jpg',
+      'tv': 'tv.jpg',
+      'ac': 'ac.jfif',
+      'refrigerator': 'fridge.jpg',
+      'washing_machine': 'Washing-machine.jpg',
+      'microwave': 'microwave.jfif',
+      'audio': 'home audio.jpg',
+      'camera': 'camera.jpg',
+      'gaming': 'gaming.jfif',
+      'other': 'smartphone.jpg' // Default fallback
+    };
+
+    try {
+      const imageName = imageMap[categoryId] || 'smartphone.jpg';
+      return new URL(`../../assets/categories/${imageName}`, import.meta.url).href;
+    } catch (error) {
+      console.error('Error loading category image:', error);
+      // Fallback to online image if local fails
+      return 'https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=400&h=300&fit=crop';
+    }
+  };
+
   const getIconFromCategory = (category) => {
     switch(category) {
       case 'smartphone': return 'smartphone';
@@ -237,11 +194,8 @@ const BookService = () => {
   // Function to handle card click
   const handleCardClick = (service) => {
     setSelectedService(service);
-    setLoading(true);
-    const techs = await fetchTechnicians(service.title);
-    setTechnicians(techs);
-    setLoading(false);
     setIsTechnicianViewOpen(true);
+    // Reset form data
     setFormData({
       issue: "",
       serviceDate: "",
@@ -440,16 +394,20 @@ const BookService = () => {
     }
   };
 
-  if (loading) return <Loader />;
-
   const filteredServices = services.filter(service => {
     const matchesCategory = activeCategory === 'all' || service.category === activeCategory;
-    const matchesSearch = service.title?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          service.description?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = service.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          service.description.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
   const featuredServices = services.filter(service => service.rating >= 4.8);
+
+  const customerNavLinks = [
+    { path: '/dashboard', label: 'Dashboard' },
+    { path: '/book-service', label: 'Book Service' },
+    { path: '/my-booking', label: 'My Bookings' },
+  ];
 
   return (
     <div className="min-h-screen bg-[#F7FBFC] text-slate-800 font-['Manrope'] relative">
@@ -504,7 +462,7 @@ const BookService = () => {
                           <span className="text-xs text-slate-500">({tech.reviews} reviews)</span>
                         </div>
                         <p className="text-sm font-bold text-[#1F7F85] mt-1">
-                          Service Charge: ${tech.serviceCharge || 0}
+                          Service Charge: ${selectedService.price}
                         </p>
                         <button
                           onClick={(e) => {
@@ -765,11 +723,11 @@ const BookService = () => {
                   <div className="flex items-center justify-between mb-6">
                     <div>
                       <p className="text-sm text-slate-500">Service Charge</p>
-                      <p className="text-2xl font-bold text-[#0F4C5C]">${selectedTechnician.serviceCharge || 0}</p>
+                      <p className="text-2xl font-bold text-[#0F4C5C]">${selectedService.price}</p>
                     </div>
                     <div>
                       <p className="text-sm text-slate-500">Total Amount</p>
-                      <p className="text-2xl font-bold text-[#0F4C5C]">${selectedTechnician.serviceCharge || 0}</p>
+                      <p className="text-2xl font-bold text-[#0F4C5C]">${selectedService.price}</p>
                     </div>
                   </div>
 
@@ -792,38 +750,49 @@ const BookService = () => {
       )}
 
       {/* Main Content */}
-      <main className="max-w-[1440px] mx-auto px-6 py-10 pt-24">
+      <main className="max-w-[1440px] mx-auto px-3 sm:px-4 lg:px-6 py-6 sm:py-8 lg:py-10 pt-20 sm:pt-24">
 
         {/* Category View */}
         {showCategoryView ? (
-          <div className="space-y-8">
-            <div className="text-center">
-              <h2 className="text-3xl font-bold text-slate-900 mb-4">Select a Service Category</h2>
-              <p className="text-slate-500">Choose the type of device you need help with</p>
+          <div className="space-y-6 sm:space-y-8">
+            <div className="text-center px-4">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#0F4C5C] mb-3 sm:mb-4">Select a Service Category</h2>
+              <p className="text-sm sm:text-base text-slate-600">Choose the type of device you need help with</p>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {availableCategories.map(category => (
                 <div 
                   key={category.id}
                   onClick={() => handleCategoryClick(category.id)}
-                  className="bg-white p-8 border border-slate-200 hover:border-[#1F7F85] hover:shadow-xl transition-all duration-300 cursor-pointer group hover:-translate-y-1"
+                  className="bg-white rounded-xl border-2 border-[#DCEBEC] hover:border-[#1F7F85] hover:shadow-2xl hover:shadow-[#1F7F85]/10 transition-all duration-300 cursor-pointer group hover:-translate-y-2 overflow-hidden"
                 >
-                  <div className="text-center">
-                    <div className="w-16 h-16 bg-[#1F7F85]/10 group-hover:bg-[#1F7F85] rounded-full flex items-center justify-center mx-auto mb-4 transition-colors">
-                      <span className="material-symbols-outlined text-2xl text-[#1F7F85] group-hover:text-white transition-colors">
-                        {category.icon}
-                      </span>
+                  {/* Category Image */}
+                  <div className="h-48 sm:h-56 lg:h-64 overflow-hidden relative">
+                    <img 
+                      src={getCategoryImage(category.id)} 
+                      alt={category.label}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#0F4C5C]/80 via-[#0F4C5C]/20 to-transparent"></div>
+                    <div className="absolute bottom-4 sm:bottom-6 left-4 sm:left-6 flex items-center gap-3 sm:gap-4">
+                      <div className="w-12 h-12 sm:w-14 sm:h-14 bg-white/95 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg">
+                        <span className="material-symbols-outlined text-xl sm:text-2xl text-[#1F7F85]">
+                          {category.icon}
+                        </span>
+                      </div>
+                      <div className="text-white">
+                        <h3 className="text-lg sm:text-xl font-bold drop-shadow-lg">{category.label}</h3>
+                        <p className="text-xs sm:text-sm opacity-90 drop-shadow">{category.count} service{category.count !== 1 ? 's' : ''}</p>
+                      </div>
                     </div>
-                    <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-[#1F7F85] transition-colors">
-                      {category.label}
-                    </h3>
-                    <p className="text-slate-500 text-sm mb-4">
-                      {category.count} service{category.count !== 1 ? 's' : ''} available
-                    </p>
-                    <div className="flex items-center justify-center text-[#1F7F85] font-medium text-sm">
+                  </div>
+                  
+                  {/* Category Info */}
+                  <div className="p-4 sm:p-6 bg-gradient-to-br from-[#F7FBFC] to-white text-center">
+                    <div className="flex items-center justify-center text-[#1F7F85] font-bold text-sm group-hover:gap-2 transition-all">
                       <span>View Services</span>
-                      <span className="material-symbols-outlined text-sm ml-1">arrow_forward</span>
+                      <span className="material-symbols-outlined text-sm ml-1 group-hover:translate-x-1 transition-transform">arrow_forward</span>
                     </div>
                   </div>
                 </div>
@@ -832,88 +801,90 @@ const BookService = () => {
           </div>
         ) : (
           /* Services List View */
-          <div className="space-y-8">
-            <div className="flex items-center gap-4 mb-6">
+          <div className="space-y-6 sm:space-y-8">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
               <button
                 onClick={handleBackToCategories}
-                className="flex items-center gap-2 text-[#1F7F85] hover:text-[#0F4C5C] font-medium transition-colors"
+                className="flex items-center gap-2 text-[#1F7F85] hover:text-[#0F4C5C] font-bold transition-colors px-4 py-2 rounded-lg hover:bg-[#F7FBFC]"
               >
                 <span className="material-symbols-outlined">arrow_back</span>
-                Back to Categories
+                <span className="text-sm sm:text-base">Back to Categories</span>
               </button>
             </div>
             
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 sm:gap-6 bg-white p-4 sm:p-6 rounded-xl border-2 border-[#DCEBEC]">
               <div>
-                <h2 className="text-2xl font-bold text-slate-900">
+                <h2 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-[#0F4C5C]">
                   {categories.find(cat => cat.id === activeCategory)?.label || 'Services'}
                 </h2>
-                <p className="text-slate-500 mt-1">Available services in this category</p>
+                <p className="text-xs sm:text-sm text-slate-600 mt-1">Available services in this category</p>
               </div>
               
-              <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full lg:w-auto">
                 <div className="relative">
-                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#1F7F85]">search</span>
                   <input
                     type="text"
-                    placeholder="Search for a service..."
+                    placeholder="Search services..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full sm:w-64 pl-10 pr-4 py-3 border border-slate-200 focus:ring-2 focus:ring-[#1F7F85] focus:border-[#1F7F85] outline-none transition-all"
+                    className="w-full sm:w-64 pl-10 pr-4 py-3 text-sm border-2 border-[#DCEBEC] rounded-lg focus:ring-2 focus:ring-[#1F7F85] focus:border-[#1F7F85] outline-none transition-all"
                   />
                 </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {loading ? (
-                <div className="col-span-full flex items-center justify-center py-20">
+                <div className="col-span-full flex items-center justify-center py-16 sm:py-20">
                   <div className="text-center">
-                    <span className="material-symbols-outlined text-4xl text-[#1F7F85] animate-spin mb-4">progress_activity</span>
-                    <p className="text-slate-500">Loading services...</p>
+                    <span className="material-symbols-outlined text-4xl sm:text-5xl text-[#1F7F85] animate-spin mb-4">progress_activity</span>
+                    <p className="text-sm sm:text-base text-slate-600">Loading services...</p>
                   </div>
                 </div>
               ) : filteredServices.length > 0 ? (
                 filteredServices.map(service => (
                   <div 
                     key={service.id} 
-                    className="bg-white border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-[#1F7F85]/10 transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden"
+                    className="bg-white rounded-xl border-2 border-[#DCEBEC] hover:border-[#1F7F85] shadow-sm hover:shadow-2xl hover:shadow-[#1F7F85]/10 transition-all duration-300 hover:-translate-y-2 cursor-pointer overflow-hidden group"
                     onClick={() => handleCardClick(service)}
                   >
-                    <div className="h-48 overflow-hidden relative">
+                    <div className="h-44 sm:h-48 lg:h-52 overflow-hidden relative">
                       <img 
                         alt={service.title} 
-                        className="w-full h-full object-cover transition-transform duration-500 hover:scale-105" 
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
                         src={service.image}
                       />
-                      <div className="absolute bottom-4 left-4 bg-[#1F7F85]/90 backdrop-blur-sm p-2 text-white shadow-sm">
-                        <span className="material-symbols-outlined text-lg">{service.icon}</span>
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#0F4C5C]/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                      <div className="absolute bottom-3 sm:bottom-4 left-3 sm:left-4 bg-[#1F7F85]/95 backdrop-blur-sm p-2 rounded-lg text-white shadow-lg">
+                        <span className="material-symbols-outlined text-base sm:text-lg">{service.icon}</span>
                       </div>
                     </div>
                     
-                    <div className="p-6">
-                      <h3 className="text-lg font-bold text-slate-900 mb-2 hover:text-[#1F7F85] transition-colors">
+                    <div className="p-4 sm:p-6">
+                      <h3 className="text-base sm:text-lg font-bold text-[#0F4C5C] mb-2 group-hover:text-[#1F7F85] transition-colors line-clamp-1">
                         {service.title}
                       </h3>
-                      <p className="text-sm text-slate-500 line-clamp-2 leading-relaxed mb-3">
+                      <p className="text-xs sm:text-sm text-slate-600 line-clamp-2 leading-relaxed mb-3">
                         {service.description}
                       </p>
-                      <p className="text-sm text-[#1F7F85] font-semibold mb-4">
+                      <p className="text-xs sm:text-sm text-[#1F7F85] font-bold mb-4">
                         By: {service.technician.name}
                       </p>
                       
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between pt-3 border-t-2 border-[#DCEBEC]">
                         <div>
-                          <p className="text-lg font-bold text-[#0F4C5C]">${service.price}</p>
+                          <p className="text-base sm:text-lg font-extrabold text-[#0F4C5C]">${service.price}</p>
                         </div>
                         <button 
                           onClick={(e) => {
                             e.stopPropagation();
                             handleCardClick(service);
                           }}
-                          className="px-4 py-2 bg-[#1F7F85] text-white text-sm font-bold hover:bg-[#0F4C5C] transition-all flex items-center gap-2"
+                          className="px-3 sm:px-4 py-2 bg-[#1F7F85] text-white text-xs sm:text-sm font-bold rounded-lg hover:bg-[#0F4C5C] transition-all flex items-center gap-1 sm:gap-2"
                         >
-                          Book Now
+                          <span className="hidden sm:inline">Book Now</span>
+                          <span className="sm:hidden">Book</span>
                           <span className="material-symbols-outlined text-sm">arrow_forward</span>
                         </button>
                       </div>
@@ -921,10 +892,10 @@ const BookService = () => {
                   </div>
                 ))
               ) : (
-                <div className="col-span-full flex items-center justify-center py-20">
+                <div className="col-span-full flex items-center justify-center py-16 sm:py-20">
                   <div className="text-center">
-                    <span className="material-symbols-outlined text-4xl text-slate-400 mb-4">search_off</span>
-                    <p className="text-slate-500">No services found in this category</p>
+                    <span className="material-symbols-outlined text-4xl sm:text-5xl text-slate-400 mb-4">search_off</span>
+                    <p className="text-sm sm:text-base text-slate-600">No services found in this category</p>
                   </div>
                 </div>
               )}
@@ -932,31 +903,60 @@ const BookService = () => {
           </div>
         )}
 
-        {/* Featured Services */}
-        {!searchTerm && (
-        <div className="mt-16 mb-12">
-          <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight mb-8">
-            Top Electronics Repair Services
-          </h1>
-          
-          <div className="flex gap-6 overflow-x-auto pb-8 custom-scrollbar scroll-smooth">
-            {featuredServices.map(service => (
-              <div 
-                key={service.id} 
-                className="w-[280px] h-[380px] flex-shrink-0 group relative overflow-hidden cursor-pointer"
-                onClick={() => handleCardClick(service)}
-              >
-                <div className="w-full h-full bg-gradient-to-br from-[#1F7F85] to-[#0F4C5C] flex items-center justify-center">
-                  <span className="material-symbols-outlined text-white text-8xl">{service.icon}</span>
-                </div>
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/20 to-transparent"></div>
-                <div className="absolute bottom-6 left-6 text-white">
-                  <h3 className="text-xl font-bold">{service.title}</h3>
-                </div>
+        {/* Featured Services - Only show when not searching */}
+        {!searchTerm && !showCategoryView && filteredServices.length > 0 && (
+          <div className="mt-12 sm:mt-16">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 sm:mb-8 px-4 sm:px-0">
+              <div>
+                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#0F4C5C]">Featured Services</h2>
+                <p className="text-xs sm:text-sm text-slate-600 mt-2">Highly rated services from our expert technicians</p>
               </div>
-            ))}
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+              {featuredServices.slice(0, 4).map(service => (
+                <div 
+                  key={service.id} 
+                  className="bg-white rounded-xl border-2 border-[#DCEBEC] hover:border-[#1F7F85] hover:shadow-2xl hover:shadow-[#1F7F85]/10 transition-all duration-300 hover:-translate-y-2 cursor-pointer overflow-hidden group"
+                  onClick={() => handleCardClick(service)}
+                >
+                  <div className="h-44 sm:h-48 overflow-hidden relative">
+                    <img 
+                      alt={service.title} 
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
+                      src={service.image}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#0F4C5C]/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div className="absolute top-3 sm:top-4 right-3 sm:right-4">
+                      <div className="bg-amber-500 text-white px-2 sm:px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-lg">
+                        <span className="material-symbols-outlined text-xs sm:text-sm fill-current">star</span>
+                        <span>{service.rating}</span>
+                      </div>
+                    </div>
+                    <div className="absolute bottom-3 sm:bottom-4 left-3 sm:left-4 bg-[#1F7F85]/95 backdrop-blur-sm p-2 rounded-lg text-white shadow-lg">
+                      <span className="material-symbols-outlined text-base sm:text-lg">{service.icon}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="p-4 sm:p-5">
+                    <h3 className="text-sm sm:text-base font-bold text-[#0F4C5C] mb-2 line-clamp-1 group-hover:text-[#1F7F85] transition-colors">
+                      {service.title}
+                    </h3>
+                    <p className="text-xs text-slate-600 mb-3 line-clamp-2">
+                      {service.description}
+                    </p>
+                    <div className="flex items-center justify-between pt-3 border-t-2 border-[#DCEBEC]">
+                      <span className="text-base sm:text-lg font-extrabold text-[#0F4C5C]">${service.price}</span>
+                      <button className="text-[#1F7F85] text-xs sm:text-sm font-bold flex items-center gap-1 group-hover:gap-2 transition-all">
+                        <span>Book</span>
+                        <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
         )}
 
       </main>

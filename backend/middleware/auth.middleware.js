@@ -22,29 +22,17 @@ module.exports.verifyToken = async (req, res, next) => {
     if (!user) {
       return res.status(401).json({ message: "User not found" });
     }
-     const isBlacklisted = await blacklistTokenModel.findOne({token:token});
-      if (isBlacklisted) {
-        return res.status(401).json({message:'Unauthorized'})
-     }
-      try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET) 
-        const user = await UserModel.findById(decoded.userId)
-        if (!user) {
-          return res.status(401).json({ message: 'User not found' })
-        }
-        req.user = {
-            userId: user._id,
-            _id: user._id,
-            role: user.role,
-            email: user.email
-        };
-        return next();
-
-    } catch (error) {
-        return res.status(401).json({ message: 'Unauthorized' })
-    }
-
-}
+    req.user = {
+      userId: user._id,
+      _id: user._id,
+      role: user.role,
+      email: user.email
+    };
+    return next();
+  } catch (error) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+};
 
 
 // const jwt = require("jsonwebtoken");

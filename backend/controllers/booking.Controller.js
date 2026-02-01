@@ -49,20 +49,15 @@ exports.createBooking = async (req, res) => {
     }
 
     const booking = await Booking.create({
-      customerId,
-      technicianId,
-      serviceId,
-      issue,
-      serviceDate,
-      timeSlot,
-      serviceLocation: finalServiceLocation,
-      status: "pending",
-      statusHistory: [
-        {
-          status: "pending",
-          updatedAt: new Date(),
-        },
-      ],
+      customer: customerId,
+      technician: technicianId,
+      serviceType: service.serviceName || 'Other',
+      description: issue,
+      location: finalServiceLocation,
+      preferredDate: serviceDate,
+      preferredTime: timeSlot,
+      estimatedPrice: service.serviceCharge,
+      status: "pending"
     });
 
     console.log("Booking created successfully:", booking);
@@ -90,37 +85,35 @@ exports.getTechnicianBookings = async (req, res) => {
     const technicianId = req.user.userId;
     const { status } = req.query;
 
-    const filter = { technicianId };
+    const filter = { technician: technicianId };
     if (status && typeof status === 'string') {
-      const allowedStatuses = ['pending', 'accepted', 'in_progress', 'completed', 'cancelled'];
+      const allowedStatuses = ['pending', 'accepted', 'in-progress', 'completed', 'cancelled'];
       if (allowedStatuses.includes(status)) {
         filter.status = status;
       }
     }
 
     const bookings = await Booking.find(filter)
-      .populate("customerId", "fullname phone")
-      .populate("serviceId", "serviceName serviceCharge")
+      .populate("customer", "fullname phone")
       .sort({ createdAt: -1 });
 
     const formattedBookings = bookings.map((b) => ({
       bookingId: b._id,
       status: b.status,
-      serviceDate: b.serviceDate,
-      timeSlot: b.timeSlot,
+      serviceDate: b.preferredDate,
+      timeSlot: b.preferredTime,
       createdAt: b.createdAt,
 
       customer: {
-        id: b.customerId?._id || null,
-        name: b.customerId?.fullname ?
-          b.customerId.fullname.firstname + " " + b.customerId.fullname.lastname : "N/A",
-        phone: b.customerId?.phone || "N/A",
+        id: b.customer?._id || null,
+        name: b.customer?.fullname ?
+          b.customer.fullname.firstname + " " + b.customer.fullname.lastname : "N/A",
+        phone: b.customer?.phone || "N/A",
       },
 
       service: {
-        id: b.serviceId?._id || null,
-        name: b.serviceId?.serviceName || "N/A",
-        charge: b.serviceId?.serviceCharge || 0,
+        type: b.serviceType || "N/A",
+        price: b.estimatedPrice || 0,
       },
     }));
 
@@ -141,7 +134,7 @@ exports.acceptBooking = async (req, res) => {
 
     const booking = await Booking.findOne({
       _id: bookingId,
-      technicianId,
+      technician: technicianId,
       status: "pending",
     });
 
@@ -152,11 +145,6 @@ exports.acceptBooking = async (req, res) => {
     }
 
     booking.status = "accepted";
-    booking.statusHistory.push({
-      status: "accepted",
-      updatedAt: new Date(),
-    });
-
     await booking.save();
 
     res.json({
@@ -165,7 +153,7 @@ exports.acceptBooking = async (req, res) => {
       status: booking.status,
     });
     await Notification.create({
-      userId: booking.customerId,
+      userId: booking.customer,
       message: "Your booking has been accepted",
     });
 
@@ -192,8 +180,8 @@ exports.cancelBooking = async (req, res) => {
       });
     }
     if (
-      (role === "customer" && booking.customerId.toString() !== userId) ||
-      (role === "technician" && booking.technicianId.toString() !== userId)
+      (role === "customer" && booking.customer.toString() !== userId) ||
+      (role === "technician" && booking.technician.toString() !== userId)
     ) {
       return res.status(403).json({
         message: "Not authorized to cancel this booking",
@@ -201,11 +189,6 @@ exports.cancelBooking = async (req, res) => {
     }
 
     booking.status = "cancelled";
-    booking.statusHistory.push({
-      status: "cancelled",
-      updatedAt: new Date(),
-    });
-
     await booking.save();
 
     res.json({
@@ -213,7 +196,7 @@ exports.cancelBooking = async (req, res) => {
       status: booking.status,
     });
     const otherUser =
-      role === "customer" ? booking.technicianId : booking.customerId;
+      role === "customer" ? booking.technician : booking.customer;
 
     await Notification.create({
       userId: otherUser,
@@ -240,13 +223,13 @@ exports.updateBookingStatus = async (req, res) => {
     }
 
     const allowedTransitions = {
-      accepted: ["in_progress"],
-      in_progress: ["completed"],
+      accepted: ["in-progress"],
+      "in-progress": ["completed"],
     };
 
     const booking = await Booking.findOne({
       _id: bookingId,
-      technicianId,
+      technician: technicianId,
     });
 
     if (!booking) {
@@ -267,11 +250,6 @@ exports.updateBookingStatus = async (req, res) => {
     }
 
     booking.status = status;
-    booking.statusHistory.push({
-      status,
-      updatedAt: new Date(),
-    });
-
     await booking.save();
 
     res.json({
@@ -280,8 +258,8 @@ exports.updateBookingStatus = async (req, res) => {
       status: booking.status,
     });
     await Notification.create({
-      userId: booking.customerId,
-      message: `Your booking is now ${status.replace("_", " ")}`,
+      userId: booking.customer,
+      message: `Your booking is now ${status.replace(/-/g, " ")}`,
     });
 
   } catch (err) {
@@ -296,38 +274,36 @@ exports.getCustomerBookings = async (req, res) => {
     const customerId = req.user.userId;
     const { status } = req.query;
 
-    const filter = { customerId };
+    const filter = { customer: customerId };
     if (status && typeof status === 'string') {
-      const allowedStatuses = ['pending', 'accepted', 'in_progress', 'completed', 'cancelled'];
+      const allowedStatuses = ['pending', 'accepted', 'in-progress', 'completed', 'cancelled'];
       if (allowedStatuses.includes(status)) {
         filter.status = status;
       }
     }
 
     const bookings = await Booking.find(filter)
-      .populate("technicianId", "fullname phone")
-      .populate("serviceId", "serviceName serviceCharge")
+      .populate("technician", "fullname phone")
       .sort({ createdAt: -1 });
 
     const formattedBookings = bookings.map((b) => ({
       bookingId: b._id,
       status: b.status,
-      serviceDate: b.serviceDate,
-      timeSlot: b.timeSlot,
-      issue: b.issue,
+      serviceDate: b.preferredDate,
+      timeSlot: b.preferredTime,
+      issue: b.description,
       createdAt: b.createdAt,
 
       technician: {
-        id: b.technicianId?._id || null,
-        name: b.technicianId?.fullname ? 
-          b.technicianId.fullname.firstname + " " + b.technicianId.fullname.lastname : "N/A",
-        phone: b.technicianId?.phone || "N/A",
+        id: b.technician?._id || null,
+        name: b.technician?.fullname ? 
+          b.technician.fullname.firstname + " " + b.technician.fullname.lastname : "N/A",
+        phone: b.technician?.phone || "N/A",
       },
 
       service: {
-        id: b.serviceId?._id || null,
-        name: b.serviceId?.serviceName || "N/A",
-        charge: b.serviceId?.serviceCharge || 0,
+        type: b.serviceType || "N/A",
+        price: b.estimatedPrice || 0,
       },
     }));
 

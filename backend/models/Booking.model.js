@@ -13,8 +13,7 @@ const bookingSchema = new mongoose.Schema({
   },
   serviceType: {
     type: String,
-    required: true,
-    enum: ['Mobile Repair', 'Laptop Repair', 'AC Repair', 'Fridge Repair', 'Washing Machine Repair', 'TV Repair', 'Other']
+    required: true
   },
   description: {
     type: String,

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from '../../components/common/Navbar';
+import Navbar from '../../Common/Navbar';
 import api from '../Landing/api';
 
 const Dashboard = () => {
@@ -14,10 +14,12 @@ const Dashboard = () => {
     cancelled: 0
   });
   const navigate = useNavigate();
-  const [activeBookings, setActiveBookings] = useState([]);
-  const [stats, setStats] = useState({ total: 0, pending: 0, completed: 0, cancelled: 0 });
-  const [loading, setLoading] = useState(true);
-  const { user } = useUser();
+
+  const customerNavLinks = [
+    { path: '/dashboard', label: 'Dashboard' },
+    { path: '/book-service', label: 'Book Service' },
+    { path: '/my-booking', label: 'My Bookings' },
+  ];
 
   useEffect(() => {
     // Get user data from localStorage

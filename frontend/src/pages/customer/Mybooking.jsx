@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from '../../components/common/Navbar';
+import Navbar from '../../Common/Navbar';
 import api from '../Landing/api';
 
 const MyBooking = () => {
@@ -18,6 +18,12 @@ const MyBooking = () => {
   });
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  const customerNavLinks = [
+    { path: '/dashboard', label: 'Dashboard' },
+    { path: '/book-service', label: 'Book Service' },
+    { path: '/my-booking', label: 'My Bookings' },
+  ];
 
   useEffect(() => {
     fetchBookings();
@@ -92,7 +98,12 @@ const MyBooking = () => {
         `}
       </style>
 
-      <Navbar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
+      <Navbar 
+        userType="customer"
+        navLinks={customerNavLinks}
+        showProfile={true}
+        showNotifications={true}
+      />
 
       <div className="bg-white border-b border-slate-200 sticky top-20 z-30">
         <div className="max-w-[1400px] mx-auto px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">

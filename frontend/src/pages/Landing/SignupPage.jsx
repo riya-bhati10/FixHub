@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import bgImage from '../../assets/repair-bg.png';
 import authService from './auth.service';
+import { useUser } from '../../context/UserContext';
 
 const SignupPage = () => {
   const navigate = useNavigate();
@@ -103,7 +104,6 @@ const SignupPage = () => {
         location: formData.location
       };
 
-<<<<<<< HEAD
       const response = await authService.register(userData);
       
       // Store token and user data for automatic login
@@ -118,15 +118,6 @@ const SignupPage = () => {
         } else {
           navigate('/dashboard');
         }
-=======
-      const data = await authService.register(userData);
-      setUser(data.user);
-      alert('Registration successful!');
-      if (data.role === 'technician') {
-        navigate('/technician/dashboard');
-      } else {
-        navigate('/dashboard');
->>>>>>> fixhub-check
       }
     } catch (error) {
       console.error('Signup failed:', error.response?.data?.message || error.message);
@@ -136,31 +127,31 @@ const SignupPage = () => {
 
   return (
     <div
-      className="min-h-screen w-screen flex items-center justify-center bg-no-repeat bg-cover bg-center overflow-hidden py-8 relative"
+      className="min-h-screen w-screen flex items-center justify-center bg-no-repeat bg-cover bg-center overflow-hidden px-4 py-8 relative"
       style={{ backgroundImage: `url(${bgImage})` }}
     >
       <button
         onClick={() => navigate('/')}
-        className="absolute top-8 left-8 text-white px-4 py-2 rounded-lg flex items-center hover:opacity-90 transition-opacity"
+        className="absolute top-4 left-4 sm:top-8 sm:left-8 text-white px-3 py-2 sm:px-4 sm:py-2 rounded-lg flex items-center hover:opacity-90 transition-opacity text-sm sm:text-base"
         style={{ backgroundColor: '#0d3d43' }}
       >
-        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
         </svg>
         Back
       </button>
 
-      <div className="w-full max-w-md rounded-xl shadow-lg bg-fixhub-bgWhite/80 backdrop-blur-md border border-white/30 p-10 font-poppins">
-        <h2 className="text-2xl font-bold text-center mb-6 text-fixhub-textDark">
+      <div className="w-full max-w-md rounded-xl shadow-lg bg-fixhub-bgWhite/80 backdrop-blur-md border border-white/30 p-6 sm:p-8 md:p-10 font-poppins mx-4">
+        <h2 className="text-xl sm:text-2xl font-bold text-center mb-4 sm:mb-6 text-fixhub-textDark">
           Sign Up
         </h2>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
           <select
             name="role"
             value={formData.role}
             onChange={handleChange}
-            className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-fixhub-primary"
+            className="w-full px-3 py-2 sm:px-4 sm:py-2 text-sm sm:text-base border rounded-md focus:outline-none focus:ring-2 focus:ring-fixhub-primary"
             required
           >
             <option value="">Select Role</option>
@@ -168,102 +159,101 @@ const SignupPage = () => {
             <option value="technician">Technician</option>
           </select>
           
-          <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+            <input
+              type="text"
+              name="firstName"
+              value={formData.firstName}
+              onChange={handleChange}
+              placeholder="First Name"
+              className="w-full sm:w-1/2 px-3 py-2 sm:px-4 sm:py-2 text-sm sm:text-base border rounded-md focus:outline-none focus:ring-2 focus:ring-fixhub-primary"
+              required
+            />
+            <input
+              type="text"
+              name="lastName"
+              value={formData.lastName}
+              onChange={handleChange}
+              placeholder="Last Name"
+              className="w-full sm:w-1/2 px-3 py-2 sm:px-4 sm:py-2 text-sm sm:text-base border rounded-md focus:outline-none focus:ring-2 focus:ring-fixhub-primary"
+              required
+            />
+          </div>
+
+          <input
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            placeholder="Email Address"
+            className="w-full px-3 py-2 sm:px-4 sm:py-2 text-sm sm:text-base border rounded-md focus:outline-none focus:ring-2 focus:ring-fixhub-primary"
+            required
+          />
+          
+          <input
+            type="password"
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
+            placeholder="Create Password"
+            className="w-full px-3 py-2 sm:px-4 sm:py-2 text-sm sm:text-base border rounded-md focus:outline-none focus:ring-2 focus:ring-fixhub-primary"
+            required
+          />
+
+          <input
+            type="tel"
+            name="phone"
+            value={formData.phone}
+            onChange={handleChange}
+            placeholder="Mobile Number"
+            className="w-full px-3 py-2 sm:px-4 sm:py-2 text-sm sm:text-base border rounded-md focus:outline-none focus:ring-2 focus:ring-fixhub-primary"
+            required
+          />
+
+          <div className="relative">
+            <div className="flex flex-col sm:flex-row gap-2">
               <input
                 type="text"
-                name="firstName"
-                value={formData.firstName}
-                onChange={handleChange}
-                placeholder="First Name"
-                className="w-1/2 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-fixhub-primary"
+                name="location"
+                value={formData.location}
+                onChange={handleLocationChange}
+                placeholder="Location or Address"
+                className="flex-1 px-3 py-2 sm:px-4 sm:py-2 text-sm sm:text-base border rounded-md focus:outline-none focus:ring-2 focus:ring-fixhub-primary"
                 required
+                autoComplete="off"
               />
-              <input
-                type="text"
-                name="lastName"
-                value={formData.lastName}
-                onChange={handleChange}
-                placeholder="Last Name"
-                className="w-1/2 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-fixhub-primary"
-                required
-              />
+              <button
+                type="button"
+                onClick={handleGetLocation}
+                className="px-3 py-2 sm:px-3 sm:py-2 bg-fixhub-mint hover:bg-fixhub-primary hover:text-white text-fixhub-textDark rounded-md font-medium transition text-xs sm:text-sm whitespace-nowrap"
+              >
+                Get Location
+              </button>
             </div>
+            {suggestions.length > 0 && (
+              <ul className="absolute z-10 w-full bg-white border border-gray-300 rounded-md mt-1 max-h-48 sm:max-h-60 overflow-y-auto shadow-lg">
+                {suggestions.map((suggestion) => (
+                  <li
+                    key={suggestion.place_id}
+                    onClick={() => handleSelectSuggestion(suggestion)}
+                    className="px-3 py-2 sm:px-4 sm:py-2 hover:bg-gray-100 cursor-pointer text-xs sm:text-sm text-gray-700"
+                  >
+                    {suggestion.display_name}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
 
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="Email Address"
-              className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-fixhub-primary"
-              required
-            />
-            
-            <input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="Create Password"
-              className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-fixhub-primary"
-              required
-            />
+          <button
+            type="submit"
+            className="w-full bg-fixhub-primary hover:bg-fixhub-dark text-white py-2 sm:py-2.5 rounded-md font-semibold transition text-sm sm:text-base"
+          >
+            Sign Up
+          </button>
+        </form>
 
-            <input
-              type="tel"
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
-              placeholder="Mobile Number"
-              className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-fixhub-primary"
-              required
-            />
-
-            <div className="relative">
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  name="location"
-                  value={formData.location}
-                  onChange={handleLocationChange}
-                  placeholder="Location or Address"
-                  className="flex-1 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-fixhub-primary"
-                  required
-                  autoComplete="off"
-                />
-                <button
-                  type="button"
-                  onClick={handleGetLocation}
-                  className="px-3 py-2 bg-fixhub-mint hover:bg-fixhub-primary hover:text-white text-fixhub-textDark rounded-md font-medium transition text-sm whitespace-nowrap"
-                >
-                  Get Location
-                </button>
-              </div>
-              {suggestions.length > 0 && (
-                <ul className="absolute z-10 w-full bg-white border border-gray-300 rounded-md mt-1 max-h-60 overflow-y-auto shadow-lg">
-                  {suggestions.map((suggestion) => (
-                    <li
-                      key={suggestion.place_id}
-                      onClick={() => handleSelectSuggestion(suggestion)}
-                      className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm text-gray-700"
-                    >
-                      {suggestion.display_name}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-
-        
-            <button
-              type="submit"
-              className="w-full bg-fixhub-primary hover:bg-fixhub-dark text-white py-2 rounded-md font-semibold transition"
-            >
-              Sign Up
-            </button>
-          </form>
-
-        <p className="text-center text-sm text-fixhub-textMuted mt-6">
+        <p className="text-center text-xs sm:text-sm text-fixhub-textMuted mt-4 sm:mt-6">
           Already have an account?
           <Link
             to="/login"
