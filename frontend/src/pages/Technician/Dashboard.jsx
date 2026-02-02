@@ -29,12 +29,12 @@ const Dashboard = () => {
       }
       
       console.log('Token found:', token ? 'Yes' : 'No');
-      console.log('API URL:', import.meta.env.VITE_API_URL);
+      console.log('API URL:', import.meta.env.VITE_API_BASE_URL);
       
       // Test backend connectivity
       console.log('Testing backend connectivity...');
       try {
-        const testResponse = await fetch(`${import.meta.env.VITE_API_URL}/test`);
+        const testResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/test`);
         const testData = await testResponse.json();
         console.log('Backend test response:', testData);
       } catch (error) {
