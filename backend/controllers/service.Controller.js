@@ -54,7 +54,7 @@ exports.createService = async (req, res) => {
 exports.updateService = async (req, res) => {
   try {
     const serviceId = req.params.id;
-    const technicianId = req.user._id; // Changed from req.user.userId to req.user._id
+    const technicianId = req.user._id;
 
     const service = await Service.findOne({
       _id: serviceId,
@@ -90,7 +90,7 @@ exports.updateService = async (req, res) => {
 exports.deleteService = async (req, res) => {
   try {
     const serviceId = req.params.id;
-    const technicianId = req.user._id; // Changed from req.user.userId to req.user._id
+    const technicianId = req.user._id;
 
     const service = await Service.findOne({
       _id: serviceId,
@@ -118,7 +118,7 @@ exports.deleteService = async (req, res) => {
 // View services (technician)
 exports.getMyServices = async (req, res) => {
   try {
-    const technicianId = req.user._id; // Changed from req.user.userId to req.user._id
+    const technicianId = req.user._id;
 
     const services = await Service.find({
       technicianId,
@@ -222,12 +222,35 @@ exports.getTechniciansByService = async (req, res) => {
 exports.getServicesByCategory = async (req, res) => {
   try {
     const { categoryId } = req.params;
-    const categoryName = categoryId.replace(/-/g, ' ');
+    console.log('=== CATEGORY SEARCH DEBUG ===');
+    console.log('Category ID:', categoryId);
+    
+    // Category mapping
+    const categoryMap = {
+      'smartphone': ['smartphone', 'mobile', 'phone', 'iphone', 'android'],
+      'laptop': ['laptop', 'computer', 'pc', 'macbook'],
+      'tv': ['tv', 'television', 'smart tv', 'led', 'lcd'],
+      'ac': ['ac', 'air conditioner', 'air conditioning', 'hvac'],
+      'fridge': ['fridge', 'refrigerator', 'freezer'],
+      'washing-machine': ['washing machine', 'washer', 'laundry'],
+      'microwave': ['microwave', 'oven'],
+      'home-audio': ['home audio', 'speaker', 'sound system', 'audio'],
+      'camera': ['camera', 'dslr', 'photography'],
+      'gaming': ['gaming', 'console', 'playstation', 'xbox', 'nintendo']
+    };
+
+    const searchTerms = categoryMap[categoryId] || [categoryId.replace(/-/g, ' ')];
+    const regexPattern = searchTerms.join('|');
+    console.log('Search Terms:', searchTerms);
+    console.log('Regex Pattern:', regexPattern);
 
     const services = await Service.find({
-      serviceName: new RegExp(categoryName, 'i'),
+      serviceName: new RegExp(regexPattern, 'i'),
       isActive: true,
     }).populate("technicianId", "fullname phone location");
+
+    console.log('Found services count:', services.length);
+    console.log('Service names:', services.map(s => s.serviceName));
 
     const formattedServices = await Promise.all(
       services.map(async (service) => {
@@ -250,8 +273,10 @@ exports.getServicesByCategory = async (req, res) => {
       })
     );
 
+    console.log('Formatted services count:', formattedServices.length);
     res.json(formattedServices);
   } catch (err) {
+    console.error('Category search error:', err);
     res.status(500).json({ message: err.message });
   }
 };
