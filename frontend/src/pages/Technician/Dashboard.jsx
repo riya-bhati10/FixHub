@@ -56,7 +56,9 @@ const Dashboard = () => {
       console.log('Fetching technician stats...');
       try {
         const statsData = await technicianService.getTechnicianStats();
-        console.log('Stats data success:', statsData);
+        console.log('=== STATS DATA RECEIVED ===');
+        console.log('Stats:', statsData);
+        console.log('Total Earnings:', statsData.totalEarnings);
         setStats(statsData);
       } catch (error) {
         console.error('Stats error:', error.response?.data || error.message);
@@ -172,16 +174,18 @@ const Dashboard = () => {
       color: 'bg-yellow-500' 
     },
     { 
-      title: 'Rating', 
-      value: stats?.averageRating ? `${stats.averageRating}/5` : 'N/A', 
+      title: 'Total Revenue', 
+      value: `$${stats?.totalEarnings?.toFixed(2) || '0.00'}`, 
       icon: (
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
       ), 
-      color: 'bg-yellow-500' 
+      color: 'bg-emerald-500' 
     }
   ];
+
+  console.log('Rendering stats cards with data:', stats);
 
   const quickActions = [
     {
@@ -272,61 +276,54 @@ const Dashboard = () => {
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {bookingRequests.map((request) => (
-                <div key={request._id} className="bg-white border border-gray-200 rounded-lg p-6 hover:border-fixhub-primary transition-colors">
-                  <div className="flex items-start space-x-4 mb-4">
-                    <div className="w-10 h-10 bg-fixhub-primary rounded-full flex items-center justify-center flex-shrink-0">
-                      <span className="text-white font-medium">
+                <div key={request._id} className="bg-white border-2 border-[#DCEBEC] rounded-xl p-6 hover:border-[#1F7F85] hover:shadow-xl transition-all duration-300">
+                  <div className="flex items-start gap-4 mb-4">
+                    <div className="w-14 h-14 bg-gradient-to-br from-[#1F7F85] to-[#0F4C5C] rounded-full flex items-center justify-center flex-shrink-0 shadow-lg">
+                      <span className="text-white font-bold text-xl">
                         {request.customer?.fullname?.firstname?.charAt(0) || 'C'}
                       </span>
                     </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900">
+                    <div className="flex-1">
+                      <h3 className="font-bold text-[#0F4C5C] text-lg">
                         {request.customer?.fullname?.firstname} {request.customer?.fullname?.lastname}
                       </h3>
-                      <p className="text-fixhub-primary font-medium">{request.serviceType}</p>
-                      <p className="text-gray-600 text-sm mt-1">{request.description}</p>
+                      <p className="text-[#1F7F85] font-semibold text-sm">{request.serviceType}</p>
+                      <p className="text-slate-600 text-sm mt-2 line-clamp-2">{request.description}</p>
                     </div>
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-4 mb-4 text-sm text-gray-600">
-                    <div className="flex items-center">
-                      <svg className="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
-                      {request.location}
+                  <div className="grid grid-cols-2 gap-3 mb-4 text-sm">
+                    <div className="flex items-center gap-2 bg-[#F7FBFC] p-2 rounded-lg">
+                      <span className="material-symbols-outlined text-[#1F7F85] text-base">location_on</span>
+                      <span className="text-slate-700 text-xs line-clamp-1">{request.location}</span>
                     </div>
-                    <div className="flex items-center">
-                      <svg className="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                      </svg>
-                      {request.customer?.phone}
+                    <div className="flex items-center gap-2 bg-[#F7FBFC] p-2 rounded-lg">
+                      <span className="material-symbols-outlined text-[#1F7F85] text-base">phone</span>
+                      <span className="text-slate-700 text-xs">{request.customer?.phone}</span>
                     </div>
-                    <div className="flex items-center">
-                      <svg className="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3a1 1 0 011-1h6a1 1 0 011 1v4h3a1 1 0 011 1v9a2 2 0 01-2 2H5a2 2 0 01-2-2V8a1 1 0 011-1h3z" />
-                      </svg>
-                      {new Date(request.preferredDate).toLocaleDateString()}
+                    <div className="flex items-center gap-2 bg-[#F7FBFC] p-2 rounded-lg">
+                      <span className="material-symbols-outlined text-[#1F7F85] text-base">calendar_today</span>
+                      <span className="text-slate-700 text-xs">{new Date(request.preferredDate).toLocaleDateString()}</span>
                     </div>
-                    <div className="flex items-center">
-                      <svg className="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                      </svg>
-                      ₹{request.estimatedPrice}
+                    <div className="flex items-center gap-2 bg-[#F7FBFC] p-2 rounded-lg">
+                      <span className="material-symbols-outlined text-[#1F7F85] text-base">payments</span>
+                      <span className="text-slate-700 font-bold text-xs">${request.estimatedPrice}</span>
                     </div>
                   </div>
                   
-                  <div className="flex space-x-3">
+                  <div className="flex gap-3">
                     <button
                       onClick={() => handleAccept(request._id)}
-                      className="flex-1 bg-fixhub-success hover:bg-fixhub-successDark text-white py-2 px-4 rounded-lg font-medium transition-colors"
+                      className="flex-1 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white py-2.5 px-4 rounded-lg font-bold transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2"
                     >
+                      <span className="material-symbols-outlined text-sm">check_circle</span>
                       Accept
                     </button>
                     <button
                       onClick={() => handleDecline(request._id)}
-                      className="flex-1 bg-fixhub-danger hover:bg-fixhub-dangerDark text-white py-2 px-4 rounded-lg font-medium transition-colors"
+                      className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-2.5 px-4 rounded-lg font-bold transition-all flex items-center justify-center gap-2"
                     >
+                      <span className="material-symbols-outlined text-sm">cancel</span>
                       Decline
                     </button>
                   </div>

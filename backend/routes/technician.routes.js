@@ -12,7 +12,8 @@ const {
   createService,
   updateService,
   deleteService,
-  updateServiceStatus
+  updateServiceStatus,
+  migrateMyEarnings
 } = require("../controllers/technician.Controller");
 const { verifyToken } = require("../middleware/auth.middleware");
 
@@ -27,6 +28,7 @@ router.get("/booking-history", getBookingHistory);
 router.get("/reviews", getReviews);
 router.get("/my-services", getMyServices);
 router.get("/test", (req, res) => res.json({ message: 'Technician routes working', userId: req.user.userId }));
+router.post("/migrate-earnings", migrateMyEarnings); // TEMPORARY
 router.post("/services", createService);
 router.put("/services/:serviceId", updateService);
 router.delete("/services/:serviceId", deleteService);

@@ -1,6 +1,7 @@
 const User = require("../models/User.model");
 const Booking = require("../models/Booking.model");
 const Service = require("../models/Service.model");
+const Earning = require("../models/Earning.model");
 
 exports.getTechnicianProfile = async (req, res) => {
   try {
@@ -19,6 +20,9 @@ exports.getTechnicianStats = async (req, res) => {
     const technicianId = req.user.userId;
     console.log('Getting stats for technician:', technicianId);
     
+    // Get technician data with earnings
+    const technician = await User.findById(technicianId).select('totalEarnings');
+    
     const totalJobs = await Booking.countDocuments({ technician: technicianId });
     const completedJobs = await Booking.countDocuments({ 
       technician: technicianId, 
@@ -29,7 +33,7 @@ exports.getTechnicianStats = async (req, res) => {
       status: { $in: ['pending', 'accepted', 'in-progress'] }
     });
     
-    // Calculate average rating
+    // Get average rating from completed bookings
     const completedBookings = await Booking.find({ 
       technician: technicianId, 
       status: 'completed',
@@ -46,6 +50,7 @@ exports.getTechnicianStats = async (req, res) => {
       totalJobs,
       completedJobs,
       pendingJobs,
+      totalEarnings: technician?.totalEarnings || 0,
       averageRating: parseFloat(averageRating)
     };
     
@@ -291,6 +296,60 @@ exports.updateServiceStatus = async (req, res) => {
     res.json(service);
   } catch (error) {
     console.error('Error updating service status:', error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// TEMPORARY: Migrate earnings for current technician
+exports.migrateMyEarnings = async (req, res) => {
+  try {
+    const technicianId = req.user.userId;
+    
+    // Get all completed bookings that don't have earnings yet
+    const completedBookings = await Booking.find({
+      technician: technicianId,
+      status: 'completed'
+    });
+
+    let totalEarnings = 0;
+    let createdCount = 0;
+
+    for (const booking of completedBookings) {
+      // Check if earning already exists
+      const existingEarning = await Earning.findOne({ booking: booking._id });
+      
+      if (!existingEarning) {
+        // Create earning record
+        const earning = await Earning.create({
+          technician: technicianId,
+          booking: booking._id,
+          totalAmount: booking.estimatedPrice,
+          adminCut: booking.estimatedPrice * 0.1,
+          technicianAmount: booking.estimatedPrice * 0.9,
+          status: 'pending'
+        });
+        
+        totalEarnings += earning.technicianAmount;
+        createdCount++;
+      }
+    }
+
+    // Update technician's totalEarnings
+    if (createdCount > 0) {
+      await User.findByIdAndUpdate(
+        technicianId,
+        { $inc: { totalEarnings } }
+      );
+    }
+
+    res.json({
+      message: 'Earnings migrated successfully',
+      completedBookings: completedBookings.length,
+      newEarningsCreated: createdCount,
+      totalEarnings: totalEarnings.toFixed(2)
+    });
+  } catch (error) {
+    console.error('Error migrating earnings:', error);
     res.status(500).json({ message: error.message });
   }
 };

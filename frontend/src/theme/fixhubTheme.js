@@ -18,6 +18,34 @@ const fixhubTheme = {
 
     borderSoft: "#B7DADB",
   },
+
+  // Admin Panel Theme 
+  admin: {
+    // Backgrounds
+    bgMain: "#0d1117",
+    bgSecondary: "#161b22",
+    bgCard: "#161b22",
+    bgHover: "#21262d",
+
+    // Mint Accent
+    primaryMint: "#2dd4bf",
+    primaryMintHover: "#14b8a6",
+    primaryMintSoft: "#5eead4",
+
+    // Text Colors
+    textPrimary: "#e6edf3",
+    textSecondary: "#c9d1d9",
+    textMuted: "#8b949e",
+
+    // Status Colors
+    success: "#3fb950",
+    warning: "#d29922",
+    danger: "#f85149",
+    info: "#58a6ff",
+
+    // Borders
+    borderDefault: "#30363d",
+  },
 };
 
 export default fixhubTheme;

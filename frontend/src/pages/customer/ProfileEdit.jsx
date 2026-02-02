@@ -12,9 +12,9 @@ const ProfileSettings = () => {
   const [location, setLocation] = useState('');
 
   const customerNavLinks = [
-    { path: '/dashboard', label: 'Dashboard' },
-    { path: '/book-service', label: 'Book Service' },
-    { path: '/my-booking', label: 'My Bookings' },
+    { path: '/customer/dashboard', label: 'Dashboard' },
+    { path: '/customer/book-service', label: 'Book Service' },
+    { path: '/customer/my-bookings', label: 'My Bookings' },
   ];
 
   useEffect(() => {
@@ -165,7 +165,7 @@ const ProfileSettings = () => {
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4 pt-4 sm:pt-6 border-t border-slate-200">
               <button 
-                onClick={() => navigate('/dashboard')}
+                onClick={() => navigate('/customer/dashboard')}
                 className="px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base bg-white text-slate-600 font-bold border-2 border-slate-200 rounded-lg hover:bg-slate-50 transition-all flex items-center justify-center gap-2"
               >
                 <span className="material-symbols-outlined text-lg sm:text-xl">close</span>

@@ -1,266 +1,292 @@
-import React, { useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
-import Navbar from "../../Common/Navbar";
+import React, { useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import Navbar from '../../Common/Navbar';
+import api from '../Landing/api';
 
-const BookServiceForm = () => {
+const BookingForm = () => {
+  const location = useLocation();
   const navigate = useNavigate();
+  const service = location.state?.service;
 
   const [formData, setFormData] = useState({
-    serviceType: "",
-    issue: "",
-    serviceDate: "",
-    timeSlot: "",
-    address: "",
+    serviceType: service?.serviceType || '',
+    description: '',
+    location: '',
+    preferredDate: '',
+    preferredTime: ''
   });
+  const [loading, setLoading] = useState(false);
+  const [loadingLocation, setLoadingLocation] = useState(false);
+  const [error, setError] = useState('');
 
-  const [isLocating, setIsLocating] = useState(false);
-  const [locationError, setLocationError] = useState(null);
-  const [addressSuggestions, setAddressSuggestions] = useState([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const suggestionTimeoutRef = useRef(null);
-
-  // Helper function to fetch address from coordinates
-  const fetchAddressFromCoords = async (coords) => {
-    const { latitude, longitude } = coords;
-    
-    try {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1`
-      );
-      
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      
-      const data = await response.json();
-      
-      if (data && data.display_name) {
-        setFormData(prev => ({ 
-          ...prev, 
-          address: data.display_name 
-        }));
-      } else {
-        setFormData(prev => ({ 
-          ...prev, 
-          address: `${latitude.toFixed(6)}, ${longitude.toFixed(6)}` 
-        }));
-      }
-    } catch (error) {
-      console.error('Reverse geocoding error:', error);
-      setFormData(prev => ({ 
-        ...prev, 
-        address: `https://www.google.com/maps?q=${latitude},${longitude}` 
-      }));
-    } finally {
-      setIsLocating(false);
-    }
-  };
-
-  const handleGeolocationError = (error) => {
-    setIsLocating(false);
-    
-    switch(error.code) {
-      case error.PERMISSION_DENIED:
-        setLocationError('Location access was denied. Please allow location access in browser settings.');
-        break;
-      case error.POSITION_UNAVAILABLE:
-        setLocationError('Location information is unavailable.');
-        break;
-      case error.TIMEOUT:
-        setLocationError('The request to get your location timed out.');
-        break;
-      case error.UNKNOWN_ERROR:
-        setLocationError('An unknown error occurred while getting your location.');
-        break;
-      default:
-        setLocationError('Unable to retrieve your location.');
-    }
-  };
-
-  const getLocation = async () => {
-    setIsLocating(true);
-    setLocationError(null);
-    
-    if (!navigator.geolocation) {
-      setLocationError('Geolocation is not supported by your browser.');
-      setIsLocating(false);
-      return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        await fetchAddressFromCoords(position.coords);
-      },
-      (error) => {
-        handleGeolocationError(error);
-      },
-      { enableHighAccuracy: false, timeout: 5000, maximumAge: 10000 }
-    );
-  };
-
-  const fetchAddressSuggestions = async (query) => {
-    if (!query || query.length < 3) {
-      setAddressSuggestions([]);
-      setShowSuggestions(false);
-      return;
-    }
-
-    try {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&addressdetails=1&limit=5`
-      );
-      if (response.ok) {
-        const data = await response.json();
-        setAddressSuggestions(data);
-        setShowSuggestions(true);
-      }
-    } catch (error) {
-      console.error("Error fetching address suggestions:", error);
-    }
-  };
+  const customerNavLinks = [
+    { label: 'Dashboard', path: '/customer/dashboard' },
+    { label: 'Book Service', path: '/customer/book-service' },
+    { label: 'My Bookings', path: '/customer/my-bookings' }
+  ];
 
   const handleChange = (e) => {
-    if (e.target.name === 'address') {
-      if (suggestionTimeoutRef.current) clearTimeout(suggestionTimeoutRef.current);
-      suggestionTimeoutRef.current = setTimeout(() => fetchAddressSuggestions(e.target.value), 500);
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const getCurrentLocation = () => {
+    setLoadingLocation(true);
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          try {
+            const { latitude, longitude } = position.coords;
+            const response = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+            );
+            const data = await response.json();
+            setFormData({ ...formData, location: data.display_name });
+          } catch (error) {
+            console.error('Error getting address:', error);
+            setFormData({ ...formData, location: `Lat: ${position.coords.latitude}, Lng: ${position.coords.longitude}` });
+          } finally {
+            setLoadingLocation(false);
+          }
+        },
+        (error) => {
+          console.error('Geolocation error:', error);
+          alert('Unable to get your location. Please enter manually.');
+          setLoadingLocation(false);
+        }
+      );
+    } else {
+      alert('Geolocation is not supported by your browser');
+      setLoadingLocation(false);
     }
-
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+    setLoading(true);
 
-    console.log("Booking Data:", formData);
+    try {
+      const bookingData = {
+        serviceId: service._id,
+        technicianId: service.technician._id,
+        issue: formData.description,
+        serviceDate: formData.preferredDate,
+        timeSlot: formData.preferredTime,
+        serviceLocation: formData.location
+      };
 
-    // yahan backend API call kar sakte ho
-    // axios.post("/api/book-service", formData)
-
-    navigate("/booking-success");
+      await api.post('/bookings', bookingData);
+      navigate('/customer/booking-success');
+    } catch (error) {
+      setError(error.response?.data?.message || 'Failed to create booking');
+    } finally {
+      setLoading(false);
+    }
   };
+
+  if (!service) {
+    return (
+      <div className="min-h-screen bg-[#F7FBFC] flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-slate-600 mb-4">No service selected</p>
+          <button
+            onClick={() => navigate('/customer/book-service')}
+            className="px-4 py-2 bg-[#1F7F85] text-white rounded-lg"
+          >
+            Go to Services
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <Navbar />
+    <div className="min-h-screen bg-[#F7FBFC]">
+      <Navbar userType="customer" navLinks={customerNavLinks} showProfile showNotifications />
+      
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12">
+        {/* Header */}
+        <div className="mb-6 sm:mb-8">
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 text-[#1F7F85] hover:text-[#0F4C5C] mb-4 text-sm"
+          >
+            <span className="material-symbols-outlined">arrow_back</span>
+            Back
+          </button>
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#0F4C5C] mb-2">Book Service</h1>
+          <p className="text-xs sm:text-sm text-slate-600">Fill in the details to book your service</p>
+        </div>
 
-      <div className="max-w-xl mx-auto bg-white p-6 mt-24 rounded-xl shadow">
-        <h2 className="text-2xl font-bold mb-6 text-center text-teal-600">
-          Book Service
-        </h2>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-        
-
-          {/* Issue */}
-          <div>
-            <label className="block mb-1 font-medium">Issue</label>
-            <textarea
-              name="issue"
-              value={formData.issue}
-              onChange={handleChange}
-              required
-              placeholder="Describe your issue"
-              className="w-full border p-2 rounded"
-            />
-          </div>
-
-          {/* Date */}
-          <div>
-            <label className="block mb-1 font-medium">Service Date</label>
-            <input
-              type="date"
-              name="serviceDate"
-              value={formData.serviceDate}
-              onChange={handleChange}
-              required
-              className="w-full border p-2 rounded"
-            />
-          </div>
-
-          {/* Time Slot */}
-          <div>
-            <label className="block mb-1 font-medium">Time Slot</label>
-            <select
-              name="timeSlot"
-              value={formData.timeSlot}
-              onChange={handleChange}
-              required
-              className="w-full border p-2 rounded"
-            >
-              <option value="">Select Time</option>
-              <option value="9AM-12PM">9 AM - 12 PM</option>
-              <option value="12PM-3PM">12 PM - 3 PM</option>
-              <option value="3PM-6PM">3 PM - 6 PM</option>
-              <option value="6PM-9PM">6 PM - 9 PM</option>
-            </select>
-          </div>
-
-          {/* Address */}
-          <div>
-            <div className="flex justify-between items-center mb-1">
-              <label className="block font-medium">Service Address</label>
-              <button
-                type="button"
-                onClick={getLocation}
-                disabled={isLocating}
-                className="text-teal-600 text-sm font-bold flex items-center gap-1 hover:bg-teal-50 px-2 py-1 rounded transition-colors"
-              >
-                {isLocating ? (
-                  <span className="material-symbols-outlined text-base animate-spin">progress_activity</span>
-                ) : (
-                  <span className="material-symbols-outlined text-base">my_location</span>
-                )}
-                {isLocating ? 'Locating...' : 'Get Location'}
-              </button>
+        {/* Technician Info Card */}
+        <div className="bg-white rounded-xl border-2 border-[#DCEBEC] p-4 sm:p-6 mb-6">
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 rounded-full bg-[#1F7F85] flex items-center justify-center text-white font-bold text-2xl">
+              {service.technician?.name?.charAt(0).toUpperCase()}
             </div>
-            <div className="relative">
+            <div>
+              <h3 className="text-lg font-bold text-[#0F4C5C]">{service.technician?.name}</h3>
+              <p className="text-sm text-slate-600 capitalize">{service.serviceType}</p>
+              <div className="flex items-center gap-2 mt-1">
+                <span className="material-symbols-outlined text-sm text-amber-500 fill-current">star</span>
+                <span className="text-sm font-semibold text-amber-700">{service.technician?.rating || 4.5}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Booking Form */}
+        <form onSubmit={handleSubmit} className="bg-white rounded-xl border-2 border-[#DCEBEC] p-4 sm:p-6 lg:p-8">
+          {error && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+              {error}
+            </div>
+          )}
+
+          <div className="space-y-5">
+            {/* Service Type */}
+            <div>
+              <label className="block text-sm font-semibold text-[#0F4C5C] mb-2">
+                Service Type <span className="text-red-500">*</span>
+              </label>
               <input
                 type="text"
-                name="address"
-                value={formData.address}
+                name="serviceType"
+                value={formData.serviceType}
                 onChange={handleChange}
                 required
-                placeholder="Enter your address"
-                className="w-full border p-2 rounded"
-                autoComplete="off"
-                onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                onFocus={() => formData.address.length >= 3 && setShowSuggestions(true)}
+                className="w-full px-4 py-3 text-sm border-2 border-[#DCEBEC] rounded-lg focus:ring-2 focus:ring-[#1F7F85] focus:border-[#1F7F85] outline-none"
               />
-              {showSuggestions && addressSuggestions.length > 0 && (
-                <div className="absolute z-10 w-full bg-white border border-gray-200 shadow-lg max-h-60 overflow-y-auto mt-1 rounded-md">
-                  {addressSuggestions.map((suggestion) => (
-                    <div 
-                      key={suggestion.place_id}
-                      className="p-2 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-0 text-sm text-gray-700"
-                      onClick={() => {
-                        setFormData(prev => ({ ...prev, address: suggestion.display_name }));
-                        setAddressSuggestions([]);
-                        setShowSuggestions(false);
-                      }}
-                    >
-                      {suggestion.display_name}
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
-            {locationError && <p className="text-red-500 text-sm mt-1">{locationError}</p>}
+
+            {/* Description */}
+            <div>
+              <label className="block text-sm font-semibold text-[#0F4C5C] mb-2">
+                Issue Description <span className="text-red-500">*</span>
+              </label>
+              <textarea
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                required
+                rows="4"
+                placeholder="Describe the issue in detail..."
+                className="w-full px-4 py-3 text-sm border-2 border-[#DCEBEC] rounded-lg focus:ring-2 focus:ring-[#1F7F85] focus:border-[#1F7F85] outline-none resize-none"
+              />
+            </div>
+
+            {/* Location with Geolocation */}
+            <div>
+              <label className="block text-sm font-semibold text-[#0F4C5C] mb-2">
+                Service Location <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  name="location"
+                  value={formData.location}
+                  onChange={handleChange}
+                  required
+                  placeholder="Enter your address"
+                  className="w-full px-4 py-3 text-sm border-2 border-[#DCEBEC] rounded-lg focus:ring-2 focus:ring-[#1F7F85] focus:border-[#1F7F85] outline-none pr-12"
+                />
+                <button
+                  type="button"
+                  onClick={getCurrentLocation}
+                  disabled={loadingLocation}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-[#1F7F85] hover:bg-[#E0F2F1] rounded-lg transition-colors disabled:opacity-50"
+                  title="Use current location"
+                >
+                  {loadingLocation ? (
+                    <span className="material-symbols-outlined animate-spin">progress_activity</span>
+                  ) : (
+                    <span className="material-symbols-outlined">my_location</span>
+                  )}
+                </button>
+              </div>
+              <p className="text-xs text-slate-500 mt-1">Click the location icon to use your current location</p>
+            </div>
+
+            {/* Date & Time */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-semibold text-[#0F4C5C] mb-2">
+                  Preferred Date <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="date"
+                  name="preferredDate"
+                  value={formData.preferredDate}
+                  onChange={handleChange}
+                  required
+                  min={new Date().toISOString().split('T')[0]}
+                  className="w-full px-4 py-3 text-sm border-2 border-[#DCEBEC] rounded-lg focus:ring-2 focus:ring-[#1F7F85] focus:border-[#1F7F85] outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-[#0F4C5C] mb-2">
+                  Preferred Time <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="time"
+                  name="preferredTime"
+                  value={formData.preferredTime}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-3 text-sm border-2 border-[#DCEBEC] rounded-lg focus:ring-2 focus:ring-[#1F7F85] focus:border-[#1F7F85] outline-none"
+                />
+              </div>
+            </div>
+
+            {/* Estimated Price - Read Only */}
+            <div>
+              <label className="block text-sm font-semibold text-[#0F4C5C] mb-2">
+                Service Charge
+              </label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#0F4C5C] font-bold text-lg">$</span>
+                <input
+                  type="text"
+                  value={service?.price || 0}
+                  disabled
+                  className="w-full pl-10 pr-4 py-3 text-lg font-bold text-[#0F4C5C] border-2 border-[#DCEBEC] rounded-lg bg-[#E0F2F1] cursor-not-allowed"
+                />
+              </div>
+              <p className="text-xs text-slate-500 mt-1">Price set by technician</p>
+            </div>
           </div>
 
-          {/* Submit */}
-          <button
-            type="submit"
-            className="w-full bg-teal-600 text-white py-2 rounded hover:bg-teal-700"
-          >
-            Book Service
-          </button>
+          {/* Submit Button */}
+          <div className="mt-8 flex flex-col sm:flex-row gap-3">
+            <button
+              type="button"
+              onClick={() => navigate(-1)}
+              className="flex-1 px-6 py-3 border-2 border-[#DCEBEC] text-[#0F4C5C] font-bold rounded-lg hover:bg-slate-50 transition-all"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="flex-1 px-6 py-3 bg-[#1F7F85] text-white font-bold rounded-lg hover:bg-[#0F4C5C] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {loading ? (
+                <>
+                  <span className="material-symbols-outlined animate-spin">progress_activity</span>
+                  Processing...
+                </>
+              ) : (
+                <>
+                  Confirm Booking
+                  <span className="material-symbols-outlined">check_circle</span>
+                </>
+              )}
+            </button>
+          </div>
         </form>
       </div>
     </div>
   );
 };
 
-export default BookServiceForm;
+export default BookingForm;

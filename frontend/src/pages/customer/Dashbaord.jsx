@@ -16,9 +16,9 @@ const Dashboard = () => {
   const navigate = useNavigate();
 
   const customerNavLinks = [
-    { path: '/dashboard', label: 'Dashboard' },
-    { path: '/book-service', label: 'Book Service' },
-    { path: '/my-booking', label: 'My Bookings' },
+    { path: '/customer/dashboard', label: 'Dashboard' },
+    { path: '/customer/book-service', label: 'Book Service' },
+    { path: '/customer/my-bookings', label: 'My Bookings' },
   ];
 
   useEffect(() => {
@@ -102,7 +102,7 @@ const Dashboard = () => {
               </p>
             </div>
             <button 
-              onClick={() => navigate('/book-service')}
+              onClick={() => navigate('/customer/book-service')}
               className="relative z-10 mt-6 md:mt-0 px-8 py-4 bg-white text-[#0F4C5C] font-bold hover:bg-teal-50 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center gap-3 group"
             >
               <span className="material-symbols-outlined text-2xl group-hover:rotate-90 transition-transform duration-300">add_circle</span>
@@ -236,7 +236,7 @@ const Dashboard = () => {
                         <span className="material-symbols-outlined text-4xl mb-2 opacity-50">event_busy</span>
                         <p>No active bookings found</p>
                         <button 
-                          onClick={() => navigate('/book-service')}
+                          onClick={() => navigate('/customer/book-service')}
                           className="mt-4 px-6 py-2 bg-[#1F7F85] text-white font-bold hover:bg-[#0F4C5C] transition-all"
                         >
                           Book a Service

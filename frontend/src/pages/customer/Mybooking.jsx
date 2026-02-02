@@ -20,9 +20,9 @@ const MyBooking = () => {
   const [loading, setLoading] = useState(true);
 
   const customerNavLinks = [
-    { path: '/dashboard', label: 'Dashboard' },
-    { path: '/book-service', label: 'Book Service' },
-    { path: '/my-booking', label: 'My Bookings' },
+    { path: '/customer/dashboard', label: 'Dashboard' },
+    { path: '/customer/book-service', label: 'Book Service' },
+    { path: '/customer/my-bookings', label: 'My Bookings' },
   ];
 
   useEffect(() => {
@@ -66,10 +66,12 @@ const MyBooking = () => {
     return booking.status;
   };
 
-  const filteredBookings = bookings.filter(booking =>
-    booking.bookingId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    booking.service.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredBookings = bookings.filter(booking => {
+    const bookingIdStr = String(booking._id || booking.bookingId);
+    const serviceName = booking.service?.name || '';
+    return bookingIdStr.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      serviceName.toLowerCase().includes(searchTerm.toLowerCase());
+  });
 
   const tabFilteredBookings = filteredBookings.filter(booking => {
     if (activeTab === 'all') return true;
@@ -206,9 +208,9 @@ const MyBooking = () => {
                   {tabFilteredBookings.map((booking) => {
                     const statusInfo = getStatusDisplay(booking.status);
                     return (
-                      <tr key={booking.bookingId} className="hover:bg-slate-50 transition-colors">
+                      <tr key={booking._id || booking.bookingId} className="hover:bg-slate-50 transition-colors">
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-bold text-slate-900">{booking.bookingId.slice(-6)}</div>
+                          <div className="text-sm font-bold text-slate-900">{String(booking._id || booking.bookingId).slice(-6)}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center gap-3">
@@ -246,7 +248,10 @@ const MyBooking = () => {
                             {booking.status === 'completed' && (
                               <button
                                 className="px-4 py-2 bg-amber-500 text-white font-bold hover:bg-amber-600 transition-colors flex items-center gap-2 text-sm"
-                                onClick={() => navigate('/review', { state: { booking } })}
+                                onClick={() => {
+                                  console.log('Passing booking to review:', booking);
+                                  navigate('/customer/review', { state: { booking } });
+                                }}
                               >
                                 <span className="material-symbols-outlined text-sm">rate_review</span>
                                 Review
@@ -266,7 +271,7 @@ const MyBooking = () => {
             <span className="material-symbols-outlined text-6xl text-slate-300">search_off</span>
             <p className="text-slate-500 mt-4 text-lg">No bookings found</p>
             <button 
-              onClick={() => navigate('/book-service')}
+              onClick={() => navigate('/customer/book-service')}
               className="mt-4 px-6 py-2 bg-[#1F7F85] text-white font-bold hover:bg-[#0F4C5C] transition-all"
             >
               Book a Service

@@ -78,8 +78,17 @@ exports.login = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    // Check if user is blocked
+    if (user.isBlocked) {
+      return res.status(403).json({ 
+        message: "Your account is blocked. Contact admin for assistance.",
+        isBlocked: true 
+      });
+    }
+
     const isMatch = await comparePassword(password, user.password);
     console.log('Password match:', isMatch);
+    console.log('Stored hash:', user.password.substring(0, 30) + '...');
     
     if (!isMatch) {
       return res.status(401).json({ message: "Invalid credentials" });
@@ -190,6 +199,34 @@ exports.updateProfile = async (req, res) => {
         role: user.role,
         createdAt: user.createdAt
       }
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// TEMPORARY: Reset password endpoint (REMOVE IN PRODUCTION)
+exports.resetPasswordTemp = async (req, res) => {
+  try {
+    const { email, newPassword } = req.body;
+    
+    if (!email || !newPassword) {
+      return res.status(400).json({ message: "Email and new password required" });
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase() });
+    
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const hashedPassword = await hashPassword(newPassword);
+    user.password = hashedPassword;
+    await user.save();
+
+    res.json({
+      message: "Password reset successfully",
+      email: user.email
     });
   } catch (err) {
     res.status(500).json({ message: err.message });

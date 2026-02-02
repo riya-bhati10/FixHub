@@ -29,10 +29,12 @@ const LoginPage = () => {
         localStorage.setItem('user', JSON.stringify(data.user));
       }
       
-      if (data.role === 'technician') {
+      if (data.role === 'admin') {
+        navigate('/admin/dashboard');
+      } else if (data.role === 'technician') {
         navigate('/technician/dashboard');
       } else {
-        navigate('/dashboard');
+        navigate('/customer/dashboard');
       }
     } catch (error) {
       console.error('Login failed:', error.response?.data?.message || error.message);

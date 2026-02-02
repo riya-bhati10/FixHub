@@ -189,7 +189,7 @@ exports.getTechniciansByService = async (req, res) => {
     const services = await Service.find({
       serviceName,
       isActive: true,
-    }).populate("technicianId", "fullname");
+    }).populate("technicianId", "fullname phone location");
 
     const technicians = await Promise.all(
       services.map(async (service) => {
@@ -213,6 +213,44 @@ exports.getTechniciansByService = async (req, res) => {
       count: technicians.length,
       technicians,
     });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// Get services by category (customer)
+exports.getServicesByCategory = async (req, res) => {
+  try {
+    const { categoryId } = req.params;
+    const categoryName = categoryId.replace(/-/g, ' ');
+
+    const services = await Service.find({
+      serviceName: new RegExp(categoryName, 'i'),
+      isActive: true,
+    }).populate("technicianId", "fullname phone location");
+
+    const formattedServices = await Promise.all(
+      services.map(async (service) => {
+        const ratingData = await getTechnicianRating(service.technicianId._id);
+        
+        return {
+          _id: service._id,
+          serviceType: service.serviceName,
+          description: service.description,
+          price: service.serviceCharge,
+          experience: service.experience,
+          technician: {
+            _id: service.technicianId._id,
+            name: service.technicianId.fullname.firstname + " " + service.technicianId.fullname.lastname,
+            phone: service.technicianId.phone,
+            location: service.technicianId.location,
+            rating: ratingData.avgRating
+          }
+        };
+      })
+    );
+
+    res.json(formattedServices);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

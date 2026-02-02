@@ -3,10 +3,14 @@ const Notification = require("../models/Notification.model");
 exports.getMyNotifications = async (req, res) => {
   try {
     const userId = req.user.userId;
+    console.log('Fetching notifications for user:', userId);
 
     const notifications = await Notification.find({ userId }).sort({
       createdAt: -1,
     });
+
+    console.log('Found notifications:', notifications.length);
+    console.log('Notifications:', JSON.stringify(notifications, null, 2));
 
     res.json(notifications);
   } catch (err) {

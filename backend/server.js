@@ -6,6 +6,7 @@ const app = express();
 
 
 const authRoutes = require("./routes/auth.Routes");
+const adminRoutes = require("./routes/admin.routes");
 const serviceRoutes = require("./routes/service.routes");
 const bookingRoutes = require("./routes/booking.routes");
 const notificationRoutes = require("./routes/notification.routes");
@@ -34,6 +35,7 @@ app.use("/api/notifications", notificationRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/technician", technicianRoutes);
+app.use("/api/admin",adminRoutes);
 
 // Test endpoint
 app.get('/api/test', (req, res) => {

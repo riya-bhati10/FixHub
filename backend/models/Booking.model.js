@@ -40,8 +40,14 @@ const bookingSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['pending', 'accepted', 'declined', 'in-progress', 'completed', 'cancelled'],
+    enum: ['pending', 'accepted', 'declined', 'in-progress', 'completed', 'cancelled', 'pending-completion'],
     default: 'pending'
+  },
+  completionOTP: {
+    type: String
+  },
+  otpGeneratedAt: {
+    type: Date
   },
   rating: {
     type: Number,

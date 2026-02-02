@@ -20,7 +20,7 @@ const notificationSchema = new mongoose.Schema(
 
     type: {
       type: String,
-      enum: ['booking_request', 'booking_accepted', 'booking_completed', 'booking_cancelled', 'review_received', 'payment_processed', 'system'],
+      enum: ['booking_request', 'booking_accepted', 'booking_completed', 'booking_cancelled', 'review_received', 'payment_processed', 'otp', 'system'],
       default: 'system'
     },
 
