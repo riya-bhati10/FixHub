@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import Navbar from '../../Common/Navbar';
 import api from '../Landing/api';
+import { HandleMessageUIError, HandleMessageUISuccess } from '../../utils/toastConfig';
 
 const ProfileSettings = () => {
   const navigate = useNavigate();
@@ -56,10 +58,10 @@ const ProfileSettings = () => {
       localStorage.setItem('user', JSON.stringify(updatedUser));
       setUser(updatedUser);
       
-      alert('Profile updated successfully!');
+      toast.success('Profile updated successfully!', HandleMessageUISuccess());
     } catch (error) {
       console.error('Error updating profile:', error);
-      alert('Failed to update profile.');
+      toast.error('Failed to update profile.', HandleMessageUIError());
     }
   };
 

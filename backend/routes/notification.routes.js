@@ -5,7 +5,8 @@ const {
   getTechnicianNotifications,
   markAsRead, 
   markAllAsRead,
-  getUnreadCount
+  getUnreadCount,
+  clearAllNotifications
 } = require("../controllers/notification.controller");
 
 router.get("/", verifyToken, getMyNotifications);
@@ -13,5 +14,7 @@ router.get("/technician", verifyToken, getTechnicianNotifications);
 router.patch("/:id/read", verifyToken, markAsRead);
 router.patch("/mark-all-read", verifyToken, markAllAsRead);
 router.get("/unread-count", verifyToken, getUnreadCount);
+
+router.delete("/clear-all", verifyToken, clearAllNotifications);
 
 module.exports = router;

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import bgImage from '../../assets/repair-bg.png';
 import authService from './auth.service';
 import { useUser } from '../../context/UserContext';
@@ -24,6 +25,15 @@ const LoginPage = () => {
     try {
       const data = await authService.login(formData.email, formData.password);
       
+      toast.success('Login successful!', {
+        duration: 4000,
+        style: { 
+          backgroundColor: "#257c8a", 
+          color: "#fff",
+          border: "none"
+        }
+      });
+      
       // Store user data
       if (data.user) {
         localStorage.setItem('user', JSON.stringify(data.user));
@@ -38,7 +48,14 @@ const LoginPage = () => {
       }
     } catch (error) {
       console.error('Login failed:', error.response?.data?.message || error.message);
-      alert(error.response?.data?.message || 'Invalid credentials');
+      toast.error(error.response?.data?.message || 'Invalid credentials', {
+        duration: 4000,
+        style: { 
+          backgroundColor: "#dc2626", 
+          color: "#fff",
+          border: "none"
+        }
+      });
     }
   };
 

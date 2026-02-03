@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
+import { toast } from 'sonner';
 import fixhubTheme from "../../theme/fixhubTheme";
 import { getAllCustomers, blockUnblockUser } from "../../Services/adminService";
 import Button from "../../components/Admin/Button";
@@ -7,6 +8,7 @@ import StatusBadge from "../../components/Admin/StatusBadge";
 import ConfirmModal from "../../components/Admin/ConfirmModal";
 import { CardSkeleton } from "../../components/Admin/LoadingSkeleton";
 import { User, Mail, Phone } from 'lucide-react';
+import { HandleMessageUIError, HandleMessageUISuccess } from '../../utils/toastConfig';
 
 const Container = styled.div`
   max-width: 1400px;
@@ -251,10 +253,11 @@ const Customers = () => {
     try {
       await blockUnblockUser(selectedUser._id);
       await fetchCustomers();
+      toast.success(`Customer ${selectedUser.isBlocked ? 'unblocked' : 'blocked'} successfully!`, HandleMessageUISuccess());
       setModalOpen(false);
       setSelectedUser(null);
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to update user status");
+      toast.error(err.response?.data?.message || "Failed to update user status", HandleMessageUIError());
     }
   };
 

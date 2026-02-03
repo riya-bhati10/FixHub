@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import { useUser } from '../context/UserContext';
 import logo from '/logo.png';
 
@@ -67,6 +68,20 @@ const Navbar = ({
     }
   };
 
+  const clearAllNotifications = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      await fetch('http://localhost:5000/api/notifications/clear-all', {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      setNotifications([]);
+      setUnreadCount(0);
+    } catch (error) {
+      console.error('Error clearing notifications:', error);
+    }
+  };
+
   const isLanding = userType === 'landing';
   const shouldShowTransparent = isLanding && !scrolled;
   const bgClass = shouldShowTransparent ? 'bg-transparent' : 'bg-white';
@@ -74,15 +89,40 @@ const Navbar = ({
   const logoTextClass = shouldShowTransparent ? 'text-white' : 'text-[#1F7F85]';
   const shadowClass = shouldShowTransparent ? '' : 'shadow-sm border-b border-slate-200';
 
-  const handleLogout = () => {
-    clearUser();
-    if (onLogout) {
-      onLogout();
-    } else {
-      navigate('/login');
+  const handleLogout = async () => {
+    try {
+      toast.success('Logging out...', {
+        duration: 2000,
+        style: { 
+          backgroundColor: "#257c8a", 
+          color: "#fff",
+          border: "none"
+        }
+      });
+      
+      // Small delay to show toast before logout
+      setTimeout(async () => {
+        await clearUser();
+        if (onLogout) {
+          onLogout();
+        } else {
+          navigate('/login');
+        }
+      }, 1000);
+      
+    } catch (error) {
+      toast.error('Logout failed', {
+        duration: 4000,
+        style: { 
+          backgroundColor: "#dc2626", 
+          color: "#fff",
+          border: "none"
+        }
+      });
+    } finally {
+      setIsProfileOpen(false);
+      setIsMenuOpen(false);
     }
-    setIsProfileOpen(false);
-    setIsMenuOpen(false);
   };
 
   const getUserInitial = () => {
@@ -218,9 +258,17 @@ const Navbar = ({
 
                 {isNotificationOpen && (
                   <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-xl border border-slate-100 z-50 max-h-96 overflow-y-auto">
-                    <div className="p-4 border-b border-slate-100">
-                      <h3 className="text-sm font-bold text-slate-900">Notifications</h3>
-                    </div>
+                  <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-[#1f7f85]">
+                    <h3 className="text-sm font-bold text-white ">Notifications</h3>
+                    {notifications.length > 0 && (
+                      <button
+                        onClick={clearAllNotifications}
+                        className="text-xs text-red-500 hover:text-red-700 font-medium"
+                      >
+                        Clear All
+                      </button>
+                    )}
+                  </div>
                     {notifications.length > 0 ? (
                       <div className="divide-y divide-slate-100">
                         {notifications.map((notif) => (

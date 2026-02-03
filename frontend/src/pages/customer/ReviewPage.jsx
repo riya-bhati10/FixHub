@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import Navbar from '../../Common/Navbar';
 import api from '../Landing/api';
+import { HandleMessageUIError, HandleMessageUISuccess } from '../../utils/toastConfig';
 
 const ReviewPage = () => {
   const location = useLocation();
@@ -57,7 +59,7 @@ const ReviewPage = () => {
         comment: comment.trim()
       });
 
-      alert('Thank you for your review!');
+      toast.success('Thank you for your review!', HandleMessageUISuccess());
       navigate('/customer/my-bookings');
     } catch (error) {
       console.error('Error submitting review:', error);

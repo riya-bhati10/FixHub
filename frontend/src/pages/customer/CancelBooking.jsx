@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import Navbar from '../../Common/Navbar';
+import { HandleMessageUIError, HandleMessageUISuccess } from '../../utils/toastConfig';
 
 const CancelBooking = () => {
   const navigate = useNavigate();
@@ -14,7 +16,7 @@ const CancelBooking = () => {
 
   const handleConfirmCancel = () => {
     // Logic to cancel booking
-    alert('Booking cancelled successfully');
+    toast.success('Booking cancelled successfully', HandleMessageUISuccess());
     navigate('/dashboard');
   };
 
