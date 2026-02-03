@@ -62,7 +62,12 @@ const ReviewPage = () => {
     } catch (error) {
       console.error('Error submitting review:', error);
       console.error('Error response:', error.response?.data);
-      setError(error.response?.data?.message || 'Failed to submit review');
+      
+      if (error.response?.data?.isDuplicate) {
+        alert('You have already reviewed this service!');
+      } else {
+        setError(error.response?.data?.message || 'Failed to submit review');
+      }
     } finally {
       setLoading(false);
     }

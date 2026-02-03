@@ -120,6 +120,22 @@ const MySchedules = () => {
     }
   };
 
+  const handleVerifyOTP = async () => {
+    try {
+      setOtpLoading(true);
+      await api.post(`/bookings/${otpModal.bookingId}/verify-otp`, { otp });
+      alert('Booking completed successfully!');
+      setOtpModal({ isOpen: false, bookingId: null });
+      setOtp('');
+      await fetchBookings();
+    } catch (error) {
+      console.error('OTP verification error:', error);
+      alert(error.response?.data?.message || 'Invalid OTP. Please try again.');
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
   const handleResendOTP = async () => {
     try {
       setResendLoading(true);

@@ -268,6 +268,7 @@ exports.getServicesByCategory = async (req, res) => {
       isActive: true,
     }).populate({
       path: "technicianId", 
+      match: { isBlocked: false },
       select: "fullname phone location isBlocked"
     });
 
@@ -282,12 +283,13 @@ exports.getServicesByCategory = async (req, res) => {
         isActive: true,
       }).populate({
         path: "technicianId", 
+        match: { isBlocked: false },
         select: "fullname phone location isBlocked"
       });
     }
 
-    // Filter services with valid technicians
-    const activeServices = services.filter(s => s.technicianId);
+    // Filter services with valid and non-blocked technicians
+    const activeServices = services.filter(s => s.technicianId && !s.technicianId.isBlocked);
 
     const formattedServices = await Promise.all(
       activeServices.map(async (service) => {

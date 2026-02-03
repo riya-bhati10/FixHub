@@ -45,8 +45,23 @@ const ServiceList = () => {
     ));
   };
 
-  const handleServiceClick = (service) => {
-    navigate('/customer/booking-form', { state: { service } });
+  const handleServiceClick = async (service) => {
+    try {
+      // Check if customer is blocked before navigating to booking form
+      const user = JSON.parse(localStorage.getItem('user'));
+      if (user) {
+        const response = await api.get('/auth/me');
+        if (response.data.user.isBlocked) {
+          alert('Your account is blocked. You cannot book services. Please contact admin for assistance.');
+          return;
+        }
+      }
+      navigate('/customer/booking-form', { state: { service } });
+    } catch (error) {
+      console.error('Error checking user status:', error);
+      // If error checking status, still allow navigation (fallback)
+      navigate('/customer/booking-form', { state: { service } });
+    }
   };
 
   const getCategoryIcon = () => {

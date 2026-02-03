@@ -20,8 +20,8 @@ const TechnicianDashboard = () => {
 
   const fetchUserData = async () => {
     try {
-      const data = await userService.getUserProfile();
-      setUserData(data);
+      const user = JSON.parse(localStorage.getItem('user'));
+      setUserData(user);
     } catch (error) {
       console.error('Error fetching user data:', error);
     } finally {
@@ -45,6 +45,7 @@ const TechnicianDashboard = () => {
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('role');
+    localStorage.removeItem('user');
     window.location.href = '/login';
   };
 

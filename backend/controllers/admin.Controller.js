@@ -3,6 +3,7 @@ const Booking = require("../models/Booking.model");
 const Service = require("../models/Service.model");
 const Review = require("../models/Review.model");
 const Notification = require("../models/Notification.model");
+const { cancelPendingBookingsForBlockedTechnician } = require("../utils/booking.utils");
 
 // Dashboard Stats
 const getDashboardStats = async (req, res) => {
@@ -202,60 +203,36 @@ const blockUnblockUser = async (req, res) => {
     
     // Handle active bookings when user is blocked
     if (user.isBlocked) {
-      let activeBookings = [];
-      let notificationTarget = [];
-
       if (user.role === "technician") {
-        // Technician blocked - cancel their bookings, notify customers
-        activeBookings = await Booking.find({
-          technician: userId,
-          status: "pending",
-        }).populate("customer", "fullname");
-
-        notificationTarget = activeBookings.map((booking) => ({
-          userId: booking.customer._id,
-          title: "Booking Cancelled",
-          message: `Your booking has been cancelled because the technician's account was blocked. You can book another technician.`,
-        }));
+        // Use utility function to cancel pending bookings and notify customers
+        await cancelPendingBookingsForBlockedTechnician(userId);
       } else if (user.role === "customer") {
         // Customer blocked - cancel their bookings, notify technicians
-        activeBookings = await Booking.find({
+        const activeBookings = await Booking.find({
           customer: userId,
           status: { $in: ["pending", "accepted"] },
         }).populate("technician", "fullname");
 
-        notificationTarget = activeBookings.map((booking) => ({
-          userId: booking.technician._id,
-          title: "Booking Cancelled",
-          message: `A booking has been cancelled because the customer's account was blocked.`,
-        }));
-      }
+        if (activeBookings.length > 0) {
+          // Cancel all active bookings
+          await Booking.updateMany(
+            { _id: { $in: activeBookings.map((b) => b._id) } },
+            { 
+              status: "cancelled",
+              cancellationReason: "Customer account blocked by admin"
+            }
+          );
 
-      // Cancel all active bookings
-      if (activeBookings.length > 0) {
-        await Booking.updateMany(
-          {
-            _id: { $in: activeBookings.map((b) => b._id) },
-          },
-          {
-            status: "cancelled",
-            $push: {
-              statusHistory: {
-                status: "cancelled",
-                updatedAt: new Date(),
-              },
-            },
-          },
-        );
-
-        // Send notifications
-        for (const notification of notificationTarget) {
-          await Notification.create(notification);
+          // Send notifications to technicians
+          for (const booking of activeBookings) {
+            await Notification.create({
+              userId: booking.technician._id,
+              title: "Booking Cancelled",
+              message: "A booking has been cancelled because the customer's account was blocked.",
+              type: "booking_cancelled"
+            });
+          }
         }
-
-        console.log(
-          `Cancelled ${activeBookings.length} bookings for blocked ${user.role}`,
-        );
       }
     }
 

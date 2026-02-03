@@ -7,7 +7,7 @@ const {
   createReview,
   getTechnicianReviews,
 
-} = require("../controllers/review.Controller");
+} = require("../controllers/review.controller");
 
 router.post("/", verifyToken, checkBlocked, checkRole("customer"), createReview);
 

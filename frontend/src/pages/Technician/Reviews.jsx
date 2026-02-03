@@ -15,11 +15,34 @@ const Reviews = () => {
   const fetchReviews = async () => {
     try {
       setLoading(true);
-      const user = JSON.parse(localStorage.getItem('user'));
-      console.log('Fetching reviews for technician:', user._id);
       
-      const response = await api.get(`/reviews/technician/${user._id}`);
+      // Try to get user from localStorage
+      let user = null;
+      try {
+        const userStr = localStorage.getItem('user');
+        if (userStr && userStr !== 'undefined') {
+          user = JSON.parse(userStr);
+        }
+      } catch (parseError) {
+        console.error('Error parsing user from localStorage:', parseError);
+      }
+      
+      console.log('User from localStorage:', user);
+      
+      const technicianId = user?._id;
+      console.log('Fetching reviews for technician:', technicianId);
+      
+      if (!technicianId) {
+        console.error('No technician ID found in localStorage');
+        console.log('Available user data:', user);
+        console.log('localStorage user item:', localStorage.getItem('user'));
+        return;
+      }
+      
+      const response = await api.get(`/reviews/technician/${technicianId}`);
       console.log('Reviews response:', response.data);
+      console.log('Reviews array:', response.data.reviews);
+      console.log('Reviews length:', response.data.reviews?.length);
       
       setReviews(response.data.reviews || []);
     } catch (error) {

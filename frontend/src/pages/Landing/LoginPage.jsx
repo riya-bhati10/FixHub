@@ -23,10 +23,14 @@ const LoginPage = () => {
     e.preventDefault();
     try {
       const data = await authService.login(formData.email, formData.password);
+      console.log('Full login response:', data);
       
       // Store user data
       if (data.user) {
+        console.log('Storing user data:', data.user);
         localStorage.setItem('user', JSON.stringify(data.user));
+      } else {
+        console.error('No user data in login response:', data);
       }
       
       if (data.role === 'admin') {

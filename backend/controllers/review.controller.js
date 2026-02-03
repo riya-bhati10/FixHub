@@ -31,7 +31,18 @@ exports.createReview = async (req, res) => {
       });
     }
 
-    // Allow multiple reviews - removed duplicate check
+    // Check for duplicate review
+    const existingReview = await Review.findOne({
+      bookingId,
+      customerId,
+    });
+
+    if (existingReview) {
+      return res.status(400).json({
+        message: "You have already reviewed this service",
+        isDuplicate: true
+      });
+    }
 
     const newReview = await Review.create({
       bookingId,
