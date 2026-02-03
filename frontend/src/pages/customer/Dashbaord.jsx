@@ -170,7 +170,10 @@ const Dashboard = () => {
                 </div>
                 <h2 className="text-xl font-bold text-[#0F4C5C]">Active Bookings</h2>
             </div>
-            <button className="text-[#1F7F85] hover:text-[#0F4C5C] text-sm font-bold flex items-center gap-1 hover:gap-2 transition-all">
+            <button 
+              onClick={() => navigate('/customer/my-bookings')}
+              className="text-[#1F7F85] hover:text-[#0F4C5C] text-sm font-bold flex items-center gap-1 hover:gap-2 transition-all"
+            >
                 View All <span className="material-symbols-outlined text-sm">arrow_forward</span>
             </button>
           </div>

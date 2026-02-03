@@ -133,24 +133,26 @@ const MySchedules = () => {
     }
   };
 
-  const handleVerifyOTP = async () => {
-    if (!otp || otp.length !== 6) {
-      alert('Please enter a valid 6-digit OTP');
+  const handleContactCustomer = (phone) => {
+    if (!phone) {
+      alert('Customer phone number not available');
       return;
     }
-
-    try {
-      setOtpLoading(true);
-      await api.post(`/bookings/${otpModal.bookingId}/verify-otp`, { otp });
-      alert('Service completed successfully!');
-      setOtpModal({ isOpen: false, bookingId: null });
-      setOtp('');
-      await fetchBookings();
-    } catch (error) {
-      console.error('OTP verification error:', error);
-      alert(error.response?.data?.message || 'Invalid OTP. Please try again.');
-    } finally {
-      setOtpLoading(false);
+    
+    // Check if mobile device
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    if (isMobile) {
+      window.open(`tel:${phone}`, '_self');
+    } else {
+      // Desktop - copy to clipboard and show WhatsApp option
+      navigator.clipboard.writeText(phone).then(() => {
+        const whatsappUrl = `https://wa.me/${phone.replace(/[^0-9]/g, '')}`;
+        if (confirm(`Phone: ${phone} copied to clipboard!\n\nClick OK to open WhatsApp or Cancel to close.`)) {
+          window.open(whatsappUrl, '_blank');
+        }
+      }).catch(() => {
+        alert(`Customer Phone: ${phone}`);
+      });
     }
   };
 
@@ -257,7 +259,10 @@ const MySchedules = () => {
                     >
                       Start Work
                     </button>
-                    <button className="flex-1 bg-[#DCEBEC] hover:bg-[#1F7F85]/20 text-[#0F4C5C] py-2 px-3 rounded-lg text-sm font-bold transition-all">
+                    <button 
+                      onClick={() => handleContactCustomer(booking.customer.phone)}
+                      className="flex-1 bg-[#DCEBEC] hover:bg-[#1F7F85]/20 text-[#0F4C5C] py-2 px-3 rounded-lg text-sm font-bold transition-all"
+                    >
                       Contact
                     </button>
                   </>
@@ -270,7 +275,10 @@ const MySchedules = () => {
                     >
                       Mark Complete
                     </button>
-                    <button className="flex-1 bg-[#DCEBEC] hover:bg-[#1F7F85]/20 text-[#0F4C5C] py-2 px-3 rounded-lg text-sm font-bold transition-all">
+                    <button 
+                      onClick={() => handleContactCustomer(booking.customer.phone)}
+                      className="flex-1 bg-[#DCEBEC] hover:bg-[#1F7F85]/20 text-[#0F4C5C] py-2 px-3 rounded-lg text-sm font-bold transition-all"
+                    >
                       Contact
                     </button>
                   </>

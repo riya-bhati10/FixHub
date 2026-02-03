@@ -52,6 +52,10 @@ const ProfileSettings = () => {
         location: location
       };
       
+      // API call to update profile
+      const response = await api.put('/auth/profile', updateData);
+      
+      // Update local storage and state
       const updatedUser = { ...user, ...updateData };
       localStorage.setItem('user', JSON.stringify(updatedUser));
       setUser(updatedUser);

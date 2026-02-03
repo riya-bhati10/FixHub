@@ -16,7 +16,7 @@ const {
 } = require("../controllers/booking.Controller");
 
 
-router.post("/", verifyToken,checkBlocked, checkRole("customer"), createBooking);
+router.post("/", verifyToken, checkRole("customer"), createBooking);
 
 router.get(
   "/technician",
@@ -25,12 +25,11 @@ router.get(
   getTechnicianBookings,
 );
 
-router.patch("/:id/accept", verifyToken, checkBlocked ,checkRole("technician"), acceptBooking);
+router.patch("/:id/accept", verifyToken, checkRole("technician"), acceptBooking);
 
 router.patch(
   "/:id/cancel",
   verifyToken,
-  checkBlocked,
   checkRole("technician", "customer"),
   cancelBooking,
 );

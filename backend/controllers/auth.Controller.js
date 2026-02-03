@@ -173,7 +173,7 @@ exports.getCurrentUser = async (req, res) => {
 // Update profile
 exports.updateProfile = async (req, res) => {
   try {
-    const { fullname, phone } = req.body;
+    const { fullname, phone, location } = req.body;
     const user = await User.findById(req.user.userId);
     
     if (!user) {
@@ -186,6 +186,9 @@ exports.updateProfile = async (req, res) => {
     if (phone) {
       user.phone = phone;
     }
+    if (location !== undefined) {
+      user.location = location;
+    }
 
     await user.save();
 
@@ -196,6 +199,7 @@ exports.updateProfile = async (req, res) => {
         fullname: user.fullname,
         email: user.email,
         phone: user.phone,
+        location: user.location,
         role: user.role,
         createdAt: user.createdAt
       }

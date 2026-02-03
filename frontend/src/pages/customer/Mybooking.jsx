@@ -54,6 +54,17 @@ const MyBooking = () => {
     }
   };
 
+  const handleCancelBooking = async (bookingId) => {
+    try {
+      await api.patch(`/bookings/${bookingId}/cancel`);
+      fetchBookings(); // Refresh bookings
+      alert('Booking cancelled successfully');
+    } catch (error) {
+      console.error('Error cancelling booking:', error);
+      alert('Failed to cancel booking');
+    }
+  };
+
   const tabItems = [
     { id: 'all', label: 'All Booking', icon: 'list_alt' },
     { id: 'active', label: 'Active', icon: 'home_repair_service' },
@@ -245,6 +256,15 @@ const MyBooking = () => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center gap-2">
+                            {booking.status === 'pending' && (
+                              <button
+                                className="px-4 py-2 bg-red-500 text-white font-bold hover:bg-red-600 transition-colors flex items-center gap-2 text-sm"
+                                onClick={() => handleCancelBooking(booking._id || booking.bookingId)}
+                              >
+                                <span className="material-symbols-outlined text-sm">cancel</span>
+                                Cancel
+                              </button>
+                            )}
                             {booking.status === 'completed' && (
                               <button
                                 className="px-4 py-2 bg-amber-500 text-white font-bold hover:bg-amber-600 transition-colors flex items-center gap-2 text-sm"

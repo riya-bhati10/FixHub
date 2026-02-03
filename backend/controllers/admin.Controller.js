@@ -208,24 +208,24 @@ const blockUnblockUser = async (req, res) => {
       if (user.role === "technician") {
         // Technician blocked - cancel their bookings, notify customers
         activeBookings = await Booking.find({
-          technicianId: userId,
+          technician: userId,
           status: "pending",
-        }).populate("customerId", "fullname");
+        }).populate("customer", "fullname");
 
         notificationTarget = activeBookings.map((booking) => ({
-          userId: booking.customerId._id,
+          userId: booking.customer._id,
           title: "Booking Cancelled",
           message: `Your booking has been cancelled because the technician's account was blocked. You can book another technician.`,
         }));
       } else if (user.role === "customer") {
         // Customer blocked - cancel their bookings, notify technicians
         activeBookings = await Booking.find({
-          customerId: userId,
+          customer: userId,
           status: { $in: ["pending", "accepted"] },
-        }).populate("technicianId", "fullname");
+        }).populate("technician", "fullname");
 
         notificationTarget = activeBookings.map((booking) => ({
-          userId: booking.technicianId._id,
+          userId: booking.technician._id,
           title: "Booking Cancelled",
           message: `A booking has been cancelled because the customer's account was blocked.`,
         }));

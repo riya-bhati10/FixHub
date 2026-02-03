@@ -31,6 +31,18 @@ exports.createBooking = async (req, res) => {
       return res.status(400).json({ message: "Customer ID missing" });
     }
 
+    // Check if customer is blocked
+    const customer = await require("../models/User.model").findById(customerId);
+    if (customer.isBlocked) {
+      return res.status(403).json({ message: "Account suspended. Cannot create booking." });
+    }
+
+    // Check if technician is blocked
+    const technician = await require("../models/User.model").findById(technicianId);
+    if (technician.isBlocked) {
+      return res.status(400).json({ message: "Service provider not available." });
+    }
+
     let finalServiceLocation = serviceLocation;
     if (!serviceLocation) {
       const customer = await require("../models/User.model").findById(customerId);
@@ -189,6 +201,7 @@ exports.cancelBooking = async (req, res) => {
     const role = req.user.role;
     const bookingId = req.params.id;
 
+    // Allow cancellation for pending bookings only
     const booking = await Booking.findOne({
       _id: bookingId,
       status: "pending",
@@ -199,9 +212,11 @@ exports.cancelBooking = async (req, res) => {
         message: "Booking not found or cannot be cancelled",
       });
     }
+
+    // Check authorization - both customer and technician can cancel pending bookings
     if (
-      (role === "customer" && booking.customer.toString() !== userId) ||
-      (role === "technician" && booking.technician.toString() !== userId)
+      (role === "customer" && booking.customer.toString() !== userId.toString()) ||
+      (role === "technician" && booking.technician.toString() !== userId.toString())
     ) {
       return res.status(403).json({
         message: "Not authorized to cancel this booking",
@@ -212,7 +227,7 @@ exports.cancelBooking = async (req, res) => {
     await booking.save();
 
     res.json({
-      message: "Booking cancelled successfully",
+      message: "Booking declined successfully",
       status: booking.status,
     });
     
@@ -222,7 +237,7 @@ exports.cancelBooking = async (req, res) => {
     await Notification.create({
       userId: otherUser,
       title: 'Booking Cancelled',
-      message: `A booking has been cancelled`,
+      message: `A booking has been cancelled by ${role}`,
       type: 'booking_cancelled',
       recipient: notifRecipient,
       data: { bookingId: booking._id }
