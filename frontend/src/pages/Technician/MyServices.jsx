@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { toast } from 'sonner';
 import technicianService from '../../Services/technicianService';
 import AddService from './AddService';
+import { HandleMessageUIError, HandleMessageUISuccess } from '../../utils/toastConfig';
 
 const MyServices = () => {
   const [services, setServices] = useState([]);
@@ -37,9 +39,10 @@ const MyServices = () => {
       try {
         await technicianService.deleteService(serviceId);
         setServices(services.filter(service => service._id !== serviceId));
+        toast.success('Service deleted successfully!', HandleMessageUISuccess());
       } catch (error) {
         console.error('Error deleting service:', error);
-        alert('Failed to delete service');
+        toast.error('Failed to delete service', HandleMessageUIError());
       }
     }
   };
@@ -53,9 +56,10 @@ const MyServices = () => {
           ? { ...service, isActive: !currentStatus }
           : service
       ));
+      toast.success(`Service ${currentStatus ? 'deactivated' : 'activated'} successfully!`, HandleMessageUISuccess());
     } catch (error) {
       console.error('Error updating service status:', error);
-      alert('Failed to update service status');
+      toast.error('Failed to update service status', HandleMessageUIError());
     }
   };
 

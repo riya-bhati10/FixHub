@@ -155,7 +155,7 @@ const Notifications = () => {
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
-      <div className="mb-8">
+      <div className="mb-8 ">
         <h1 className="text-3xl font-bold text-fixhub-textDark mb-2">Notifications</h1>
         <p className="text-fixhub-textMuted">
           You have {unreadCount} unread notification{unreadCount !== 1 ? 's' : ''}

@@ -1,4 +1,5 @@
 import React from "react";
+import { Toaster } from "sonner";
 
 import FixHubDashboard from "./pages/customer/Mybooking";
 import BookService from "./pages/customer/BookService";
@@ -22,7 +23,13 @@ import { AdminDashboard, Technicians, Customers, Earnings } from "./pages/Admin"
 
 const App = () => {
   return (
-    <Routes>
+    <>
+      <Toaster 
+        position="bottom-right" 
+        expand={false}
+        richColors={false}
+      />
+      <Routes>
       {/* Public Routes */}
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<LoginPage />} />
@@ -67,7 +74,8 @@ const App = () => {
           <Route path="earnings" element={<Earnings />} />
         </Route>
       </Route>
-    </Routes>
+      </Routes>
+    </>
   );
 };
 

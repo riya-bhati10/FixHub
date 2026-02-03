@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { toast } from 'sonner';
 import bgImage from '../../assets/repair-bg.png';
 import authService from './auth.service';
 import { useUser } from '../../context/UserContext';
@@ -81,11 +82,25 @@ const SignupPage = () => {
           setSuggestions([]);
         },
         (error) => {
-          alert('Unable to retrieve location');
+          toast.error('Unable to retrieve location', {
+            duration: 4000,
+            style: { 
+              backgroundColor: "#dc2626", 
+              color: "#fff",
+              border: "none"
+            }
+          });
         }
       );
     } else {
-      alert('Geolocation is not supported by this browser.');
+      toast.error('Geolocation is not supported by this browser.', {
+        duration: 4000,
+        style: { 
+          backgroundColor: "#dc2626", 
+          color: "#fff",
+          border: "none"
+        }
+      });
     }
   };
 
@@ -106,6 +121,15 @@ const SignupPage = () => {
 
       const response = await authService.register(userData);
       
+      toast.success('Account created successfully!', {
+        duration: 4000,
+        style: { 
+          backgroundColor: "#257c8a", 
+          color: "#fff",
+          border: "none"
+        }
+      });
+      
       // Store token and user data for automatic login
       if (response.token) {
         localStorage.setItem('token', response.token);
@@ -121,7 +145,14 @@ const SignupPage = () => {
       }
     } catch (error) {
       console.error('Signup failed:', error.response?.data?.message || error.message);
-      alert(error.response?.data?.message || 'Signup failed');
+      toast.error(error.response?.data?.message || 'Signup failed', {
+        duration: 4000,
+        style: { 
+          backgroundColor: "#dc2626", 
+          color: "#fff",
+          border: "none"
+        }
+      });
     }
   };
 

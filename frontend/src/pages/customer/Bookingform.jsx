@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import Navbar from '../../Common/Navbar';
 import api from '../Landing/api';
+import { HandleMessageUIError, HandleMessageUISuccess } from '../../utils/toastConfig';
 
 const BookingForm = () => {
   const location = useLocation();
@@ -50,12 +52,12 @@ const BookingForm = () => {
         },
         (error) => {
           console.error('Geolocation error:', error);
-          alert('Unable to get your location. Please enter manually.');
+          toast.error('Unable to get your location. Please enter manually.', HandleMessageUIError());
           setLoadingLocation(false);
         }
       );
     } else {
-      alert('Geolocation is not supported by your browser');
+      toast.error('Geolocation is not supported by your browser', HandleMessageUIError());
       setLoadingLocation(false);
     }
   };
@@ -76,6 +78,7 @@ const BookingForm = () => {
       };
 
       await api.post('/bookings', bookingData);
+      toast.success('Booking created successfully!', HandleMessageUISuccess());
       navigate('/customer/booking-success');
     } catch (error) {
       setError(error.response?.data?.message || 'Failed to create booking');

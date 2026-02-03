@@ -1,6 +1,8 @@
 import React, { useState } from "react";
+import { toast } from 'sonner';
 import api from '../Landing/api';
 import technicianService from '../../Services/technicianService';
+import { HandleMessageUIError, HandleMessageUISuccess } from '../../utils/toastConfig';
 
 const AddService = ({ onClose, onServiceAdded }) => {
   const [formData, setFormData] = useState({
@@ -56,7 +58,7 @@ const AddService = ({ onClose, onServiceAdded }) => {
       const response = await api.post('/services', serviceData);
       console.log('Service created:', response.data);
       
-      alert("Service Added Successfully ✅");
+      toast.success("Service Added Successfully ✅", HandleMessageUISuccess());
       
       if (onServiceAdded) {
         onServiceAdded();
@@ -69,7 +71,7 @@ const AddService = ({ onClose, onServiceAdded }) => {
       console.error('Error adding service:', error);
       console.error('Error response:', error.response?.data);
       const errorMessage = error.response?.data?.message || 'Failed to add service. Please try again.';
-      alert(errorMessage);
+      toast.error(errorMessage, HandleMessageUIError());
     } finally {
       setLoading(false);
     }

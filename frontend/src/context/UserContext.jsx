@@ -31,10 +31,22 @@ export const UserProvider = ({ children }) => {
     setUser(userData);
   };
 
-  const clearUser = () => {
-    setUser(null);
-    localStorage.removeItem('token');
-    localStorage.removeItem('role');
+  const clearUser = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (token) {
+        // Call logout API to blacklist token
+        await axiosInstance.get('/auth/logout');
+      }
+    } catch (error) {
+      console.error('Logout API error:', error);
+    } finally {
+      // Clear user data regardless of API success/failure
+      setUser(null);
+      localStorage.removeItem('token');
+      localStorage.removeItem('role');
+      localStorage.removeItem('user');
+    }
   };
 
   return (
