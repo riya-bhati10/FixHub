@@ -1,4 +1,4 @@
-const Service = require("../models/service.model");
+const Service = require("../models/Service.model");
 const { getTechnicianRating } = require("../utils/rating.helper");
 
 

@@ -1,7 +1,7 @@
-const Review = require("../models/review.model");
-const Booking = require("../models/booking.model");
-const Service = require("../models/service.model");
-const Notification = require("../models/notification.model");
+const Review = require("../models/Review.model");
+const Booking = require("../models/Booking.model");
+const Service = require("../models/Service.model");
+const Notification = require("../models/Notification.model");
 
 
 // add new review (customer)
