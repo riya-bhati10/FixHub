@@ -32,4 +32,4 @@ const earningSchema = new mongoose.Schema({
   timestamps: true
 });
 
-module.exports = mongoose.model('Earning', earningSchema);
+module.exports = mongoose.models.Earning || mongoose.model('Earning', earningSchema);

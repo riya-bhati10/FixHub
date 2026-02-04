@@ -32,4 +32,4 @@ const ratingSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-module.exports = mongoose.model("Review", ratingSchema);
+module.exports = mongoose.models.Review || mongoose.model("Review", ratingSchema);

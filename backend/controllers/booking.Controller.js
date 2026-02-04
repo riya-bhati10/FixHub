@@ -32,20 +32,20 @@ exports.createBooking = async (req, res) => {
     }
 
     // Check if customer is blocked
-    const customer = await require("../models/User.Model").findById(customerId);
+    const customer = await require("../models/user.model").findById(customerId);
     if (customer.isBlocked) {
       return res.status(403).json({ message: "Account suspended. Cannot create booking." });
     }
 
     // Check if technician is blocked
-    const technician = await require("../models/User.Model").findById(technicianId);
+    const technician = await require("../models/user.model").findById(technicianId);
     if (technician.isBlocked) {
       return res.status(400).json({ message: "Service provider not available." });
     }
 
     let finalServiceLocation = serviceLocation;
     if (!serviceLocation) {
-      const customer = await require("../models/User.Model").findById(customerId);
+      const customer = await require("../models/user.model").findById(customerId);
       finalServiceLocation = customer?.location || "Address not provided";
     }
     
@@ -462,7 +462,7 @@ exports.verifyCompletionOTP = async (req, res) => {
     });
 
     // Update technician total earnings
-    await require("../models/User.Model").findByIdAndUpdate(
+    await require("../models/user.model").findByIdAndUpdate(
       technicianId,
       { $inc: { totalEarnings: earning.technicianAmount } }
     );
