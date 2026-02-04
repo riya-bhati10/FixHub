@@ -1,4 +1,4 @@
-const User = require("../models/User.model");
+const User = require("../models/user.model");
 
 
 const checkBlocked = async (req, res, next) => {
@@ -47,7 +47,7 @@ const checkBlockedForAcceptedWork = async (req, res, next) => {
 
     if (user.isBlocked) {
       // Check if this is for an already accepted booking
-      const booking = await require("../models/Booking.model").findOne({
+      const booking = await require("../models/booking.model").findOne({
         _id: bookingId,
         technician: userId,
         status: { $in: ["accepted", "in-progress", "pending-completion"] }

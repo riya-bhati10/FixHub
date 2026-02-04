@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const Review = require("../models/Review.model");
+const Review = require("../models/review.model");
 
 exports.getTechnicianRating = async (technicianId) => {
   const result = await Review.aggregate([

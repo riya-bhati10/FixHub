@@ -1,5 +1,5 @@
-const Booking = require("../models/Booking.model");
-const Notification = require("../models/Notification.model");
+const Booking = require("../models/booking.model");
+const Notification = require("../models/notification.model");
 
 // Auto-cancel pending bookings when technician is blocked
 const cancelPendingBookingsForBlockedTechnician = async (technicianId) => {
