@@ -105,8 +105,13 @@ const BookingForm = () => {
 
   return (
     <div className="min-h-screen bg-[#F7FBFC]">
-      <Navbar userType="customer" navLinks={customerNavLinks} showProfile showNotifications />
-      
+      <Navbar
+        userType="customer"
+        navLinks={customerNavLinks}
+        showProfile
+        showNotifications
+      />
+
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12">
         {/* Header */}
         <div className="mb-6 sm:mb-8">
@@ -117,8 +122,12 @@ const BookingForm = () => {
             <span className="material-symbols-outlined">arrow_back</span>
             Back
           </button>
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#0F4C5C] mb-2">Book Service</h1>
-          <p className="text-xs sm:text-sm text-slate-600">Fill in the details to book your service</p>
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#0F4C5C] mb-2">
+            Book Service
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-600">
+            Fill in the details to book your service
+          </p>
         </div>
 
         {/* Technician Info Card */}
@@ -128,18 +137,29 @@ const BookingForm = () => {
               {service.technician?.name?.charAt(0).toUpperCase()}
             </div>
             <div>
-              <h3 className="text-lg font-bold text-[#0F4C5C]">{service.technician?.name}</h3>
-              <p className="text-sm text-slate-600 capitalize">{service.serviceType}</p>
+              <h3 className="text-lg font-bold text-[#0F4C5C]">
+                {service.technician?.name}
+              </h3>
+              <p className="text-sm text-slate-600 capitalize">
+                {service.serviceType}
+              </p>
               <div className="flex items-center gap-2 mt-1">
-                <span className="material-symbols-outlined text-sm text-amber-500 fill-current">star</span>
-                <span className="text-sm font-semibold text-amber-700">{service.technician?.rating || 4.5}</span>
+                <span className="material-symbols-outlined text-sm text-amber-500 fill-current">
+                  star
+                </span>
+                <span className="text-sm font-semibold text-amber-700">
+                  {service.technician?.rating || 4.5}
+                </span>
               </div>
             </div>
           </div>
         </div>
 
         {/* Booking Form */}
-        <form onSubmit={handleSubmit} className="bg-white rounded-xl border-2 border-[#DCEBEC] p-4 sm:p-6 lg:p-8">
+        <form
+          onSubmit={handleSubmit}
+          className="bg-white rounded-xl border-2 border-[#DCEBEC] p-4 sm:p-6 lg:p-8"
+        >
           {error && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
               {error}
@@ -147,19 +167,21 @@ const BookingForm = () => {
           )}
 
           <div className="space-y-5">
-            {/* Service Type */}
+            {/* Service Type - Read Only */}
             <div>
               <label className="block text-sm font-semibold text-[#0F4C5C] mb-2">
-                Service Type <span className="text-red-500">*</span>
+                Service Type
               </label>
               <input
                 type="text"
                 name="serviceType"
-                value={formData.serviceType}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-3 text-sm border-2 border-[#DCEBEC] rounded-lg focus:ring-2 focus:ring-[#1F7F85] focus:border-[#1F7F85] outline-none"
+                value={service?.serviceType || service?.serviceName || ''}
+                disabled
+                className="w-full px-4 py-3 text-sm border-2 border-[#DCEBEC] rounded-lg bg-[#E0F2F1] cursor-not-allowed text-[#0F4C5C] font-medium"
               />
+              <p className="text-xs text-slate-500 mt-1">
+                Service selected by you
+              </p>
             </div>
 
             {/* Description */}
@@ -201,13 +223,19 @@ const BookingForm = () => {
                   title="Use current location"
                 >
                   {loadingLocation ? (
-                    <span className="material-symbols-outlined animate-spin">progress_activity</span>
+                    <span className="material-symbols-outlined animate-spin">
+                      progress_activity
+                    </span>
                   ) : (
-                    <span className="material-symbols-outlined">my_location</span>
+                    <span className="material-symbols-outlined">
+                      my_location
+                    </span>
                   )}
                 </button>
               </div>
-              <p className="text-xs text-slate-500 mt-1">Click the location icon to use your current location</p>
+              <p className="text-xs text-slate-500 mt-1">
+                Click the location icon to use your current location
+              </p>
             </div>
 
             {/* Date & Time */}
@@ -222,7 +250,7 @@ const BookingForm = () => {
                   value={formData.preferredDate}
                   onChange={handleChange}
                   required
-                  min={new Date().toISOString().split('T')[0]}
+                  min={new Date().toISOString().split("T")[0]}
                   className="w-full px-4 py-3 text-sm border-2 border-[#DCEBEC] rounded-lg focus:ring-2 focus:ring-[#1F7F85] focus:border-[#1F7F85] outline-none"
                 />
               </div>
@@ -230,14 +258,25 @@ const BookingForm = () => {
                 <label className="block text-sm font-semibold text-[#0F4C5C] mb-2">
                   Preferred Time <span className="text-red-500">*</span>
                 </label>
-                <input
-                  type="time"
+                <select
                   name="preferredTime"
                   value={formData.preferredTime}
                   onChange={handleChange}
                   required
                   className="w-full px-4 py-3 text-sm border-2 border-[#DCEBEC] rounded-lg focus:ring-2 focus:ring-[#1F7F85] focus:border-[#1F7F85] outline-none"
-                />
+                >
+                  <option value="">Select time slot</option>
+                  <option value="09:00-10:00">09:00 AM - 10:00 AM</option>
+                  <option value="10:00-11:00">10:00 AM - 11:00 AM</option>
+                  <option value="11:00-12:00">11:00 AM - 12:00 PM</option>
+                  <option value="12:00-13:00">12:00 PM - 01:00 PM</option>
+                  <option value="12:00-13:00">02:00 PM - 03:00 PM</option>
+                  <option value="14:00-15:00">02:00 PM - 03:00 PM</option>
+                  <option value="15:00-16:00">03:00 PM - 04:00 PM</option>
+                  <option value="16:00-17:00">04:00 PM - 05:00 PM</option>
+                  <option value="17:00-18:00">05:00 PM - 06:00 PM</option>
+                  <option value="18:00-19:00">06:00 PM - 07:00 PM</option>
+                </select>
               </div>
             </div>
 
@@ -247,7 +286,9 @@ const BookingForm = () => {
                 Service Charge
               </label>
               <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#0F4C5C] font-bold text-lg">$</span>
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#0F4C5C] font-bold text-lg">
+                  $
+                </span>
                 <input
                   type="text"
                   value={service?.price || 0}
@@ -255,7 +296,9 @@ const BookingForm = () => {
                   className="w-full pl-10 pr-4 py-3 text-lg font-bold text-[#0F4C5C] border-2 border-[#DCEBEC] rounded-lg bg-[#E0F2F1] cursor-not-allowed"
                 />
               </div>
-              <p className="text-xs text-slate-500 mt-1">Price set by technician</p>
+              <p className="text-xs text-slate-500 mt-1">
+                Price set by technician
+              </p>
             </div>
           </div>
 
@@ -275,13 +318,17 @@ const BookingForm = () => {
             >
               {loading ? (
                 <>
-                  <span className="material-symbols-outlined animate-spin">progress_activity</span>
+                  <span className="material-symbols-outlined animate-spin">
+                    progress_activity
+                  </span>
                   Processing...
                 </>
               ) : (
                 <>
                   Confirm Booking
-                  <span className="material-symbols-outlined">check_circle</span>
+                  <span className="material-symbols-outlined">
+                    check_circle
+                  </span>
                 </>
               )}
             </button>

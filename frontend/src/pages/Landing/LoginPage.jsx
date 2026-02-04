@@ -24,7 +24,6 @@ const LoginPage = () => {
     e.preventDefault();
     try {
       const data = await authService.login(formData.email, formData.password);
-      console.log('Full login response:', data);
       
       toast.success('Login successful!', {
         duration: 4000,
@@ -37,10 +36,7 @@ const LoginPage = () => {
       
       // Store user data
       if (data.user) {
-        console.log('Storing user data:', data.user);
         localStorage.setItem('user', JSON.stringify(data.user));
-      } else {
-        console.error('No user data in login response:', data);
       }
       
       if (data.role === 'admin') {
@@ -51,7 +47,6 @@ const LoginPage = () => {
         navigate('/customer/dashboard');
       }
     } catch (error) {
-      console.error('Login failed:', error.response?.data?.message || error.message);
       toast.error(error.response?.data?.message || 'Invalid credentials', {
         duration: 4000,
         style: { 

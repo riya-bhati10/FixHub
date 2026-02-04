@@ -236,7 +236,9 @@ const SignupPage = () => {
             name="phone"
             value={formData.phone}
             onChange={handleChange}
-            placeholder="Mobile Number"
+            placeholder="Mobile Number (10 digits)"
+            pattern="[0-9]{10}"
+            maxLength="10"
             className="w-full px-3 py-2 sm:px-4 sm:py-2 text-sm sm:text-base border rounded-md focus:outline-none focus:ring-2 focus:ring-fixhub-primary"
             required
           />

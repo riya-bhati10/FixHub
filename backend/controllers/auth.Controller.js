@@ -65,14 +65,12 @@ exports.signup = async (req, res) => {
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    console.log('Login attempt:', { email, password: '***' });
 
     if (!email || !password) {
       return res.status(400).json({ message: "Email & password required" });
     }
 
     const user = await User.findOne({ email: email.toLowerCase() }).select("+password");
-    console.log('User found:', user ? 'Yes' : 'No');
     
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -87,8 +85,6 @@ exports.login = async (req, res) => {
     }
 
     const isMatch = await comparePassword(password, user.password);
-    console.log('Password match:', isMatch);
-    console.log('Stored hash:', user.password.substring(0, 30) + '...');
     
     if (!isMatch) {
       return res.status(401).json({ message: "Invalid credentials" });
@@ -113,7 +109,6 @@ exports.login = async (req, res) => {
       }
     });
   } catch (err) {
-    console.error('Login error:', err);
     res.status(500).json({ message: err.message });
   }
 };
@@ -157,7 +152,6 @@ module.exports.logoutUser = async (req, res) => {
 
     res.status(200).json({ message: 'Logged out successfully' });
   } catch (error) {
-    console.error('Logout error:', error);
     res.status(500).json({ message: error.message });
   }
 }

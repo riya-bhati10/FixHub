@@ -55,17 +55,21 @@ const ProfileSettings = () => {
       };
       
       // API call to update profile
-      const response = await api.put('/auth/profile', updateData);
+      const response = await api.put('/auth/update-profile', updateData);
       
-      // Update local storage and state
-      const updatedUser = { ...user, ...updateData };
-      localStorage.setItem('user', JSON.stringify(updatedUser));
-      setUser(updatedUser);
+      // Validate response data before updating
+      if (response.data && response.data.user) {
+        const updatedUser = response.data.user;
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+        setUser(updatedUser);
+      } else {
+        throw new Error('Invalid response format from server');
+      }
       
       toast.success('Profile updated successfully!', HandleMessageUISuccess());
     } catch (error) {
       console.error('Error updating profile:', error);
-      toast.error('Failed to update profile.', HandleMessageUIError());
+      toast.error(error.response?.data?.message || 'Failed to update profile.', HandleMessageUIError());
     }
   };
 
