@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
-const UserModel = require("../models/user.model");
-const blacklistTokenModel = require("../models/blacklisttoken.model");
+const UserModel = require("../models/User.Model");
+const blacklistTokenModel = require("../models/blacklistToken.model");
 
 module.exports.verifyToken = async (req, res, next) => {
   const authHeader = req.headers.authorization;

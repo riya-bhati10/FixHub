@@ -10,7 +10,7 @@ const {
   getTechniciansByService,
   getAllServices,
   getServicesByCategory
-} = require("../controllers/service.controller");
+} = require("../controllers/service.Controller");
 const { verifyToken } = require("../middleware/auth.middleware");
 const { checkRole } = require("../middleware/role.middleware");
 const { checkBlocked } = require("../middleware/block.middleware");

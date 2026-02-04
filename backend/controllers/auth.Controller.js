@@ -1,5 +1,5 @@
-const User = require("../models/user.model");
-const blackListTokenModel = require("../models/blacklisttoken.model");
+const User = require("../models/User.Model");
+const blackListTokenModel = require("../models/blacklistToken.model");
 const {
   hashPassword,
   comparePassword,

@@ -14,7 +14,7 @@ const {
   deleteService,
   updateServiceStatus,
   migrateMyEarnings
-} = require("../controllers/technician.controller");
+} = require("../controllers/technician.Controller");
 const { verifyToken } = require("../middleware/auth.middleware");
 
 // All routes require authentication
