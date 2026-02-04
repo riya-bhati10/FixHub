@@ -13,7 +13,7 @@ const {
   getCustomerBookings,
   verifyCompletionOTP,
   resendCompletionOTP,
-} = require("../controllers/booking.Controller");
+} = require("../controllers/booking.controller");
 
 
 router.post("/", verifyToken, checkRole("customer"), createBooking);

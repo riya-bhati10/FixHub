@@ -1,9 +1,9 @@
 const User = require("../models/user.model");
 
-const Booking = require("../models/Booking.model");
-const Service = require("../models/Service.model");
-const Review = require("../models/Review.model");
-const Notification = require("../models/Notification.model");
+const Booking = require("../models/booking.model");
+const Service = require("../models/service.model");
+const Review = require("../models/review.model");
+const Notification = require("../models/notification.model");
 const { cancelPendingBookingsForBlockedTechnician } = require("../utils/booking.utils");
 
 // Dashboard Stats

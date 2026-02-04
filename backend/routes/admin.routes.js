@@ -13,7 +13,7 @@ const {
   getUserBookingHistory,
   getCompletedBookings,
   getChartData
-} = require("../controllers/admin.Controller");
+} = require("../controllers/admin.controller");
 
 const adminOnly = [verifyToken, checkRole("admin")];
 
