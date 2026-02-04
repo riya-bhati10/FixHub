@@ -5,14 +5,14 @@ const connectDB = require("./config/db");
 const app = express();
 
 
-const authRoutes = require("./routes/auth.routes");
-const adminRoutes = require("./routes/admin.routes");
-const serviceRoutes = require("./routes/service.routes");
-const bookingRoutes = require("./routes/booking.routes");
-const notificationRoutes = require("./routes/notification.routes");
-const reviewRoutes = require("./routes/review.routes");
-const userRoutes = require("./routes/user.routes");
-const technicianRoutes = require("./routes/technician.routes");
+const authRoutes = require("./routes/auth.routes.js");
+const adminRoutes = require("./routes/admin.routes.js");
+const serviceRoutes = require("./routes/service.routes.js");
+const bookingRoutes = require("./routes/booking.routes.js");
+const notificationRoutes = require("./routes/notification.routes.js");
+const reviewRoutes = require("./routes/review.routes.js");
+const userRoutes = require("./routes/user.routes.js");
+const technicianRoutes = require("./routes/technician.routes.js");
 
 dotenv.config();
 connectDB();
