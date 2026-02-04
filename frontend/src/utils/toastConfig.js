@@ -1,4 +1,4 @@
-// Success messages के लिए
+// Success messages
 export const HandleMessageUISuccess = () => {
   return {
     duration: 4000,
@@ -10,7 +10,7 @@ export const HandleMessageUISuccess = () => {
   };
 };
 
-// Error messages के लिए  
+// Error messages 
 export const HandleMessageUIError = () => {
   return {
     duration: 4000,
