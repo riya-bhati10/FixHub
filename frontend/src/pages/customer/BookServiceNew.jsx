@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import Navbar from '../../Common/Navbar';
-import axiosInstance from '../../Services/axiosInstance';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import Navbar from "../../Common/Navbar";
+import axiosInstance from "../../Services/axiosInstance";
+import { HandleMessageUIError } from "../../utils/toastConfig";
 
 const BookService = () => {
   const navigate = useNavigate();
@@ -12,12 +14,12 @@ const BookService = () => {
   const [showTechnicians, setShowTechnicians] = useState(false);
   const [showBookingForm, setShowBookingForm] = useState(false);
   const [loading, setLoading] = useState(true);
-  
+
   const [formData, setFormData] = useState({
-    issue: '',
-    serviceDate: '',
-    timeSlot: '',
-    address: ''
+    issue: "",
+    serviceDate: "",
+    timeSlot: "",
+    address: "",
   });
 
   useEffect(() => {
@@ -26,10 +28,10 @@ const BookService = () => {
 
   const fetchServices = async () => {
     try {
-      const response = await axiosInstance.get('/api/services');
+      const response = await axiosInstance.get("/api/services");
       setServices(response.data);
     } catch (error) {
-      console.error('Error fetching services:', error);
+      console.error("Error fetching services:", error);
     } finally {
       setLoading(false);
     }
@@ -37,10 +39,12 @@ const BookService = () => {
 
   const fetchTechnicians = async (serviceId) => {
     try {
-      const response = await axiosInstance.get(`/api/technician/by-service/${serviceId}`);
+      const response = await axiosInstance.get(
+        `/api/technician/by-service/${serviceId}`,
+      );
       setTechnicians(response.data);
     } catch (error) {
-      console.error('Error fetching technicians:', error);
+      console.error("Error fetching technicians:", error);
     }
   };
 
@@ -62,14 +66,14 @@ const BookService = () => {
       const bookingData = {
         serviceId: selectedService._id,
         technicianId: selectedTechnician._id,
-        ...formData
+        ...formData,
       };
-      
-      await axiosInstance.post('/api/bookings', bookingData);
-      navigate('/booking-success');
+
+      await axiosInstance.post("/api/bookings", bookingData);
+      navigate("/booking-success");
     } catch (error) {
-      console.error('Booking failed:', error);
-      alert('Booking failed. Please try again.');
+      console.error("Booking failed:", error);
+      toast.error("Booking failed. Please try again.", HandleMessageUIError());
     }
   };
 
@@ -87,14 +91,16 @@ const BookService = () => {
   return (
     <div className="min-h-screen bg-gray-100">
       <Navbar />
-      
+
       <div className="max-w-6xl mx-auto px-4 py-8 mt-24">
         {!showTechnicians && !showBookingForm && (
           <div>
-            <h2 className="text-3xl font-bold mb-8 text-center">Select a Service</h2>
+            <h2 className="text-3xl font-bold mb-8 text-center">
+              Select a Service
+            </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {services.map(service => (
-                <div 
+              {services.map((service) => (
+                <div
                   key={service._id}
                   className="bg-white p-6 rounded-lg shadow hover:shadow-lg transition-shadow cursor-pointer"
                   onClick={() => handleServiceSelect(service)}
@@ -110,16 +116,18 @@ const BookService = () => {
 
         {showTechnicians && (
           <div>
-            <button 
+            <button
               onClick={() => setShowTechnicians(false)}
               className="mb-4 text-teal-600 hover:underline"
             >
               ← Back to Services
             </button>
-            <h2 className="text-3xl font-bold mb-8 text-center">Select a Technician</h2>
+            <h2 className="text-3xl font-bold mb-8 text-center">
+              Select a Technician
+            </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {technicians.map(tech => (
-                <div 
+              {technicians.map((tech) => (
+                <div
                   key={tech._id}
                   className="bg-white p-6 rounded-lg shadow hover:shadow-lg transition-shadow cursor-pointer"
                   onClick={() => handleTechnicianSelect(tech)}
@@ -137,7 +145,7 @@ const BookService = () => {
 
         {showBookingForm && (
           <div>
-            <button 
+            <button
               onClick={() => {
                 setShowBookingForm(false);
                 setShowTechnicians(true);
@@ -147,14 +155,18 @@ const BookService = () => {
               ← Back to Technicians
             </button>
             <div className="max-w-md mx-auto bg-white p-6 rounded-lg shadow">
-              <h2 className="text-2xl font-bold mb-6 text-center">Book Service</h2>
-              
+              <h2 className="text-2xl font-bold mb-6 text-center">
+                Book Service
+              </h2>
+
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className="block mb-1 font-medium">Issue</label>
                   <textarea
                     value={formData.issue}
-                    onChange={(e) => setFormData({...formData, issue: e.target.value})}
+                    onChange={(e) =>
+                      setFormData({ ...formData, issue: e.target.value })
+                    }
                     required
                     className="w-full border p-2 rounded"
                     placeholder="Describe your issue"
@@ -166,7 +178,9 @@ const BookService = () => {
                   <input
                     type="date"
                     value={formData.serviceDate}
-                    onChange={(e) => setFormData({...formData, serviceDate: e.target.value})}
+                    onChange={(e) =>
+                      setFormData({ ...formData, serviceDate: e.target.value })
+                    }
                     required
                     className="w-full border p-2 rounded"
                   />
@@ -176,7 +190,9 @@ const BookService = () => {
                   <label className="block mb-1 font-medium">Time Slot</label>
                   <select
                     value={formData.timeSlot}
-                    onChange={(e) => setFormData({...formData, timeSlot: e.target.value})}
+                    onChange={(e) =>
+                      setFormData({ ...formData, timeSlot: e.target.value })
+                    }
                     required
                     className="w-full border p-2 rounded"
                   >
@@ -193,7 +209,9 @@ const BookService = () => {
                   <input
                     type="text"
                     value={formData.address}
-                    onChange={(e) => setFormData({...formData, address: e.target.value})}
+                    onChange={(e) =>
+                      setFormData({ ...formData, address: e.target.value })
+                    }
                     required
                     className="w-full border p-2 rounded"
                     placeholder="Enter your address"

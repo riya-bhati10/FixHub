@@ -19,7 +19,6 @@ const History = () => {
         technicianService.getTechnicianBookingHistory(),
         technicianService.getTechnicianStats()
       ]);
-      
       setHistoryData(history);
       setStats(statsData);
     } catch (error) {
@@ -118,7 +117,9 @@ const History = () => {
               </svg>
             </div>
             <div className="ml-4">
-              <p className="text-2xl font-bold text-fixhub-textDark">{stats?.averageRating || 'N/A'}</p>
+              <p className="text-2xl font-bold text-fixhub-textDark">
+                {stats?.averageRating && stats.averageRating > 0 ? stats.averageRating.toFixed(1) : 'N/A'}
+              </p>
               <p className="text-fixhub-textMuted">Avg Rating</p>
             </div>
           </div>

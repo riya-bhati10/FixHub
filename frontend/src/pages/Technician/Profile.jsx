@@ -20,8 +20,8 @@ const Profile = () => {
 
   const fetchUserProfile = async () => {
     try {
-      const response = await api.get('/auth/profile');
-      const userData = response.data;
+      const response = await api.get('/auth/me');
+      const userData = response.data.user;
       setUser(userData);
       setFirstName(userData.fullname.firstname);
       setLastName(userData.fullname.lastname || '');
