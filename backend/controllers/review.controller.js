@@ -8,37 +8,53 @@ const Notification = require("../models/Notification.model");
 exports.createReview = async (req, res) => {
   try {
     const customerId = req.user.userId;
-    const { bookingId, rating, review } = req.body;
+    const { bookingId, rating, review, comment } = req.body;
+    const reviewText = review || comment; // Accept both field names
+
+    console.log('Review request - customerId:', customerId);
+    console.log('Review request - bookingId:', bookingId);
 
     const booking = await Booking.findOne({
       _id: bookingId,
-      customerId,
+      customer: customerId,
       status: "completed",
     });
 
+    console.log('Found booking:', booking);
+
     if (!booking) {
+      const anyBooking = await Booking.findOne({ _id: bookingId });
+      console.log('Booking with any status:', anyBooking);
+      
       return res.status(400).json({
         message: "You can review only your completed bookings",
       });
     }
 
-    const existingReview = await Review.findOne({ bookingId });
+    // Check for duplicate review
+    const existingReview = await Review.findOne({
+      bookingId,
+      customerId,
+    });
+
     if (existingReview) {
       return res.status(400).json({
-        message: "Review already submitted for this booking",
+        message: "You have already reviewed this service",
+        isDuplicate: true
       });
     }
 
     const newReview = await Review.create({
       bookingId,
       customerId,
-      technicianId: booking.technicianId,
+      technicianId: booking.technician,
       rating,
-      review,
+      review: reviewText,
     });
     
      await Notification.create({
-       userId: booking.technicianId,
+       userId: booking.technician,
+       title: 'New Review Received',
        message: "You received a new review for your service",
      });
 
@@ -47,12 +63,7 @@ exports.createReview = async (req, res) => {
       review: newReview,
     });
   } catch (err) {
-    if (err.code === 11000) {
-      return res.status(400).json({
-        message: "Review already exists for this booking",
-      });
-    }
-
+    console.error('Review creation error:', err);
     return res.status(500).json({ message: err.message });
   }
 };
@@ -62,43 +73,33 @@ exports.createReview = async (req, res) => {
 exports.getTechnicianReviews = async (req, res) => {
   try {
     const { technicianId } = req.params;
-    const { serviceName } = req.query;
+    console.log('Fetching reviews for technician:', technicianId);
 
-    let reviews = await Review.find({ technicianId })
-      .populate({
-        path: "bookingId",
-        populate: {
-          path: "serviceId",
-          select: "serviceName",
-        },
-      })
+    const reviews = await Review.find({ technicianId })
       .populate("customerId", "fullname")
+      .populate("bookingId", "serviceType")
       .sort({ createdAt: -1 });
 
-    if (serviceName) {
-      reviews = reviews.filter(
-        (r) => r.bookingId?.serviceId?.serviceName === serviceName,
-      );
-    }
+    console.log('Found reviews:', reviews.length);
 
-const formattedReviews = reviews.map((r) => ({
-  rating: r.rating,
-  review: r.review,
-  customerName: r.customerId?.fullname
-    ? r.customerId.fullname.firstname +
-      " " +
-      (r.customerId.fullname.lastname || "")
-    : "N/A",
-  serviceName: r.bookingId?.serviceId?.serviceName || "N/A",
-  createdAt: r.createdAt,
-}));
-
+    const formattedReviews = reviews.map((r) => ({
+      rating: r.rating,
+      review: r.review,
+      customerName: r.customerId?.fullname
+        ? r.customerId.fullname.firstname +
+          " " +
+          (r.customerId.fullname.lastname || "")
+        : "N/A",
+      serviceName: r.bookingId?.serviceType || "N/A",
+      createdAt: r.createdAt,
+    }));
 
     res.json({
       count: formattedReviews.length,
       reviews: formattedReviews,
     });
   } catch (err) {
+    console.error('Error fetching technician reviews:', err);
     res.status(500).json({ message: err.message });
   }
 };

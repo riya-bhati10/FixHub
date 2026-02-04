@@ -5,20 +5,24 @@ const connectDB = require("./config/db");
 const app = express();
 
 
-const authRoutes = require("./routes/auth.routes");
+const authRoutes = require("./routes/auth.Routes");
+const adminRoutes = require("./routes/admin.routes");
 const serviceRoutes = require("./routes/service.routes");
 const bookingRoutes = require("./routes/booking.routes");
 const notificationRoutes = require("./routes/notification.routes");
 const reviewRoutes = require("./routes/review.routes");
 const userRoutes = require("./routes/user.routes");
+const technicianRoutes = require("./routes/technician.routes");
 
 dotenv.config();
 connectDB();
 
 
 const corsOptions = {
-    origin: ['http://localhost:5173', 'http://localhost:3000', 'http://localhost:3001'],
+    origin: ['http://localhost:5173', 'http://localhost:3000'],
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization']
 }
 app.use(cors(corsOptions));
 app.use(express.json());
@@ -30,6 +34,13 @@ app.use("/api/bookings", bookingRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/user", userRoutes);
+app.use("/api/technician", technicianRoutes);
+app.use("/api/admin",adminRoutes);
+
+// Test endpoint
+app.get('/api/test', (req, res) => {
+  res.json({ message: 'Backend is working!' });
+});
 
 
 app.listen(process.env.PORT, () =>

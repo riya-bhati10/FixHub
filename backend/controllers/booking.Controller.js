@@ -1,6 +1,7 @@
 const Booking = require("../models/Booking.model");
 const Service = require("../models/Service.model");
 const Notification = require("../models/Notification.model");
+const Earning = require("../models/Earning.model");
 
 
 // create new booking (for customer)
@@ -16,10 +17,30 @@ exports.createBooking = async (req, res) => {
       serviceLocation, 
     } = req.body;
 
+    console.log("Booking data:", req.body);
+    console.log("Customer ID:", customerId);
+    console.log("User object:", req.user);
+
     if (!serviceId || !technicianId || !issue || !serviceDate || !timeSlot) {
       return res.status(400).json({
         message: "All required booking fields must be provided",
       });
+    }
+
+    if (!customerId) {
+      return res.status(400).json({ message: "Customer ID missing" });
+    }
+
+    // Check if customer is blocked
+    const customer = await require("../models/User.model").findById(customerId);
+    if (customer.isBlocked) {
+      return res.status(403).json({ message: "Account suspended. Cannot create booking." });
+    }
+
+    // Check if technician is blocked
+    const technician = await require("../models/User.model").findById(technicianId);
+    if (technician.isBlocked) {
+      return res.status(400).json({ message: "Service provider not available." });
     }
 
     let finalServiceLocation = serviceLocation;
@@ -41,33 +62,42 @@ exports.createBooking = async (req, res) => {
     }
 
     const booking = await Booking.create({
-      customerId,
-      technicianId,
-      serviceId,
-      issue,
-      serviceDate,
-      timeSlot,
-      serviceLocation: finalServiceLocation,
-      status: "pending",
-      statusHistory: [
-        {
-          status: "pending",
-          updatedAt: new Date(),
-        },
-      ],
+      customer: customerId,
+      technician: technicianId,
+      serviceType: service.serviceName || 'Other',
+      description: issue,
+      location: finalServiceLocation,
+      preferredDate: serviceDate,
+      preferredTime: timeSlot,
+      estimatedPrice: service.serviceCharge,
+      status: "pending"
     });
+
+    console.log("Booking created successfully:", booking);
 
     res.status(201).json({
       message: "Booking created successfully",
       bookingId: booking._id,
       status: booking.status,
     });
+    
     await Notification.create({
       userId: technicianId,
-      message: "You have received a new booking request",
+      title: 'New Booking Request',
+      message: `You have received a new booking request for ${service.serviceName || 'service'}`,
+      type: 'booking_request',
+      recipient: 'technician',
+      data: {
+        bookingId: booking._id,
+        serviceType: service.serviceName,
+        serviceDate: serviceDate,
+        timeSlot: timeSlot
+      }
     });
 
   } catch (err) {
+    console.error("Booking creation error:", err);
+    console.error("Error details:", err.message);
     res.status(500).json({ message: err.message });
   }
 };
@@ -78,37 +108,39 @@ exports.getTechnicianBookings = async (req, res) => {
     const technicianId = req.user.userId;
     const { status } = req.query;
 
-    const filter = { technicianId };
+    const filter = { technician: technicianId };
     if (status && typeof status === 'string') {
-      const allowedStatuses = ['pending', 'accepted', 'in_progress', 'completed', 'cancelled'];
+      const allowedStatuses = ['pending', 'accepted', 'in-progress', 'completed', 'cancelled'];
       if (allowedStatuses.includes(status)) {
         filter.status = status;
       }
     }
 
     const bookings = await Booking.find(filter)
-      .populate("customerId", "fullname phone")
-      .populate("serviceId", "serviceName serviceCharge")
+      .populate("customer", "fullname phone")
       .sort({ createdAt: -1 });
 
     const formattedBookings = bookings.map((b) => ({
+      _id: b._id,
       bookingId: b._id,
       status: b.status,
-      serviceDate: b.serviceDate,
-      timeSlot: b.timeSlot,
+      serviceDate: b.preferredDate,
+      timeSlot: b.preferredTime,
       createdAt: b.createdAt,
 
       customer: {
-        id: b.customerId?._id || null,
-        name: b.customerId?.fullname ?
-          b.customerId.fullname.firstname + " " + b.customerId.fullname.lastname : "N/A",
-        phone: b.customerId?.phone || "N/A",
+        _id: b.customer?._id || null,
+        id: b.customer?._id || null,
+        name: b.customer?.fullname ?
+          b.customer.fullname.firstname + " " + b.customer.fullname.lastname : "N/A",
+        phone: b.customer?.phone || "N/A",
       },
 
       service: {
-        id: b.serviceId?._id || null,
-        name: b.serviceId?.serviceName || "N/A",
-        charge: b.serviceId?.serviceCharge || 0,
+        name: b.serviceType || "N/A",
+        type: b.serviceType || "N/A",
+        charge: b.estimatedPrice || 0,
+        price: b.estimatedPrice || 0,
       },
     }));
 
@@ -129,7 +161,7 @@ exports.acceptBooking = async (req, res) => {
 
     const booking = await Booking.findOne({
       _id: bookingId,
-      technicianId,
+      technician: technicianId,
       status: "pending",
     });
 
@@ -140,11 +172,6 @@ exports.acceptBooking = async (req, res) => {
     }
 
     booking.status = "accepted";
-    booking.statusHistory.push({
-      status: "accepted",
-      updatedAt: new Date(),
-    });
-
     await booking.save();
 
     res.json({
@@ -152,9 +179,14 @@ exports.acceptBooking = async (req, res) => {
       bookingId: booking._id,
       status: booking.status,
     });
+    
     await Notification.create({
-      userId: booking.customerId,
-      message: "Your booking has been accepted",
+      userId: booking.customer,
+      title: 'Booking Accepted',
+      message: "Your booking has been accepted by the technician",
+      type: 'booking_accepted',
+      recipient: 'customer',
+      data: { bookingId: booking._id }
     });
 
   } catch (err) {
@@ -169,6 +201,7 @@ exports.cancelBooking = async (req, res) => {
     const role = req.user.role;
     const bookingId = req.params.id;
 
+    // Allow cancellation for pending bookings only
     const booking = await Booking.findOne({
       _id: bookingId,
       status: "pending",
@@ -179,9 +212,11 @@ exports.cancelBooking = async (req, res) => {
         message: "Booking not found or cannot be cancelled",
       });
     }
+
+    // Check authorization - both customer and technician can cancel pending bookings
     if (
-      (role === "customer" && booking.customerId.toString() !== userId) ||
-      (role === "technician" && booking.technicianId.toString() !== userId)
+      (role === "customer" && booking.customer.toString() !== userId.toString()) ||
+      (role === "technician" && booking.technician.toString() !== userId.toString())
     ) {
       return res.status(403).json({
         message: "Not authorized to cancel this booking",
@@ -189,23 +224,23 @@ exports.cancelBooking = async (req, res) => {
     }
 
     booking.status = "cancelled";
-    booking.statusHistory.push({
-      status: "cancelled",
-      updatedAt: new Date(),
-    });
-
     await booking.save();
 
     res.json({
-      message: "Booking cancelled successfully",
+      message: "Booking declined successfully",
       status: booking.status,
     });
-    const otherUser =
-      role === "customer" ? booking.technicianId : booking.customerId;
+    
+    const otherUser = role === "customer" ? booking.technician : booking.customer;
+    const notifRecipient = role === "customer" ? 'technician' : 'customer';
 
     await Notification.create({
       userId: otherUser,
-      message: "Booking has been cancelled",
+      title: 'Booking Cancelled',
+      message: `A booking has been cancelled by ${role}`,
+      type: 'booking_cancelled',
+      recipient: notifRecipient,
+      data: { bookingId: booking._id }
     });
 
   } catch (err) {
@@ -228,13 +263,13 @@ exports.updateBookingStatus = async (req, res) => {
     }
 
     const allowedTransitions = {
-      accepted: ["in_progress"],
-      in_progress: ["completed"],
+      accepted: ["in-progress"],
+      "in-progress": ["pending-completion"],
     };
 
     const booking = await Booking.findOne({
       _id: bookingId,
-      technicianId,
+      technician: technicianId,
     });
 
     if (!booking) {
@@ -254,12 +289,49 @@ exports.updateBookingStatus = async (req, res) => {
       });
     }
 
-    booking.status = status;
-    booking.statusHistory.push({
-      status,
-      updatedAt: new Date(),
-    });
+    // If moving to pending-completion, generate OTP
+    if (status === "pending-completion") {
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      booking.completionOTP = otp;
+      booking.otpGeneratedAt = new Date();
+      booking.status = status;
+      await booking.save();
 
+      console.log('=== OTP GENERATION ===');
+      console.log('Booking ID:', booking._id);
+      console.log('OTP Generated:', otp);
+      console.log('Customer ID:', booking.customer);
+      console.log('Customer ID Type:', typeof booking.customer);
+
+      try {
+        // Send OTP to customer
+        const notification = await Notification.create({
+          userId: booking.customer,
+          title: 'Service Completion OTP',
+          message: `Your service completion OTP is: ${otp}. Share this with the technician to complete the service.`,
+          type: 'otp',
+          recipient: 'customer',
+          data: { bookingId: booking._id, otp }
+        });
+
+        console.log('=== NOTIFICATION CREATED ===');
+        console.log('Notification ID:', notification._id);
+        console.log('Notification:', JSON.stringify(notification, null, 2));
+      } catch (notifError) {
+        console.error('=== NOTIFICATION ERROR ===');
+        console.error('Error creating notification:', notifError);
+        console.error('Error details:', notifError.message);
+      }
+
+      return res.json({
+        message: "OTP sent to customer. Please enter the OTP to complete the service.",
+        bookingId: booking._id,
+        status: booking.status,
+        requiresOTP: true
+      });
+    }
+
+    booking.status = status;
     await booking.save();
 
     res.json({
@@ -267,11 +339,152 @@ exports.updateBookingStatus = async (req, res) => {
       bookingId: booking._id,
       status: booking.status,
     });
+    
+    const statusMessages = {
+      'in-progress': 'Your booking is now in progress',
+    };
+    
     await Notification.create({
-      userId: booking.customerId,
-      message: `Your booking is now ${status.replace("_", " ")}`,
+      userId: booking.customer,
+      title: 'Booking Status Updated',
+      message: statusMessages[status] || `Your booking status: ${status}`,
+      type: 'system',
+      recipient: 'customer',
+      data: { bookingId: booking._id, status }
     });
 
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// Resend OTP
+exports.resendCompletionOTP = async (req, res) => {
+  try {
+    const technicianId = req.user.userId;
+    const bookingId = req.params.id;
+
+    const booking = await Booking.findOne({
+      _id: bookingId,
+      technician: technicianId,
+      status: "pending-completion"
+    });
+
+    if (!booking) {
+      return res.status(404).json({
+        message: "Booking not found or not in pending-completion status",
+      });
+    }
+
+    // Generate new OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    booking.completionOTP = otp;
+    booking.otpGeneratedAt = new Date();
+    await booking.save();
+
+    console.log('=== RESEND OTP ===');
+    console.log('New OTP Generated:', otp);
+    console.log('Customer ID:', booking.customer);
+
+    try {
+      // Send new OTP to customer
+      const notification = await Notification.create({
+        userId: booking.customer,
+        title: 'Service Completion OTP (Resent)',
+        message: `Your new service completion OTP is: ${otp}. Share this with the technician to complete the service.`,
+        type: 'otp',
+        recipient: 'customer',
+        data: { bookingId: booking._id, otp }
+      });
+
+      console.log('Resend Notification Created:', notification._id);
+    } catch (notifError) {
+      console.error('Error creating resend notification:', notifError);
+    }
+
+    res.json({
+      message: "New OTP sent to customer successfully",
+      bookingId: booking._id,
+    });
+  } catch (err) {
+    console.error('Resend OTP error:', err);
+    res.status(500).json({ message: err.message });
+  }
+};
+exports.verifyCompletionOTP = async (req, res) => {
+  try {
+    const technicianId = req.user.userId;
+    const bookingId = req.params.id;
+    const { otp } = req.body;
+
+    if (!otp) {
+      return res.status(400).json({ message: "OTP is required" });
+    }
+
+    const booking = await Booking.findOne({
+      _id: bookingId,
+      technician: technicianId,
+      status: "pending-completion"
+    });
+
+    if (!booking) {
+      return res.status(404).json({
+        message: "Booking not found or not in pending-completion status",
+      });
+    }
+
+    // Check if OTP is expired (valid for 1 minute)
+    const otpAge = Date.now() - new Date(booking.otpGeneratedAt).getTime();
+    if (otpAge > 1 * 60 * 1000) {
+      return res.status(400).json({ message: "OTP has expired. Please request a new one." });
+    }
+
+    // Verify OTP
+    if (booking.completionOTP !== otp) {
+      return res.status(400).json({ message: "Invalid OTP" });
+    }
+
+    // Mark as completed
+    booking.status = "completed";
+    booking.completedAt = new Date();
+    booking.completionOTP = undefined;
+    booking.otpGeneratedAt = undefined;
+    await booking.save();
+
+    // Create earning record
+    const earning = await Earning.create({
+      technician: technicianId,
+      booking: bookingId,
+      totalAmount: booking.estimatedPrice,
+      adminCut: booking.estimatedPrice * 0.1,
+      technicianAmount: booking.estimatedPrice * 0.9,
+      status: 'pending'
+    });
+
+    // Update technician total earnings
+    await require("../models/User.model").findByIdAndUpdate(
+      technicianId,
+      { $inc: { totalEarnings: earning.technicianAmount } }
+    );
+
+    console.log(`Earning created: $${earning.technicianAmount} for technician ${technicianId}`);
+
+    // Notify customer
+    await Notification.create({
+      userId: booking.customer,
+      title: 'Service Completed',
+      message: 'Your service has been completed successfully',
+      type: 'booking_completed',
+      recipient: 'customer',
+      data: { bookingId: booking._id }
+    });
+
+    res.json({
+      message: "Service completed successfully",
+      bookingId: booking._id,
+      status: booking.status,
+      earning: earning.technicianAmount
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -284,38 +497,40 @@ exports.getCustomerBookings = async (req, res) => {
     const customerId = req.user.userId;
     const { status } = req.query;
 
-    const filter = { customerId };
+    const filter = { customer: customerId };
     if (status && typeof status === 'string') {
-      const allowedStatuses = ['pending', 'accepted', 'in_progress', 'completed', 'cancelled'];
+      const allowedStatuses = ['pending', 'accepted', 'in-progress', 'completed', 'cancelled'];
       if (allowedStatuses.includes(status)) {
         filter.status = status;
       }
     }
 
     const bookings = await Booking.find(filter)
-      .populate("technicianId", "fullname phone")
-      .populate("serviceId", "serviceName serviceCharge")
+      .populate("technician", "fullname phone")
       .sort({ createdAt: -1 });
 
     const formattedBookings = bookings.map((b) => ({
+      _id: b._id,
       bookingId: b._id,
       status: b.status,
-      serviceDate: b.serviceDate,
-      timeSlot: b.timeSlot,
-      issue: b.issue,
+      serviceDate: b.preferredDate,
+      timeSlot: b.preferredTime,
+      issue: b.description,
       createdAt: b.createdAt,
 
       technician: {
-        id: b.technicianId?._id || null,
-        name: b.technicianId?.fullname ? 
-          b.technicianId.fullname.firstname + " " + b.technicianId.fullname.lastname : "N/A",
-        phone: b.technicianId?.phone || "N/A",
+        _id: b.technician?._id || null,
+        id: b.technician?._id || null,
+        name: b.technician?.fullname ? 
+          b.technician.fullname.firstname + " " + b.technician.fullname.lastname : "N/A",
+        phone: b.technician?.phone || "N/A",
       },
 
       service: {
-        id: b.serviceId?._id || null,
-        name: b.serviceId?.serviceName || "N/A",
-        charge: b.serviceId?.serviceCharge || 0,
+        name: b.serviceType || "N/A",
+        type: b.serviceType || "N/A",
+        charge: b.estimatedPrice || 0,
+        price: b.estimatedPrice || 0,
       },
     }));
 

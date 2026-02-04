@@ -1,21 +1,33 @@
 import React, { useState, useEffect } from 'react';
-import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
+import { useUser } from '../context/UserContext';
 import logo from '/logo.png';
 
 const Navbar = ({ 
-  userType = 'landing', // 'landing', 'customer', 'technician', 'admin'
+  userType = 'landing',
   navLinks = [],
   showProfile = false,
   showNotifications = false,
-  userName = '',
-  onLogout = null,
-  isScrolled = false
+  onLogout = null
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
   const navigate = useNavigate();
-  const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
+  const { user, clearUser } = useUser();
+
+  useEffect(() => {
+    console.log('Navbar - Current user:', user);
+    if (showNotifications && user) {
+      fetchNotifications();
+      const interval = setInterval(fetchNotifications, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [user, showNotifications]);
 
   useEffect(() => {
     if (userType === 'landing') {
@@ -27,6 +39,49 @@ const Navbar = ({
     }
   }, [userType]);
 
+  const fetchNotifications = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+      
+      const response = await fetch('http://localhost:5000/api/notifications', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await response.json();
+      setNotifications(data.slice(0, 5));
+      setUnreadCount(data.filter(n => !n.read).length);
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+    }
+  };
+
+  const markAsRead = async (notificationId) => {
+    try {
+      const token = localStorage.getItem('token');
+      await fetch(`http://localhost:5000/api/notifications/${notificationId}/read`, {
+        method: 'PATCH',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      fetchNotifications();
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+    }
+  };
+
+  const clearAllNotifications = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      await fetch('http://localhost:5000/api/notifications/clear-all', {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      setNotifications([]);
+      setUnreadCount(0);
+    } catch (error) {
+      console.error('Error clearing notifications:', error);
+    }
+  };
+
   const isLanding = userType === 'landing';
   const shouldShowTransparent = isLanding && !scrolled;
   const bgClass = shouldShowTransparent ? 'bg-transparent' : 'bg-white';
@@ -34,21 +89,85 @@ const Navbar = ({
   const logoTextClass = shouldShowTransparent ? 'text-white' : 'text-[#1F7F85]';
   const shadowClass = shouldShowTransparent ? '' : 'shadow-sm border-b border-slate-200';
 
-  const handleLogout = () => {
-    if (onLogout) {
-      onLogout();
-    } else {
-      navigate('/login');
+  const handleLogout = async () => {
+    try {
+      toast.success('Logging out...', {
+        duration: 2000,
+        style: { 
+          backgroundColor: "#257c8a", 
+          color: "#fff",
+          border: "none"
+        }
+      });
+      
+      // Small delay to show toast before logout
+      setTimeout(async () => {
+        await clearUser();
+        if (onLogout) {
+          onLogout();
+        } else {
+          navigate('/login');
+        }
+      }, 1000);
+      
+    } catch (error) {
+      toast.error('Logout failed', {
+        duration: 4000,
+        style: { 
+          backgroundColor: "#dc2626", 
+          color: "#fff",
+          border: "none"
+        }
+      });
+    } finally {
+      setIsProfileOpen(false);
+      setIsMenuOpen(false);
     }
-    setIsProfileOpen(false);
-    setIsMenuOpen(false);
   };
 
   const getUserInitial = () => {
-    if (userName) return userName.charAt(0).toUpperCase();
+    console.log('Getting user initial for:', user);
+    if (user?.fullname?.firstname) {
+      const initial = user.fullname.firstname.charAt(0).toUpperCase();
+      console.log('User initial:', initial);
+      return initial;
+    }
+    // Fallback to localStorage if user context not loaded yet
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        if (parsedUser?.fullname?.firstname) {
+          return parsedUser.fullname.firstname.charAt(0).toUpperCase();
+        }
+      } catch (e) {
+        console.error('Error parsing stored user:', e);
+      }
+    }
+    // Final fallback based on userType
     if (userType === 'technician') return 'T';
     if (userType === 'admin') return 'A';
+    if (userType === 'customer') return 'C';
     return 'U';
+  };
+
+  const getUserName = () => {
+    if (user?.fullname) {
+      return `${user.fullname.firstname} ${user.fullname.lastname || ''}`;
+    }
+    // Fallback to localStorage
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        if (parsedUser?.fullname) {
+          return `${parsedUser.fullname.firstname} ${parsedUser.fullname.lastname || ''}`;
+        }
+      } catch (e) {
+        console.error('Error parsing stored user:', e);
+      }
+    }
+    return 'User';
   };
 
   return (
@@ -61,7 +180,7 @@ const Navbar = ({
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
-          <div className="flex-shrink-0 cursor-pointer" onClick={() => navigate(isLanding ? '/' : '/dashboard')}>
+          <div className="flex-shrink-0 cursor-pointer" onClick={() => navigate(isLanding ? '/' : userType === 'customer' ? '/customer/dashboard' : '/technician/dashboard')}>
             <div className="flex items-center gap-3">
               <img src={logo} alt="FixHub Logo" className="h-16 w-16 sm:h-20 sm:w-20" />
               <span className={`text-xl sm:text-2xl font-extrabold ${logoTextClass} tracking-tight transition-colors`}>FixHub</span>
@@ -124,10 +243,92 @@ const Navbar = ({
 
             {/* Notification Bell */}
             {showNotifications && (
-              <button className={`w-10 h-10 flex items-center justify-center ${textClass} hover:text-[#1F7F85] hover:bg-slate-50 rounded-full transition-all relative`}>
-                <span className="material-symbols-outlined text-2xl">notifications</span>
-                <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
-              </button>
+              <div className="relative">
+                <button
+                  onClick={() => setIsNotificationOpen(!isNotificationOpen)}
+                  className={`w-10 h-10 flex items-center justify-center ${textClass} hover:text-[#1F7F85] hover:bg-slate-50 rounded-full transition-all relative`}
+                >
+                  <span className="material-symbols-outlined text-2xl">notifications</span>
+                  {unreadCount > 0 && (
+                    <span className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
+                  )}
+                </button>
+
+                {isNotificationOpen && (
+                  <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-xl border border-slate-100 z-50 max-h-96 overflow-y-auto">
+                  <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-[#1f7f85]">
+                    <h3 className="text-sm font-bold text-white ">Notifications</h3>
+                    {notifications.length > 0 && (
+                      <button
+                        onClick={clearAllNotifications}
+                        className="text-xs text-red-500 hover:text-red-700 font-medium"
+                      >
+                        Clear All
+                      </button>
+                    )}
+                  </div>
+                    {notifications.length > 0 ? (
+                      <div className="divide-y divide-slate-100">
+                        {notifications.map((notif) => (
+                          <div
+                            key={notif._id}
+                            onClick={() => {
+                              if (notif.type !== 'otp') {
+                                markAsRead(notif._id);
+                              }
+                            }}
+                            className={`p-4 hover:bg-slate-50 cursor-pointer transition-colors ${
+                              !notif.read ? 'bg-blue-50' : ''
+                            } ${notif.type === 'otp' ? 'bg-purple-50 border-l-4 border-purple-500' : ''}`}
+                          >
+                            <div className="flex items-start gap-3">
+                              <span className={`material-symbols-outlined text-xl mt-0.5 ${
+                                notif.type === 'otp' ? 'text-purple-600' : 'text-[#1F7F85]'
+                              }`}>
+                                {notif.type === 'booking_request' ? 'event' : 
+                                 notif.type === 'booking_accepted' ? 'check_circle' :
+                                 notif.type === 'booking_completed' ? 'task_alt' :
+                                 notif.type === 'booking_cancelled' ? 'cancel' :
+                                 notif.type === 'otp' ? 'lock' :
+                                 notif.type === 'review_received' ? 'star' : 'notifications'}
+                              </span>
+                              <div className="flex-1 min-w-0">
+                                <p className={`text-sm font-bold ${
+                                  notif.type === 'otp' ? 'text-purple-900' : 'text-slate-900'
+                                }`}>{notif.title}</p>
+                                <p className={`text-xs mt-1 ${
+                                  notif.type === 'otp' ? 'text-purple-700 font-semibold' : 'text-slate-600'
+                                }`}>{notif.message}</p>
+                                {notif.type === 'otp' && notif.data?.otp && (
+                                  <div className="mt-2 p-2 bg-white rounded border-2 border-purple-300">
+                                    <p className="text-xs text-purple-600 font-bold mb-1">Your OTP:</p>
+                                    <p className="text-2xl font-black text-purple-900 tracking-widest text-center">
+                                      {notif.data.otp}
+                                    </p>
+                                  </div>
+                                )}
+                                <p className="text-xs text-slate-400 mt-1">
+                                  {new Date(notif.createdAt).toLocaleDateString()}
+                                </p>
+                              </div>
+                              {!notif.read && notif.type !== 'otp' && (
+                                <span className="w-2 h-2 bg-blue-500 rounded-full mt-2"></span>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="p-8 text-center">
+                        <span className="material-symbols-outlined text-4xl text-slate-300">notifications_off</span>
+                        <p className="text-sm text-slate-500 mt-2">No notifications</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             )}
 
             {/* Avatar Dropdown */}

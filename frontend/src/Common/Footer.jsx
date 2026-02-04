@@ -54,14 +54,6 @@ const Footer = () => {
               <li>123 Tech Street, Digital City</li>
             </ul>
             
-            <div className="mt-6">
-              <Link 
-                to="/technician-login" 
-                className="text-sm text-fixhub-light hover:text-fixhub-mint transition-colors underline"
-              >
-                Technician Login
-              </Link>
-            </div>
           </div>
         </div>
 

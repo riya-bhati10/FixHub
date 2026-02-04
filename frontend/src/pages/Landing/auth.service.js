@@ -1,5 +1,6 @@
 import axiosInstance from '../../Services/axiosInstance';
 
+// Adjust the base path '/users' if your backend routes are different (e.g., '/auth')
 const API_URL = '/auth'; 
 
 const register = async (userData) => {
@@ -26,8 +27,14 @@ const logout = async () => {
   localStorage.removeItem('role');
 };
 
+const getCurrentUser = async () => {
+  const response = await axiosInstance.get(`${API_URL}/me`);
+  return response.data;
+};
+
 export default {
   register,
   login,
   logout,
+  getCurrentUser,
 };

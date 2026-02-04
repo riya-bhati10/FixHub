@@ -82,11 +82,6 @@ const ServicesSection = () => {
           ))}
         </div>
 
-        <div className="text-center mt-8 sm:mt-10 lg:mt-12">
-          <button className="bg-fixhub-primary text-fixhub-textWhite px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-semibold text-sm sm:text-base hover:bg-fixhub-dark transition-colors">
-            View All Services
-          </button>
-        </div>
       </div>
     </section>
   );

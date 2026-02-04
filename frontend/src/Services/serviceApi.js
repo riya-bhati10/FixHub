@@ -6,9 +6,10 @@ export const authApi = {
   login: (data) => axiosInstance.post("/auth/login", data),
 };
 
-/* ============ SERVICES / PETROL PUMPS ============ */
+/* ============ SERVICES ============ */
 export const serviceApi = {
-  getAll: () => axiosInstance.get("/services"),
+  getMyServices: () => axiosInstance.get("/services"), // Technician's own services (auth required)
+  getAllServices: () => axiosInstance.get("/services/all"), // All services for customers (no auth)
   create: (data) => axiosInstance.post("/services", data),
   update: (id, data) => axiosInstance.put(`/services/${id}`, data),
   delete: (id) => axiosInstance.delete(`/services/${id}`),

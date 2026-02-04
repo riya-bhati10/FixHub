@@ -1,38 +1,37 @@
-import React, { useState } from 'react';
-import { useTechnician } from './context/TechnicianContext';
+import React, { useState, useEffect } from 'react';
+import technicianService from '../../Services/technicianService';
 
 const History = () => {
-  const { schedules } = useTechnician();
+  const [historyData, setHistoryData] = useState([]);
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [selectedReview, setSelectedReview] = useState(null);
-  
-  const completedServices = schedules.filter(schedule => schedule.status === 'completed');
-  
-  const mockReviews = {
-    3: {
-      rating: 5,
-      comment: "Excellent service! Fixed my laptop quickly and professionally. Highly recommended!",
-      date: "2024-01-21"
-    },
-    5: {
-      rating: 4,
-      comment: "Good work on the refrigerator repair. Technician was punctual and knowledgeable.",
-      date: "2024-01-19"
-    },
-    6: {
-      rating: 5,
-      comment: "Amazing service! My washing machine works like new. Very satisfied with the repair.",
-      date: "2024-01-18"
+
+  useEffect(() => {
+    fetchHistoryData();
+  }, []);
+
+  const fetchHistoryData = async () => {
+    try {
+      setLoading(true);
+      const [history, statsData] = await Promise.all([
+        technicianService.getTechnicianBookingHistory(),
+        technicianService.getTechnicianStats()
+      ]);
+      
+      setHistoryData(history);
+      setStats(statsData);
+    } catch (error) {
+      console.error('Error fetching history data:', error);
+      setError('Failed to load history data');
+    } finally {
+      setLoading(false);
     }
   };
-
-  const getRatingStars = (rating) => {
-    return Array.from({ length: 5 }, (_, i) => (
-      <span key={i} className={`text-lg ${i < rating ? 'text-yellow-400' : 'text-gray-300'}`}>
-        ★
-      </span>
-    ));
-  };
-
+  
+  const completedServices = historyData.filter(item => item.status === 'completed');
+  
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -40,6 +39,53 @@ const History = () => {
       day: 'numeric'
     });
   };
+
+  const getRatingStars = (rating) => {
+    return Array.from({ length: 5 }, (_, index) => (
+      <svg
+        key={index}
+        className={`w-5 h-5 ${
+          index < rating ? 'text-yellow-400' : 'text-gray-300'
+        }`}
+        fill="currentColor"
+        viewBox="0 0 20 20"
+      >
+        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+      </svg>
+    ));
+  };
+
+  const calculateTotalEarned = () => {
+    return historyData
+      .filter(item => item.status === 'completed')
+      .reduce((total, item) => total + (item.estimatedPrice || 0), 0);
+  };
+
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fixhub-primary"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="text-center">
+          <p className="text-red-500">{error}</p>
+          <button 
+            onClick={fetchHistoryData}
+            className="mt-4 bg-fixhub-primary text-white px-4 py-2 rounded-lg"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -58,7 +104,7 @@ const History = () => {
               </svg>
             </div>
             <div className="ml-4">
-              <p className="text-2xl font-bold text-fixhub-textDark">{completedServices.length}</p>
+              <p className="text-2xl font-bold text-fixhub-textDark">{stats?.completedJobs || 0}</p>
               <p className="text-fixhub-textMuted">Completed Jobs</p>
             </div>
           </div>
@@ -72,7 +118,7 @@ const History = () => {
               </svg>
             </div>
             <div className="ml-4">
-              <p className="text-2xl font-bold text-fixhub-textDark">4.7</p>
+              <p className="text-2xl font-bold text-fixhub-textDark">{stats?.averageRating || 'N/A'}</p>
               <p className="text-fixhub-textMuted">Avg Rating</p>
             </div>
           </div>
@@ -86,7 +132,7 @@ const History = () => {
               </svg>
             </div>
             <div className="ml-4">
-              <p className="text-2xl font-bold text-fixhub-textDark">₹15,800</p>
+              <p className="text-2xl font-bold text-fixhub-textDark">₹{calculateTotalEarned().toLocaleString()}</p>
               <p className="text-fixhub-textMuted">Total Earned</p>
             </div>
           </div>
@@ -95,32 +141,46 @@ const History = () => {
 
       {/* History List */}
       <div className="space-y-4">
-        {completedServices.length > 0 ? (
-          completedServices.map((service) => (
-            <div key={service.id} className="bg-white rounded-lg shadow-md border border-fixhub-borderSoft p-6">
+        {historyData.length > 0 ? (
+          historyData.map((service) => (
+            <div key={service._id} className="bg-white rounded-lg shadow-md border border-fixhub-borderSoft p-6">
               <div className="flex items-start justify-between">
                 <div className="flex items-center space-x-4">
                   <div className="w-12 h-12 bg-fixhub-primary rounded-full flex items-center justify-center">
-                    <span className="text-white font-medium text-lg">{service.customer.charAt(0)}</span>
+                    <span className="text-white font-medium text-lg">
+                      {service.customer?.fullname?.firstname?.charAt(0) || 'C'}
+                    </span>
                   </div>
                   <div>
-                    <h3 className="font-semibold text-fixhub-textDark text-lg">{service.customer}</h3>
-                    <p className="text-fixhub-primary font-medium">{service.service}</p>
-                    <p className="text-sm text-fixhub-textMuted">{formatDate(service.date)} • {service.scheduledTime}</p>
+                    <h3 className="font-semibold text-fixhub-textDark text-lg">
+                      {service.customer?.fullname?.firstname} {service.customer?.fullname?.lastname}
+                    </h3>
+                    <p className="text-fixhub-primary font-medium">{service.serviceType}</p>
+                    <p className="text-sm text-fixhub-textMuted">
+                      {formatDate(service.preferredDate)} • {service.preferredTime}
+                    </p>
                   </div>
                 </div>
                 
                 <div className="flex items-center space-x-3">
                   <div className="text-right">
-                    <p className="font-semibold text-fixhub-primary text-lg">{service.serviceCharge}</p>
-                    <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">
-                      Completed
+                    <p className="font-semibold text-fixhub-primary text-lg">₹{service.estimatedPrice}</p>
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                      service.status === 'completed' 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-red-100 text-red-800'
+                    }`}>
+                      {service.status.charAt(0).toUpperCase() + service.status.slice(1)}
                     </span>
                   </div>
                   
-                  {mockReviews[service.id] && (
+                  {service.rating && service.review && (
                     <button
-                      onClick={() => setSelectedReview(mockReviews[service.id])}
+                      onClick={() => setSelectedReview({
+                        rating: service.rating,
+                        comment: service.review,
+                        date: service.updatedAt
+                      })}
                       className="bg-fixhub-primary hover:bg-fixhub-dark text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
                     >
                       View Review
@@ -134,15 +194,29 @@ const History = () => {
               </div>
               
               <div className="mt-4 flex items-center justify-between text-sm text-fixhub-textMuted">
-                <span>📍 {service.address}</span>
-                <span>⏱️ Duration: {service.estimatedDuration}</span>
-                <span>📞 {service.phone}</span>
+                <div className="flex items-center">
+                  <svg className="w-4 h-4 mr-2 text-fixhub-textMuted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  <span>{service.location}</span>
+                </div>
+                <div className="flex items-center">
+                  <svg className="w-4 h-4 mr-2 text-fixhub-textMuted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                  </svg>
+                  <span>{service.customer?.phone}</span>
+                </div>
               </div>
             </div>
           ))
         ) : (
           <div className="bg-white rounded-lg shadow-md p-8 text-center">
-            <div className="text-6xl mb-4">📋</div>
+            <div className="w-16 h-16 bg-fixhub-mint rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-fixhub-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+              </svg>
+            </div>
             <h3 className="text-lg font-medium text-fixhub-textDark mb-2">No Completed Services</h3>
             <p className="text-fixhub-textMuted">Your completed service history will appear here.</p>
           </div>
