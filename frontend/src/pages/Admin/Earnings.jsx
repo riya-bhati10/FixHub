@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import fixhubTheme from "../../theme/fixhubTheme";
 import { getCompletedBookings } from "../../Services/adminService";
-import Table from "../../components/admin/Table";
-import { TableSkeleton } from "../../components/admin/LoadingSkeleton";
+import Table from "../../Components/Admin/Table";
+import { TableSkeleton } from "../../Components/Admin/LoadingSkeleton";
 
 const Container = styled.div`
   max-width: 1400px;
