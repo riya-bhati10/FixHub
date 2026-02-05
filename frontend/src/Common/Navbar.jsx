@@ -44,7 +44,7 @@ const Navbar = ({
       const token = localStorage.getItem('token');
       if (!token) return;
       
-      const response = await fetch('http://localhost:5000/api/notifications', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/notifications`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await response.json();
@@ -58,7 +58,7 @@ const Navbar = ({
   const markAsRead = async (notificationId) => {
     try {
       const token = localStorage.getItem('token');
-      await fetch(`http://localhost:5000/api/notifications/${notificationId}/read`, {
+      await fetch(`${import.meta.env.VITE_API_BASE_URL}/notifications/${notificationId}/read`, {
         method: 'PATCH',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -71,7 +71,7 @@ const Navbar = ({
   const clearAllNotifications = async () => {
     try {
       const token = localStorage.getItem('token');
-      await fetch('http://localhost:5000/api/notifications/clear-all', {
+      await fetch(`${import.meta.env.VITE_API_BASE_URL}/notifications/clear-all`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });

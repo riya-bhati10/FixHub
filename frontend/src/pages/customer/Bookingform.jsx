@@ -1,9 +1,21 @@
-import React, { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
-import Navbar from '../../Common/Navbar';
-import api from '../Landing/api';
-import { HandleMessageUIError, HandleMessageUISuccess } from '../../utils/toastConfig';
+import React, { useState, useCallback } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import Navbar from "../../Common/Navbar";
+import api from "../Landing/api";
+import {
+  HandleMessageUIError,
+  HandleMessageUISuccess,
+} from "../../utils/toastConfig";
+
+// Debounce function
+const debounce = (func, delay) => {
+  let timeoutId;
+  return (...args) => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => func.apply(null, args), delay);
+  };
+};
 
 const BookingForm = () => {
   const location = useLocation();
@@ -11,24 +23,92 @@ const BookingForm = () => {
   const service = location.state?.service;
 
   const [formData, setFormData] = useState({
-    serviceType: service?.serviceType || '',
-    description: '',
-    location: '',
-    preferredDate: '',
-    preferredTime: ''
+    serviceType: service?.serviceType || "",
+    description: "",
+    location: "",
+    preferredDate: "",
+    preferredTime: "",
   });
   const [loading, setLoading] = useState(false);
   const [loadingLocation, setLoadingLocation] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
+  const [locationSuggestions, setLocationSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [searchingLocation, setSearchingLocation] = useState(false);
 
   const customerNavLinks = [
-    { label: 'Dashboard', path: '/customer/dashboard' },
-    { label: 'Book Service', path: '/customer/book-service' },
-    { label: 'My Bookings', path: '/customer/my-bookings' }
+    { label: "Dashboard", path: "/customer/dashboard" },
+    { label: "Book Service", path: "/customer/book-service" },
+    { label: "My Bookings", path: "/customer/my-bookings" },
   ];
 
+  // OpenStreetMap Nominatim API only
+  const searchLocations = async (query) => {
+    if (query.length < 3) return [];
+
+    try {
+      // Try Nominatim API
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=in&limit=5&addressdetails=1`,
+        {
+          headers: {
+            "User-Agent": "FixHub-App/1.0",
+          },
+        },
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data && data.length > 0) {
+          return data.map((item) => ({
+            label: item.display_name,
+            value: item.display_name,
+            lat: parseFloat(item.lat),
+            lon: parseFloat(item.lon),
+          }));
+        }
+      }
+    } catch (error) {
+      console.log("API failed");
+    }
+
+    return [];
+  };
+
+  const handleLocationSearch = useCallback(
+    debounce(async (query) => {
+      if (query.length >= 3) {
+        setSearchingLocation(true);
+        const results = await searchLocations(query);
+        setLocationSuggestions(results);
+        setShowSuggestions(results.length > 0);
+        setSearchingLocation(false);
+      } else {
+        setLocationSuggestions([]);
+        setShowSuggestions(false);
+      }
+    }, 300),
+    [],
+  );
+
+  const handleLocationChange = (e) => {
+    const value = e.target.value;
+    setFormData({ ...formData, location: value });
+    handleLocationSearch(value);
+  };
+
+  const selectLocation = (suggestion) => {
+    setFormData({ ...formData, location: suggestion.value });
+    setLocationSuggestions([]);
+    setShowSuggestions(false);
+  };
+
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    if (e.target.name === "location") {
+      handleLocationChange(e);
+    } else {
+      setFormData({ ...formData, [e.target.name]: e.target.value });
+    }
   };
 
   const getCurrentLocation = () => {
@@ -36,35 +116,68 @@ const BookingForm = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         async (position) => {
+          const { latitude, longitude } = position.coords;
           try {
-            const { latitude, longitude } = position.coords;
+            // Try BigDataCloud API for detailed address
             const response = await fetch(
-              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+              `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`,
             );
-            const data = await response.json();
-            setFormData({ ...formData, location: data.display_name });
+
+            if (response.ok) {
+              const data = await response.json();
+              // Build complete address
+              const addressParts = [];
+              if (data.locality) addressParts.push(data.locality);
+              if (data.city && data.city !== data.locality)
+                addressParts.push(data.city);
+              if (data.principalSubdivision)
+                addressParts.push(data.principalSubdivision);
+              if (data.countryName) addressParts.push(data.countryName);
+
+              const fullAddress =
+                addressParts.length > 0
+                  ? addressParts.join(", ")
+                  : `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+              setFormData({ ...formData, location: fullAddress });
+            } else {
+              setFormData({
+                ...formData,
+                location: `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`,
+              });
+            }
           } catch (error) {
-            console.error('Error getting address:', error);
-            setFormData({ ...formData, location: `Lat: ${position.coords.latitude}, Lng: ${position.coords.longitude}` });
-          } finally {
-            setLoadingLocation(false);
+            setFormData({
+              ...formData,
+              location: `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`,
+            });
           }
+          setLoadingLocation(false);
         },
         (error) => {
-          console.error('Geolocation error:', error);
-          toast.error('Unable to get your location. Please enter manually.', HandleMessageUIError());
+          toast.error(
+            "Unable to get your location. Please enter manually.",
+            HandleMessageUIError(),
+          );
           setLoadingLocation(false);
-        }
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 60000,
+        },
       );
     } else {
-      toast.error('Geolocation is not supported by your browser', HandleMessageUIError());
+      toast.error(
+        "Geolocation is not supported by your browser",
+        HandleMessageUIError(),
+      );
       setLoadingLocation(false);
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
 
     try {
@@ -74,14 +187,28 @@ const BookingForm = () => {
         issue: formData.description,
         serviceDate: formData.preferredDate,
         timeSlot: formData.preferredTime,
-        serviceLocation: formData.location
+        serviceLocation: formData.location,
       };
 
-      await api.post('/bookings', bookingData);
-      toast.success('Booking created successfully!', HandleMessageUISuccess());
-      navigate('/customer/booking-success');
+      const response = await api.post("/bookings", bookingData);
+      toast.success("Booking created successfully!", HandleMessageUISuccess());
+
+      // Pass booking data to success page
+      const successBookingData = {
+        serviceDate: formData.preferredDate,
+        timeSlot: formData.preferredTime,
+        bookingId: response.data.bookingId,
+        service: {
+          name: service.serviceName || service.serviceType,
+        },
+        status: response.data.status,
+      };
+
+      navigate("/customer/booking-success", {
+        state: { booking: successBookingData },
+      });
     } catch (error) {
-      setError(error.response?.data?.message || 'Failed to create booking');
+      setError(error.response?.data?.message || "Failed to create booking");
     } finally {
       setLoading(false);
     }
@@ -93,7 +220,7 @@ const BookingForm = () => {
         <div className="text-center">
           <p className="text-slate-600 mb-4">No service selected</p>
           <button
-            onClick={() => navigate('/customer/book-service')}
+            onClick={() => navigate("/customer/book-service")}
             className="px-4 py-2 bg-[#1F7F85] text-white rounded-lg"
           >
             Go to Services
@@ -175,7 +302,7 @@ const BookingForm = () => {
               <input
                 type="text"
                 name="serviceType"
-                value={service?.serviceType || service?.serviceName || ''}
+                value={service?.serviceType || service?.serviceName || ""}
                 disabled
                 className="w-full px-4 py-3 text-sm border-2 border-[#DCEBEC] rounded-lg bg-[#E0F2F1] cursor-not-allowed text-[#0F4C5C] font-medium"
               />
@@ -200,41 +327,71 @@ const BookingForm = () => {
               />
             </div>
 
-            {/* Location with Geolocation */}
-            <div>
+            {/* Location with Search */}
+            <div className="relative">
               <label className="block text-sm font-semibold text-[#0F4C5C] mb-2">
                 Service Location <span className="text-red-500">*</span>
               </label>
-              <div className="relative">
+              <div className="flex gap-2">
                 <input
                   type="text"
                   name="location"
                   value={formData.location}
                   onChange={handleChange}
                   required
-                  placeholder="Enter your address"
-                  className="w-full px-4 py-3 text-sm border-2 border-[#DCEBEC] rounded-lg focus:ring-2 focus:ring-[#1F7F85] focus:border-[#1F7F85] outline-none pr-12"
+                  placeholder="Type to search locations..."
+                  className="flex-1 px-4 py-3 text-sm border-2 border-[#DCEBEC] rounded-lg focus:border-[#1F7F85] focus:outline-none transition-colors"
                 />
                 <button
                   type="button"
                   onClick={getCurrentLocation}
                   disabled={loadingLocation}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-[#1F7F85] hover:bg-[#E0F2F1] rounded-lg transition-colors disabled:opacity-50"
-                  title="Use current location"
+                  className="px-4 py-3 bg-[#1F7F85] text-white rounded-lg hover:bg-[#0F4C5C] transition-colors disabled:opacity-50 flex items-center gap-2 text-sm whitespace-nowrap"
                 >
                   {loadingLocation ? (
-                    <span className="material-symbols-outlined animate-spin">
-                      progress_activity
+                    <span className="material-symbols-outlined animate-spin text-lg">
+                      refresh
                     </span>
                   ) : (
-                    <span className="material-symbols-outlined">
+                    <span className="material-symbols-outlined text-lg">
                       my_location
                     </span>
                   )}
+                  {loadingLocation ? "Getting..." : "Current"}
                 </button>
               </div>
+
+              {/* Location Suggestions */}
+              {showSuggestions && locationSuggestions.length > 0 && (
+                <div className="absolute z-10 w-full mt-1 bg-white border-2 border-[#DCEBEC] rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                  {locationSuggestions.map((suggestion, index) => (
+                    <button
+                      key={index}
+                      type="button"
+                      onClick={() => selectLocation(suggestion)}
+                      className="w-full px-4 py-3 text-left text-sm hover:bg-[#F0F9FF] border-b border-gray-100 last:border-b-0 transition-colors"
+                    >
+                      <div className="font-medium text-[#0F4C5C] truncate">
+                        {suggestion.label}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {searchingLocation && (
+                <div className="absolute z-10 w-full mt-1 bg-white border-2 border-[#DCEBEC] rounded-lg shadow-lg p-4">
+                  <div className="flex items-center gap-2 text-sm text-slate-600">
+                    <span className="material-symbols-outlined animate-spin text-lg">
+                      refresh
+                    </span>
+                    Searching locations...
+                  </div>
+                </div>
+              )}
+
               <p className="text-xs text-slate-500 mt-1">
-                Click the location icon to use your current location
+                Type to search exact locations or click Current for GPS location
               </p>
             </div>
 

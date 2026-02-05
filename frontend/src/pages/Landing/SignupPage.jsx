@@ -34,6 +34,37 @@ const SignupPage = () => {
     });
   };
 
+  // OpenStreetMap Nominatim API (completely free)
+  const searchLocations = async (query) => {
+    if (query.length < 3) return [];
+    
+    try {
+      // Direct Nominatim API
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=in&limit=5&addressdetails=1`,
+        {
+          headers: {
+            'User-Agent': 'FixHub-App/1.0'
+          }
+        }
+      );
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data && data.length > 0) {
+          return data.map(item => ({
+            display_name: item.display_name,
+            place_id: item.place_id
+          }));
+        }
+      }
+    } catch (error) {
+      console.log('API failed');
+    }
+    
+    return [];
+  };
+
   const handleLocationChange = async (e) => {
     const value = e.target.value;
     setFormData({
@@ -41,15 +72,13 @@ const SignupPage = () => {
       location: value
     });
 
-    if (value.length > 2) {
+    if (value.length >= 3) {
       try {
-        const response = await fetch(
-          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(value)}&limit=5`
-        );
-        const data = await response.json();
-        setSuggestions(data);
+        const results = await searchLocations(value);
+        setSuggestions(results);
       } catch (error) {
         console.error('Error fetching location suggestions:', error);
+        setSuggestions([]);
       }
     } else {
       setSuggestions([]);

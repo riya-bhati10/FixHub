@@ -1,56 +1,83 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import Navbar from '../../Common/Navbar';
-import Footer from '../../Common/Footer';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import Navbar from "../../Common/Navbar";
+import Footer from "../../Common/Footer";
+import { HandleMessageUISuccess } from "../../utils/toastConfig";
 
 const BookServicePage = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    device: '',
-    issue: '',
-    address: '',
-    preferredDate: '',
-    preferredTime: ''
+    name: "",
+    email: "",
+    phone: "",
+    device: "",
+    issue: "",
+    address: "",
+    preferredDate: "",
+    preferredTime: "",
   });
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log('Service booking:', formData);
-    alert('Service booked successfully! We will contact you soon.');
+    console.log("Service booking:", formData);
+    toast.success(
+      "Service booked successfully! We will contact you soon.",
+      HandleMessageUISuccess(),
+    );
   };
 
   const devices = [
-    'Smartphone', 'Laptop', 'Desktop', 'Tablet', 'Television', 
-    'Refrigerator', 'Washing Machine', 'Air Conditioner', 'Microwave', 'Other'
+    "Smartphone",
+    "Laptop",
+    "Desktop",
+    "Tablet",
+    "Television",
+    "Refrigerator",
+    "Washing Machine",
+    "Air Conditioner",
+    "Microwave",
+    "Other",
   ];
 
   const timeSlots = [
-    '9:00 AM - 11:00 AM', '11:00 AM - 1:00 PM', '1:00 PM - 3:00 PM', 
-    '3:00 PM - 5:00 PM', '5:00 PM - 7:00 PM', '7:00 PM - 9:00 PM'
+    "9:00 AM - 11:00 AM",
+    "11:00 AM - 1:00 PM",
+    "1:00 PM - 3:00 PM",
+    "3:00 PM - 5:00 PM",
+    "5:00 PM - 7:00 PM",
+    "7:00 PM - 9:00 PM",
   ];
 
   return (
     <div className="min-h-screen bg-fixhub-bgWhite">
       <Navbar />
-      
+
       <div className="pt-20 pb-16">
         <div className="max-w-2xl mx-auto px-4">
           <button
-            onClick={() => navigate('/')}
+            onClick={() => navigate("/")}
             className="mb-4 flex items-center text-fixhub-textDark hover:text-fixhub-primary transition-colors"
           >
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            <svg
+              className="w-5 h-5 mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M10 19l-7-7m0 0l7-7m-7 7h18"
+              />
             </svg>
             Back to Home
           </button>
@@ -59,7 +86,8 @@ const BookServicePage = () => {
               Book Your Repair Service
             </h1>
             <p className="text-lg text-fixhub-textMuted">
-              Fill out the form below and our expert technician will visit you at your convenience
+              Fill out the form below and our expert technician will visit you
+              at your convenience
             </p>
           </div>
 
@@ -79,7 +107,7 @@ const BookServicePage = () => {
                     required
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-fixhub-textDark font-medium mb-2">
                     Email Address *
@@ -109,7 +137,7 @@ const BookServicePage = () => {
                     required
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-fixhub-textDark font-medium mb-2">
                     Device Type *
@@ -123,7 +151,9 @@ const BookServicePage = () => {
                   >
                     <option value="">Select Device</option>
                     {devices.map((device) => (
-                      <option key={device} value={device}>{device}</option>
+                      <option key={device} value={device}>
+                        {device}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -169,12 +199,12 @@ const BookServicePage = () => {
                     name="preferredDate"
                     value={formData.preferredDate}
                     onChange={handleChange}
-                    min={new Date().toISOString().split('T')[0]}
+                    min={new Date().toISOString().split("T")[0]}
                     className="w-full px-4 py-3 border border-fixhub-borderSoft rounded-lg focus:outline-none focus:ring-2 focus:ring-fixhub-primary"
                     required
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-fixhub-textDark font-medium mb-2">
                     Preferred Time *
@@ -188,7 +218,9 @@ const BookServicePage = () => {
                   >
                     <option value="">Select Time Slot</option>
                     {timeSlots.map((slot) => (
-                      <option key={slot} value={slot}>{slot}</option>
+                      <option key={slot} value={slot}>
+                        {slot}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -204,7 +236,7 @@ const BookServicePage = () => {
           </div>
         </div>
       </div>
-      
+
       <Footer />
     </div>
   );
