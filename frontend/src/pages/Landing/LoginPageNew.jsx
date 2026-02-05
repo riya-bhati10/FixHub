@@ -1,43 +1,51 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import bgImage from '../../assets/repair-bg.png';
-import axiosInstance from '../../Services/axiosInstance';
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import bgImage from "../../assets/repair-bg.png";
+import axiosInstance from "../../Services/axiosInstance";
+import {
+  HandleMessageUIError,
+  HandleMessageUISuccess,
+} from "../../utils/toastConfig";
 
 const LoginPage = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    email: '',
-    password: ''
+    email: "",
+    password: "",
   });
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    
+
     try {
-      const response = await axiosInstance.post('/api/auth/login', formData);
-      
+      const response = await axiosInstance.post("/api/auth/login", formData);
+
       if (response.data.token) {
-        localStorage.setItem('token', response.data.token);
-        localStorage.setItem('role', response.data.role);
-        
-        if (response.data.role === 'technician') {
-          navigate('/technician/dashboard');
+        localStorage.setItem("token", response.data.token);
+        localStorage.setItem("role", response.data.role);
+
+        if (response.data.role === "technician") {
+          navigate("/technician/dashboard");
         } else {
-          navigate('/dashboard');
+          navigate("/dashboard");
         }
       }
     } catch (error) {
-      console.error('Login failed:', error);
-      alert(error.response?.data?.message || 'Login failed');
+      console.error("Login failed:", error);
+      toast.error(
+        error.response?.data?.message || "Login failed",
+        HandleMessageUIError(),
+      );
     } finally {
       setLoading(false);
     }
@@ -49,9 +57,9 @@ const LoginPage = () => {
       style={{ backgroundImage: `url(${bgImage})` }}
     >
       <button
-        onClick={() => navigate('/')}
+        onClick={() => navigate("/")}
         className="absolute top-8 left-8 text-white px-4 py-2 rounded-lg flex items-center hover:opacity-90 transition-opacity"
-        style={{ backgroundColor: '#0d3d43' }}
+        style={{ backgroundColor: "#0d3d43" }}
       >
         ← Back
       </button>
@@ -87,7 +95,7 @@ const LoginPage = () => {
             disabled={loading}
             className="w-full bg-teal-600 hover:bg-teal-700 text-white py-2 rounded-md font-semibold transition disabled:opacity-50"
           >
-            {loading ? 'Logging in...' : 'Login'}
+            {loading ? "Logging in..." : "Login"}
           </button>
         </form>
 
