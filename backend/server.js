@@ -22,6 +22,7 @@ const corsOptions = {
     origin: [
         "https://fix-hub-ten.vercel.app",
         "https://fix-facehnvuw-riya-bhatis-projects.vercel.app",
+        "https://fix-du6x8q0p9-riya-bhatis-projects.vercel.app",
         "http://localhost:5173"
     ],
     credentials: true,
