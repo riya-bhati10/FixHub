@@ -1,0 +1,31 @@
+COMPLETE DEPLOYMENT GUIDE:
+
+=== RENDER (BACKEND) ===
+1. Go to Render Dashboard
+2. Select your backend service
+3. Click "Manual Deploy" → "Deploy Latest Commit"
+4. Set Environment Variables:
+   PORT=10000
+   NODE_ENV=production
+   MONGO_URI=mongodb+srv://viveksbca2023_db_user:yLcMPyMrUdYsU8OF@cluster0.er7vqvc.mongodb.net/Fixhub_DB?appName=Cluster0
+   JWT_SECRET=beef01b2db4f9b56c17fba1cda41731cd1d7a732e90ea684121053bb2fa2e39b
+   FRONTEND_URL=https://fix-facehnvuw-riya-bhatis-projects.vercel.app
+   BACKEND_URL=https://service-provider-py18.onrender.com
+
+=== VERCEL (FRONTEND) ===
+1. Go to Vercel Dashboard
+2. Select your frontend project
+3. Go to Settings → Environment Variables
+4. Set:
+   VITE_API_BASE_URL=https://service-provider-py18.onrender.com/api
+5. Redeploy from Deployments tab
+
+=== TEST AFTER DEPLOYMENT ===
+1. Backend test: https://service-provider-py18.onrender.com/api/test
+2. Frontend login: https://fix-facehnvuw-riya-bhatis-projects.vercel.app
+
+CHANGES MADE:
+✅ Frontend now uses centralized API config
+✅ All API calls go to /api/auth/login (correct)
+✅ CORS properly configured
+✅ Environment variables updated
