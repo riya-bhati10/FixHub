@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import fixhubTheme from "../../theme/fixhubTheme";
 import { getDashboardStats, getChartData } from "../../Services/adminService";
-import { CardSkeleton } from "../../components/Admin/LoadingSkeleton";
+import { CardSkeleton } from "../../components/admin/LoadingSkeleton";
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Users, Wrench, CheckCircle, DollarSign, TrendingUp, Activity } from 'lucide-react';
 

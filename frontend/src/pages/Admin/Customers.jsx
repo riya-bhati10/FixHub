@@ -3,10 +3,10 @@ import styled from "styled-components";
 import { toast } from 'sonner';
 import fixhubTheme from "../../theme/fixhubTheme";
 import { getAllCustomers, blockUnblockUser } from "../../Services/adminService";
-import Button from "../../components/Admin/Button";
-import StatusBadge from "../../components/Admin/StatusBadge";
-import ConfirmModal from "../../components/Admin/ConfirmModal";
-import { CardSkeleton } from "../../components/Admin/LoadingSkeleton";
+import Button from "../../components/admin/Button";
+import StatusBadge from "../../components/admin/StatusBadge";
+import ConfirmModal from "../../components/admin/ConfirmModal";
+import { CardSkeleton } from "../../components/admin/LoadingSkeleton";
 import { User, Mail, Phone } from 'lucide-react';
 import { HandleMessageUIError, HandleMessageUISuccess } from '../../utils/toastConfig';
 
