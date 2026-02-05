@@ -1,15 +1,12 @@
-import axiosInstance from '../../Services/axiosInstance';
-
-// Adjust the base path '/users' if your backend routes are different (e.g., '/auth')
-const API_URL = '/auth'; 
+import API from '../../config/api';
 
 const register = async (userData) => {
-  const response = await axiosInstance.post(`${API_URL}/signup`, userData);
+  const response = await API.post('/auth/signup', userData);
   return response.data;
 };
 
 const login = async (email, password) => {
-  const response = await axiosInstance.post(`${API_URL}/login`, { email, password });
+  const response = await API.post('/auth/login', { email, password });
   if (response.data.token) {
     localStorage.setItem('token', response.data.token);
     localStorage.setItem('role', response.data.role);
@@ -19,7 +16,7 @@ const login = async (email, password) => {
 
 const logout = async () => {
   try {
-    await axiosInstance.get(`${API_URL}/logout`);
+    await API.get('/auth/logout');
   } catch (error) {
     console.error("Logout failed", error);
   }
@@ -28,7 +25,7 @@ const logout = async () => {
 };
 
 const getCurrentUser = async () => {
-  const response = await axiosInstance.get(`${API_URL}/me`);
+  const response = await API.get('/auth/me');
   return response.data;
 };
 
