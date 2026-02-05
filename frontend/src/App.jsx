@@ -4,7 +4,7 @@ import { Toaster } from "sonner";
 import FixHubDashboard from "./pages/customer/Mybooking";
 import BookService from "./pages/customer/BookService";
 import ServiceList from "./pages/customer/ServiceList";
-import BookingForm from "./pages/customer/BookingForm";
+import BookingForm from "./pages/customer/Bookingform";
 import ProfileEdi from "./pages/customer/ProfileEdit";
 import Dashboard from "./pages/customer/Dashbaord";
 import ReviewPage from "./pages/customer/ReviewPage";

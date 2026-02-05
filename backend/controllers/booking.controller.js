@@ -126,6 +126,7 @@ exports.getTechnicianBookings = async (req, res) => {
       status: b.status,
       serviceDate: b.preferredDate,
       timeSlot: b.preferredTime,
+      location: b.location || "Address not provided",
       createdAt: b.createdAt,
 
       customer: {

@@ -76,7 +76,12 @@ const BookingSuccessConfirmation = () => {
                   <p className="text-[10px] sm:text-xs font-bold text-[#1F7F85]/70 uppercase">Date</p>
                 </div>
                 <p className="text-sm sm:text-base lg:text-lg font-bold text-[#0F4C5C]">
-                  {bookingData?.serviceDate ? new Date(bookingData.serviceDate).toLocaleDateString() : 'To be confirmed'}
+                  {bookingData?.serviceDate ? new Date(bookingData.serviceDate).toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  }) : 'To be confirmed'}
                 </p>
               </div>
 
