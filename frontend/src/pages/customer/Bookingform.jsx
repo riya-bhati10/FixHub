@@ -172,9 +172,21 @@ const BookingForm = () => {
         serviceLocation: formData.location
       };
 
-      await api.post('/bookings', bookingData);
+      const response = await api.post('/bookings', bookingData);
       toast.success('Booking created successfully!', HandleMessageUISuccess());
-      navigate('/customer/booking-success');
+      
+      // Pass booking data to success page
+      const successBookingData = {
+        serviceDate: formData.preferredDate,
+        timeSlot: formData.preferredTime,
+        bookingId: response.data.bookingId,
+        service: {
+          name: service.serviceName || service.serviceType
+        },
+        status: response.data.status
+      };
+      
+      navigate('/customer/booking-success', { state: { booking: successBookingData } });
     } catch (error) {
       setError(error.response?.data?.message || 'Failed to create booking');
     } finally {

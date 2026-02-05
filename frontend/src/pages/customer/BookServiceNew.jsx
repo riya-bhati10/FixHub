@@ -69,8 +69,20 @@ const BookService = () => {
         ...formData,
       };
 
-      await axiosInstance.post("/api/bookings", bookingData);
-      navigate("/booking-success");
+      const response = await axiosInstance.post("/api/bookings", bookingData);
+      
+      // Pass booking data to success page
+      const successBookingData = {
+        serviceDate: formData.serviceDate,
+        timeSlot: formData.timeSlot,
+        bookingId: response.data.bookingId,
+        service: {
+          name: selectedService.serviceName || selectedService.serviceType
+        },
+        status: response.data.status
+      };
+      
+      navigate("/booking-success", { state: { booking: successBookingData } });
     } catch (error) {
       console.error("Booking failed:", error);
       toast.error("Booking failed. Please try again.", HandleMessageUIError());

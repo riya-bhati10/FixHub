@@ -20,7 +20,19 @@ const History = () => {
         technicianService.getTechnicianStats()
       ]);
       setHistoryData(history);
-      setStats(statsData);
+
+      // If averageRating not provided or 0, fetch reviews to get a total reviews count (frontend-only fallback)
+      let reviewsCount = statsData?.reviewsCount ?? null;
+      if (statsData && (statsData.averageRating == null || statsData.averageRating === 0)) {
+        try {
+          const reviews = await technicianService.getTechnicianReviews();
+          reviewsCount = Array.isArray(reviews) ? reviews.length : reviewsCount;
+        } catch (err) {
+          console.error('Error fetching reviews for count fallback:', err);
+        }
+      }
+
+      setStats({ ...statsData, reviewsCount });
     } catch (error) {
       console.error('Error fetching history data:', error);
       setError('Failed to load history data');
@@ -118,7 +130,13 @@ const History = () => {
             </div>
             <div className="ml-4">
               <p className="text-2xl font-bold text-fixhub-textDark">
-                {stats?.averageRating && stats.averageRating > 0 ? stats.averageRating.toFixed(1) : 'N/A'}
+                {
+                  stats?.averageRating && stats.averageRating > 0
+                    ? stats.averageRating.toFixed(1)
+                    : (typeof stats?.reviewsCount === 'number' && stats.reviewsCount > 0
+                        ? `${stats.reviewsCount} ${stats.reviewsCount === 1 ? 'review' : 'reviews'}`
+                        : 'No reviews')
+                }
               </p>
               <p className="text-fixhub-textMuted">Avg Rating</p>
             </div>
