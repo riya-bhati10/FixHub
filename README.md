@@ -489,12 +489,13 @@ This project is licensed under the ISC License.
 
 ## 👨‍💻 Author
 
-FixHub Development Team 
+FixHub Development Team
 
 ## 🐛 Known Issues
 
 - OTP expiry is set to 1 minute (configurable)
 - Temporary password reset endpoint exists (remove in production)
+
 
 
 
