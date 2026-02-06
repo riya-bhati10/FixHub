@@ -117,7 +117,7 @@ exports.getTechnicianBookings = async (req, res) => {
     }
 
     const bookings = await Booking.find(filter)
-      .populate("customer", "fullname phone")
+      .populate("customer", "fullname phone location")
       .sort({ createdAt: -1 });
 
     const formattedBookings = bookings.map((b) => ({
@@ -135,6 +135,7 @@ exports.getTechnicianBookings = async (req, res) => {
         name: b.customer?.fullname ?
           b.customer.fullname.firstname + " " + b.customer.fullname.lastname : "N/A",
         phone: b.customer?.phone || "N/A",
+        location: b.location || b.customer?.location || "Address not provided",
       },
 
       service: {
