@@ -440,27 +440,6 @@ const Dashboard = () => {
                       <span className="text-slate-700 text-xs line-clamp-1">
                         {request.location}
                       </span>
-                    </div>
-                    <div className="flex items-center gap-2 bg-[#F7FBFC] p-2 rounded-lg">
-                      <span className="material-symbols-outlined text-[#1F7F85] text-base">
-                        phone
-                      </span>
-                      <span className="text-slate-700 text-xs">
-                        {request.customer?.phone}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 bg-[#F7FBFC] p-2 rounded-lg">
-                      <span className="material-symbols-outlined text-[#1F7F85] text-base">
-                        calendar_today
-                      </span>
-                      <span className="text-slate-700 text-xs">
-                        {new Date(request.preferredDate).toLocaleDateString()}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 bg-[#F7FBFC] p-2 rounded-lg">
-                      <span className="material-symbols-outlined text-[#1F7F85] text-base">
-                        payments
-                      </span>
                       <span className="text-slate-700 font-bold text-xs">
                         ${request.estimatedPrice}
                       </span>

@@ -523,6 +523,8 @@ exports.getCustomerBookings = async (req, res) => {
       timeSlot: b.preferredTime,
       issue: b.description,
       createdAt: b.createdAt,
+      estimatedPrice: b.estimatedPrice || 0,
+      actualPrice: b.actualPrice || b.estimatedPrice || 0,
 
       technician: {
         _id: b.technician?._id || null,

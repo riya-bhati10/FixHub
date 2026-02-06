@@ -50,16 +50,37 @@ const MyBooking = () => {
   // Calculate stats based on real-time data
   const stats = {
     total: bookings.length,
-    active: bookings.filter(
-      (b) => b.status === "accepted" || b.status === "in_progress",
-    ).length,
+    active: bookings.filter((b) => b.status === "in-progress").length,
     pending: bookings.filter((b) => b.status === "pending").length,
     completed: bookings.filter((b) => b.status === "completed").length,
     cancelled: bookings.filter((b) => b.status === "cancelled").length,
     totalSpent: bookings
-      .filter((b) => b.status === "completed" && b.actualPrice)
-      .reduce((sum, b) => sum + b.actualPrice, 0),
+      .filter((b) => b.status === "completed")
+      .reduce((sum, b) => sum + (b.actualPrice || b.estimatedPrice || 0), 0),
   };
+
+  // Debug logging for total spent
+  console.log("=== MYBOOKINGS DEBUG ===");
+  console.log("All bookings:", bookings);
+  console.log("Completed bookings:", bookings.filter((b) => b.status === "completed"));
+  
+  // Check the completed booking details
+  const completedBookings = bookings.filter((b) => b.status === "completed");
+  if (completedBookings.length > 0) {
+    const completedBooking = completedBookings[0];
+    console.log("=== COMPLETED BOOKING DETAILS ===");
+    console.log("Full booking object:", completedBooking);
+    console.log("Status:", completedBooking.status);
+    console.log("actualPrice:", completedBooking.actualPrice);
+    console.log("estimatedPrice:", completedBooking.estimatedPrice);
+    console.log("All fields:", Object.keys(completedBooking));
+    console.log("All values:", Object.values(completedBooking));
+    console.log("Price fields:", Object.keys(completedBooking).filter(key => key.toLowerCase().includes('price')));
+  }
+  
+  console.log("Bookings with actualPrice:", bookings.filter((b) => b.status === "completed" && b.actualPrice));
+  console.log("Bookings with estimatedPrice:", bookings.filter((b) => b.status === "completed" && b.estimatedPrice));
+  console.log("Total spent:", stats.totalSpent);
 
   const handleCancelBooking = async (bookingId) => {
     try {
@@ -156,13 +177,7 @@ const MyBooking = () => {
         <div className="max-w-[1400px] mx-auto px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <h2 className="text-xl font-bold text-slate-900">My Bookings</h2>
-            {lastUpdated && (
-              <div className="flex items-center gap-2 text-xs text-green-600">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <span>Live • Updated {formatTime(lastUpdated)}</span>
-              </div>
-            )}
-          </div>
+            </div>
           <div className="flex items-center gap-4">
             <div className="relative w-full sm:w-80">
               <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
@@ -253,7 +268,7 @@ const MyBooking = () => {
                   Total Spent
                 </p>
                 <p className="text-2xl font-bold text-white mt-1">
-                  ${stats.totalSpent.toFixed(2)}
+                  ${stats.totalSpent ? stats.totalSpent.toFixed(2) : '0.00'}
                 </p>
               </div>
               <span className="material-symbols-outlined text-2xl text-teal-100">

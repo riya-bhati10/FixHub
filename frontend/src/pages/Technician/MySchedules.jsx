@@ -211,6 +211,7 @@ const MySchedules = () => {
       setOtpModal({ isOpen: false, bookingId: null });
       setOtp("");
       await fetchBookings();
+      refresh(); // Use real-time refresh to update UI immediately
     } catch (error) {
       console.error("OTP verification error:", error);
       toast.error(
@@ -303,13 +304,7 @@ const MySchedules = () => {
             <p className="text-fixhub-textMuted">
               Manage your service appointments and track job progress.
             </p>
-            {lastUpdated && (
-              <div className="flex items-center gap-2 text-xs text-green-600">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <span>Live • Updated {formatTime(lastUpdated)}</span>
-              </div>
-            )}
-          </div>
+            </div>
         </div>
         <button
           onClick={refresh}
