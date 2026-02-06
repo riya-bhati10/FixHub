@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import Navbar from "../../Common/Navbar";
 import api from "../Landing/api";
-import ConfirmModal from "../../Common/ConfirmModal";
 import { useRealTimeData } from "../../hooks/useRealTimeData";
 import {
   HandleMessageUIError,
   HandleMessageUISuccess,
 } from "../../utils/toastConfig";
+import ConfirmModal from "../../Common/ConfirmModal";
 
 const MySchedules = () => {
   const navigate = useNavigate();
@@ -36,7 +37,7 @@ const MySchedules = () => {
     return date.toLocaleDateString();
   };
 
-  // Real-time data fetching with 15-second interval
+  // Real-time data fetching with 5-second interval
   const fetchBookings = async () => {
     const response = await api.get("/bookings/technician");
     return response.data.bookings || [];
@@ -262,34 +263,45 @@ const MySchedules = () => {
     if (!phone) {
       toast.error(
         "Customer phone number not available",
-        HandleMessageUIError(),
+        HandleMessageUIError()
       );
       return;
     }
+    window.open(`tel:${phone}`);
+  };
 
-    // Check if mobile device
-    const isMobile =
-      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-        navigator.userAgent,
+  const handleOpenMap = (location) => {
+    if (!location) {
+      toast.error(
+        "Customer location not available",
+        HandleMessageUIError()
       );
-    if (isMobile) {
-      window.open(`tel:${phone}`, "_self");
+      return;
+    }
+    
+    // Get technician's current location (you can use geolocation or a fixed location)
+    // For now, let's use geolocation API to get current location
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const technicianLat = position.coords.latitude;
+          const technicianLng = position.coords.longitude;
+          
+          // Create Google Maps URL with route between technician and customer
+          const mapUrl = `https://www.google.com/maps/dir/?api=1&origin=${technicianLat},${technicianLng}&destination=${encodeURIComponent(location)}`;
+          window.open(mapUrl, '_blank');
+        },
+        (error) => {
+          // If geolocation fails, use customer location only
+          console.log("Geolocation failed, using customer location only");
+          const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`;
+          window.open(mapUrl, '_blank');
+        }
+      );
     } else {
-      // Desktop - copy to clipboard and show WhatsApp option
-      navigator.clipboard
-        .writeText(phone)
-        .then(() => {
-          const whatsappUrl = `https://wa.me/${phone.replace(/[^0-9]/g, "")}`;
-          setConfirmAction("openWhatsapp");
-          setConfirmPayload(whatsappUrl);
-          setConfirmMessage(
-            `Phone: ${phone} copied to clipboard!\n\nClick Yes to open WhatsApp or No to close.`,
-          );
-          setConfirmOpen(true);
-        })
-        .catch(() => {
-          toast(`Customer Phone: ${phone}`);
-        });
+      // If geolocation not supported, use customer location only
+      const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`;
+      window.open(mapUrl, '_blank');
     }
   };
 
@@ -385,7 +397,7 @@ const MySchedules = () => {
               </div>
 
               {/* Details */}
-              <div className="grid grid-cols-2 gap-3 mb-4 text-sm">
+              <div className="grid grid-cols-1 gap-3 mb-4 text-sm">
                 <div className="flex items-center gap-2 bg-[#F7FBFC] p-2 rounded-lg">
                   <span className="material-symbols-outlined text-[#1F7F85] text-base">
                     schedule
@@ -402,13 +414,27 @@ const MySchedules = () => {
                     {new Date(booking.serviceDate).toLocaleDateString()}
                   </span>
                 </div>
-                <div className="flex items-center gap-2 bg-[#F7FBFC] p-2 rounded-lg col-span-2">
+                <div className="flex items-center gap-2 bg-[#F7FBFC] p-2 rounded-lg">
                   <span className="material-symbols-outlined text-[#1F7F85] text-base">
                     phone
                   </span>
                   <span className="text-slate-700 text-xs">
                     {booking.customer.phone}
                   </span>
+                </div>
+                <div className="flex items-center gap-2 bg-[#F7FBFC] p-2 rounded-lg">
+                  <span className="material-symbols-outlined text-[#1F7F85] text-base">
+                    location_on
+                  </span>
+                  <span className="text-slate-700 text-xs flex-1">
+                    {booking.location || "Location not specified"}
+                  </span>
+                  <button
+                    onClick={() => handleOpenMap(booking.location)}
+                    className="bg-[#1F7F85] hover:bg-[#0F4C5C] text-white px-3 py-1 rounded text-xs font-medium transition-colors"
+                  >
+                    Map
+                  </button>
                 </div>
               </div>
 
