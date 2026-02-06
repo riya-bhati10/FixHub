@@ -48,9 +48,6 @@ const ReviewPage = () => {
     setError("");
 
     try {
-      ,
-      });
-
       await api.post("/reviews", {
         bookingId: booking._id,
         technicianId: booking.technician?._id,
