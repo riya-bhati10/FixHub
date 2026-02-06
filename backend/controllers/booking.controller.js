@@ -2,6 +2,7 @@ const Booking = require("../models/booking.model");
 const Service = require("../models/service.model");
 const Notification = require("../models/notification.model");
 const Earning = require("../models/earning.model");
+const { emitToUser, emitToRole } = require("../config/socket");
 
 
 // create new booking (for customer)
@@ -79,6 +80,12 @@ exports.createBooking = async (req, res) => {
       message: "Booking created successfully",
       bookingId: booking._id,
       status: booking.status,
+    });
+    
+    // Real-time update to technician
+    emitToUser(technicianId, 'booking:new', {
+      bookingId: booking._id,
+      message: 'New booking request received'
     });
     
     await Notification.create({
@@ -181,6 +188,12 @@ exports.acceptBooking = async (req, res) => {
       status: booking.status,
     });
     
+    // Real-time update to customer
+    emitToUser(booking.customer, 'booking:accepted', {
+      bookingId: booking._id,
+      message: 'Your booking has been accepted'
+    });
+    
     await Notification.create({
       userId: booking.customer,
       title: 'Booking Accepted',
@@ -232,7 +245,13 @@ exports.cancelBooking = async (req, res) => {
       status: booking.status,
     });
     
+    // Real-time update
     const otherUser = role === "customer" ? booking.technician : booking.customer;
+    emitToUser(otherUser, 'booking:cancelled', {
+      bookingId: booking._id,
+      message: 'Booking has been cancelled'
+    });
+    
     const notifRecipient = role === "customer" ? 'technician' : 'customer';
 
     await Notification.create({
@@ -334,6 +353,13 @@ exports.updateBookingStatus = async (req, res) => {
 
     booking.status = status;
     await booking.save();
+
+    // Real-time update to customer
+    emitToUser(booking.customer, 'booking:statusUpdate', {
+      bookingId: booking._id,
+      status: status,
+      message: `Booking status updated to ${status}`
+    });
 
     res.json({
       message: "Booking status updated successfully",

@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import Navbar from "../../Common/Navbar";
 import api from "../Landing/api";
-import useAutoRefresh from "../../hooks/useAutoRefresh";
+import { useSocket } from "../../contexts/SocketContext";
 import {
   HandleMessageUISuccess,
   HandleMessageUIError,
@@ -11,6 +11,7 @@ import {
 
 const MyBooking = () => {
   const navigate = useNavigate();
+  const { socket } = useSocket();
   const [activeTab, setActiveTab] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [bookings, setBookings] = useState([]);
@@ -60,7 +61,32 @@ const MyBooking = () => {
     }
   };
 
-  useAutoRefresh(fetchBookings, 5000);
+  React.useEffect(() => {
+    fetchBookings();
+
+    if (socket) {
+      socket.on('booking:accepted', () => {
+        console.log('Booking accepted - refreshing');
+        fetchBookings();
+      });
+
+      socket.on('booking:statusUpdate', () => {
+        console.log('Booking status updated - refreshing');
+        fetchBookings();
+      });
+
+      socket.on('booking:cancelled', () => {
+        console.log('Booking cancelled - refreshing');
+        fetchBookings();
+      });
+
+      return () => {
+        socket.off('booking:accepted');
+        socket.off('booking:statusUpdate');
+        socket.off('booking:cancelled');
+      };
+    }
+  }, [socket]);
 
   const handleCancelBooking = async (bookingId) => {
     try {

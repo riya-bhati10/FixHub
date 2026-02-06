@@ -39,7 +39,7 @@ const MyServices = () => {
     }
   };
 
-  useAutoRefresh(fetchMyServices, 5000);
+  useAutoRefresh(fetchMyServices, 3000); // 3 seconds
 
   const handleDeleteService = (serviceId) => {
     setConfirmAction("deleteService");

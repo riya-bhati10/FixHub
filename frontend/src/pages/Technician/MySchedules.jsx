@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import api from "../Landing/api";
 import ConfirmModal from "../../Common/ConfirmModal";
-import useAutoRefresh from "../../hooks/useAutoRefresh";
+import { useSocket } from "../../contexts/SocketContext";
 import {
   HandleMessageUIError,
   HandleMessageUISuccess,
@@ -11,6 +11,7 @@ import {
 
 const MySchedules = () => {
   const navigate = useNavigate();
+  const { socket } = useSocket();
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split("T")[0],
   );
@@ -40,7 +41,6 @@ const MySchedules = () => {
     }
   };
 
-  // Refresh without loading state
   const refreshBookings = async () => {
     try {
       const response = await api.get("/bookings/technician");
@@ -51,7 +51,26 @@ const MySchedules = () => {
     }
   };
 
-  useAutoRefresh(fetchBookings, 5000);
+  React.useEffect(() => {
+    fetchBookings();
+
+    if (socket) {
+      socket.on('booking:new', () => {
+        console.log('New booking - refreshing');
+        refreshBookings();
+      });
+
+      socket.on('booking:cancelled', () => {
+        console.log('Booking cancelled - refreshing');
+        refreshBookings();
+      });
+
+      return () => {
+        socket.off('booking:new');
+        socket.off('booking:cancelled');
+      };
+    }
+  }, [socket]);
 
   const filters = [
     { key: "all", label: "All", count: bookings.length },
