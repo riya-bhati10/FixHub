@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import Navbar from "../../Common/Navbar";
 import api from "../Landing/api";
+import useAutoRefresh from "../../hooks/useAutoRefresh";
 import {
   HandleMessageUISuccess,
   HandleMessageUIError,
@@ -30,9 +31,7 @@ const MyBooking = () => {
     { path: "/customer/my-bookings", label: "My Bookings" },
   ];
 
-  useEffect(() => {
-    fetchBookings();
-  }, []);
+  useAutoRefresh(fetchBookings, 5000);
 
   const fetchBookings = async () => {
     try {

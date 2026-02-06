@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import technicianService from "../../Services/technicianService";
 import AddService from "./AddService";
 import ConfirmModal from "../../Common/ConfirmModal";
+import useAutoRefresh from "../../hooks/useAutoRefresh";
 import {
   HandleMessageUIError,
   HandleMessageUISuccess,
@@ -20,10 +21,7 @@ const MyServices = () => {
   const [confirmAction, setConfirmAction] = useState("");
   const [confirmPayload, setConfirmPayload] = useState(null);
 
-  useEffect(() => {
-    console.log("MyServices component mounted, fetching services...");
-    fetchMyServices();
-  }, []);
+  useAutoRefresh(fetchMyServices, 5000);
 
   const fetchMyServices = async () => {
     try {

@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import api from "../Landing/api";
 import ConfirmModal from "../../Common/ConfirmModal";
+import useAutoRefresh from "../../hooks/useAutoRefresh";
 import {
   HandleMessageUIError,
   HandleMessageUISuccess,
@@ -26,9 +27,7 @@ const MySchedules = () => {
   const [confirmPayload, setConfirmPayload] = useState(null);
   const [confirmMessage, setConfirmMessage] = useState("");
 
-  useEffect(() => {
-    fetchBookings();
-  }, []);
+  useAutoRefresh(fetchBookings, 5000);
 
   const fetchBookings = async () => {
     try {
@@ -40,6 +39,17 @@ const MySchedules = () => {
       console.error("Error fetching bookings:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Refresh without loading state
+  const refreshBookings = async () => {
+    try {
+      const response = await api.get("/bookings/technician");
+      const bookingsData = response.data.bookings || [];
+      setBookings(bookingsData);
+    } catch (error) {
+      console.error("Error refreshing bookings:", error);
     }
   };
 
@@ -169,7 +179,7 @@ const MySchedules = () => {
         }
       }
 
-      await fetchBookings();
+      await refreshBookings();
     } catch (error) {
       console.error("Error updating booking status:", error);
       console.error("Error response:", error.response?.data);
@@ -190,7 +200,7 @@ const MySchedules = () => {
       );
       setOtpModal({ isOpen: false, bookingId: null });
       setOtp("");
-      await fetchBookings();
+      await refreshBookings();
     } catch (error) {
       console.error("OTP verification error:", error);
       toast.error(
@@ -340,7 +350,7 @@ const MySchedules = () => {
               </div>
 
               {/* Details */}
-              <div className="grid grid-cols-2 gap-3 mb-4 text-sm">
+              <div className="space-y-2 mb-4 text-sm">
                 <div className="flex items-center gap-2 bg-[#F7FBFC] p-2 rounded-lg">
                   <span className="material-symbols-outlined text-[#1F7F85] text-base">
                     schedule
@@ -357,13 +367,29 @@ const MySchedules = () => {
                     {new Date(booking.serviceDate).toLocaleDateString()}
                   </span>
                 </div>
-                <div className="flex items-center gap-2 bg-[#F7FBFC] p-2 rounded-lg col-span-2">
+                <div className="flex items-center gap-2 bg-[#F7FBFC] p-2 rounded-lg">
                   <span className="material-symbols-outlined text-[#1F7F85] text-base">
                     phone
                   </span>
                   <span className="text-slate-700 text-xs">
                     {booking.customer.phone}
                   </span>
+                </div>
+                <div className="flex items-center gap-2 bg-[#F7FBFC] p-2 rounded-lg">
+                  <span className="material-symbols-outlined text-[#1F7F85] text-base">
+                    location_on
+                  </span>
+                  <span className="text-slate-700 text-xs flex-1">
+                    {booking.customer.location || 'Location not provided'}
+                  </span>
+                  {booking.customer.location && (
+                    <button
+                      onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(booking.customer.location)}`, '_blank')}
+                      className="bg-[#1F7F85] hover:bg-[#0F4C5C] text-white px-2 py-1 rounded text-xs font-medium transition-all"
+                    >
+                      Open Map
+                    </button>
+                  )}
                 </div>
               </div>
 
