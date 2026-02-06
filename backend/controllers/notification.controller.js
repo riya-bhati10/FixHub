@@ -7,8 +7,6 @@ exports.getMyNotifications = async (req, res) => {
       createdAt: -1,
     });
 
-    );
-
     res.json(notifications);
   } catch (err) {
     res.status(500).json({ message: err.message });

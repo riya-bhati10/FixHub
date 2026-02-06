@@ -143,8 +143,6 @@ exports.getAllServices = async (req, res) => {
       select: "fullname phone location isBlocked"
     });
 
-    );
-
     // Filter out services with blocked technicians
     const activeServices = services.filter(s => s.technicianId && !s.technicianId.isBlocked);
     const formattedServices = activeServices.map(service => ({
