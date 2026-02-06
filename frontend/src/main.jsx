@@ -3,15 +3,12 @@ import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 import { UserProvider } from "./context/UserContext";
-import { SocketProvider } from "./contexts/SocketContext";
 import "./index.css";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <BrowserRouter>
     <UserProvider>
-      <SocketProvider>
-        <App />
-      </SocketProvider>
+      <App />
     </UserProvider>
   </BrowserRouter>
 );

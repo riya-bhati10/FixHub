@@ -1,9 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import api from "../Landing/api";
 import ConfirmModal from "../../Common/ConfirmModal";
-import { useSocket } from "../../contexts/SocketContext";
 import {
   HandleMessageUIError,
   HandleMessageUISuccess,
@@ -11,7 +10,6 @@ import {
 
 const MySchedules = () => {
   const navigate = useNavigate();
-  const { socket } = useSocket();
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split("T")[0],
   );
@@ -51,26 +49,9 @@ const MySchedules = () => {
     }
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     fetchBookings();
-
-    if (socket) {
-      socket.on('booking:new', () => {
-        console.log('New booking - refreshing');
-        refreshBookings();
-      });
-
-      socket.on('booking:cancelled', () => {
-        console.log('Booking cancelled - refreshing');
-        refreshBookings();
-      });
-
-      return () => {
-        socket.off('booking:new');
-        socket.off('booking:cancelled');
-      };
-    }
-  }, [socket]);
+  }, []);
 
   const filters = [
     { key: "all", label: "All", count: bookings.length },

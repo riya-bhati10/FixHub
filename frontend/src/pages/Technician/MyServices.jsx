@@ -4,7 +4,6 @@ import { toast } from "sonner";
 import technicianService from "../../Services/technicianService";
 import AddService from "./AddService";
 import ConfirmModal from "../../Common/ConfirmModal";
-import useAutoRefresh from "../../hooks/useAutoRefresh";
 import {
   HandleMessageUIError,
   HandleMessageUISuccess,
@@ -39,7 +38,9 @@ const MyServices = () => {
     }
   };
 
-  useAutoRefresh(fetchMyServices, 3000); // 3 seconds
+  useEffect(() => {
+    fetchMyServices();
+  }, []);
 
   const handleDeleteService = (serviceId) => {
     setConfirmAction("deleteService");
