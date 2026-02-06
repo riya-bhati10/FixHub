@@ -450,15 +450,20 @@ exports.verifyCompletionOTP = async (req, res) => {
     booking.completedAt = new Date();
     booking.completionOTP = undefined;
     booking.otpGeneratedAt = undefined;
+    
+    // Set actualPrice (could be same as estimatedPrice or different)
+    // For now, using estimatedPrice as actualPrice
+    booking.actualPrice = booking.estimatedPrice;
+    
     await booking.save();
 
     // Create earning record
     const earning = await Earning.create({
       technician: technicianId,
       booking: bookingId,
-      totalAmount: booking.estimatedPrice,
-      adminCut: booking.estimatedPrice * 0.1,
-      technicianAmount: booking.estimatedPrice * 0.9,
+      totalAmount: booking.actualPrice,
+      adminCut: booking.actualPrice * 0.1,
+      technicianAmount: booking.actualPrice * 0.9,
       status: 'pending'
     });
 

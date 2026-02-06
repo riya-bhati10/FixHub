@@ -257,11 +257,13 @@ exports.getServicesByCategory = async (req, res) => {
       'microwave': ['microwave', 'oven', 'micro wave'],
       'home-audio': ['home audio', 'speaker', 'sound system', 'audio', 'music system', 'stereo'],
       'camera': ['camera', 'dslr', 'photography', 'photo', 'cam'],
-      'gaming': ['gaming', 'console', 'playstation', 'xbox', 'nintendo', 'game', 'ps4', 'ps5']
+      'gaming': ['gaming', 'console', 'playstation', 'xbox', 'nintendo', 'game', 'ps4', 'ps5'],
+      'fan': ['fan', 'ceiling fan', 'table fan', 'exhaust fan'],
+      'mixer': ['mixer', 'grinder', 'mixer grinder', 'blender']
     };
 
     const searchTerms = categoryMap[categoryId] || [categoryId.replace(/-/g, ' ')];
-    const regexPattern = searchTerms.map(term => `(${term})`).join('|');
+    const regexPattern = searchTerms.map(term => `\\b${term}\\b`).join('|');
 
     let services = await Service.find({
       serviceName: new RegExp(regexPattern, 'i'),

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import Navbar from "../../Common/Navbar";
 import api from "../Landing/api";
+import { useRealTimeData } from "../../hooks/useRealTimeData";
 import {
   HandleMessageUISuccess,
   HandleMessageUIError,
@@ -12,17 +13,7 @@ const MyBooking = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
-  const [bookings, setBookings] = useState([]);
-  const [stats, setStats] = useState({
-    total: 0,
-    active: 0,
-    pending: 0,
-    completed: 0,
-    cancelled: 0,
-    totalSpent: 0,
-  });
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
 
   const customerNavLinks = [
     { path: "/customer/dashboard", label: "Dashboard" },
@@ -30,47 +21,64 @@ const MyBooking = () => {
     { path: "/customer/my-bookings", label: "My Bookings" },
   ];
 
-  useEffect(() => {
-    fetchBookings();
-  }, []);
+  // Format time helper
+  const formatTime = (date) => {
+    const now = new Date();
+    const diff = Math.floor((now - date) / 1000); // seconds
+    
+    if (diff < 60) return 'just now';
+    if (diff < 3600) return `${Math.floor(diff / 60)} min ago`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)} hours ago`;
+    return date.toLocaleDateString();
+  };
 
+  // Real-time data fetching
   const fetchBookings = async () => {
-    try {
-      const response = await api.get("/bookings/customer");
-      const bookingsData = response.data.bookings || [];
-      setBookings(bookingsData);
+    const response = await api.get("/bookings/customer");
+    return response.data.bookings || [];
+  };
 
-      // Calculate stats
-      const newStats = {
-        total: bookingsData.length,
-        active: bookingsData.filter(
-          (b) => b.status === "accepted" || b.status === "in_progress",
-        ).length,
-        pending: bookingsData.filter((b) => b.status === "pending").length,
-        completed: bookingsData.filter((b) => b.status === "completed").length,
-        cancelled: bookingsData.filter((b) => b.status === "cancelled").length,
-        totalSpent: bookingsData
-          .filter((b) => b.status === "completed")
-          .reduce((sum, b) => sum + (b.service?.charge || 0), 0),
-      };
-      setStats(newStats);
+  const { data: bookings, loading, lastUpdated, refresh, updateDataOptimistically } = useRealTimeData(fetchBookings, {
+    interval: 7000, // 7 seconds for customers (balanced)
+    showToast: false, // Don't annoy with frequent toasts
+    successMessage: "Booking status updated!",
+    errorMessage: "Failed to update bookings",
+    optimisticUpdate: true,
+    cacheKey: 'customer-bookings'
+  });
 
-      console.log("Customer bookings:", bookingsData);
-    } catch (error) {
-      console.error("Error fetching bookings:", error);
-    } finally {
-      setLoading(false);
-    }
+  // Calculate stats based on real-time data
+  const stats = {
+    total: bookings.length,
+    active: bookings.filter(
+      (b) => b.status === "accepted" || b.status === "in_progress",
+    ).length,
+    pending: bookings.filter((b) => b.status === "pending").length,
+    completed: bookings.filter((b) => b.status === "completed").length,
+    cancelled: bookings.filter((b) => b.status === "cancelled").length,
+    totalSpent: bookings
+      .filter((b) => b.status === "completed" && b.actualPrice)
+      .reduce((sum, b) => sum + b.actualPrice, 0),
   };
 
   const handleCancelBooking = async (bookingId) => {
     try {
+      // Optimistic Update - Update UI immediately
+      updateDataOptimistically(prevBookings =>
+        prevBookings.map(b =>
+          b._id === bookingId || b.bookingId === bookingId
+            ? { ...b, status: 'cancelled', updatedAt: new Date() }
+            : b
+        )
+      );
+
       await api.patch(`/bookings/${bookingId}/cancel`);
-      fetchBookings(); // Refresh bookings
       toast.success("Booking cancelled successfully", HandleMessageUISuccess());
     } catch (error) {
       console.error("Error cancelling booking:", error);
       toast.error("Failed to cancel booking", HandleMessageUIError());
+      // Revert optimistic update on error
+      refresh();
     }
   };
 
@@ -146,18 +154,48 @@ const MyBooking = () => {
 
       <div className="bg-white border-b border-slate-200 sticky top-20 z-30">
         <div className="max-w-[1400px] mx-auto px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <h2 className="text-xl font-bold text-slate-900">My Bookings</h2>
-          <div className="relative w-full sm:w-80">
-            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-              search
-            </span>
-            <input
-              className="w-full bg-slate-50 border border-slate-200 pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-[#1F7F85] focus:border-[#1F7F85]"
-              placeholder="Search bookings..."
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+          <div className="flex items-center gap-4">
+            <h2 className="text-xl font-bold text-slate-900">My Bookings</h2>
+            {lastUpdated && (
+              <div className="flex items-center gap-2 text-xs text-green-600">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <span>Live • Updated {formatTime(lastUpdated)}</span>
+              </div>
+            )}
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="relative w-full sm:w-80">
+              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                search
+              </span>
+              <input
+                className="w-full bg-slate-50 border border-slate-200 pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-[#1F7F85] focus:border-[#1F7F85]"
+                placeholder="Search bookings..."
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <button
+              onClick={refresh}
+              disabled={loading}
+              className="bg-[#1F7F85] hover:bg-[#0F4C5C] text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2 transition-colors disabled:opacity-50 whitespace-nowrap"
+            >
+              <svg
+                className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                />
+              </svg>
+              Refresh
+            </button>
           </div>
         </div>
       </div>

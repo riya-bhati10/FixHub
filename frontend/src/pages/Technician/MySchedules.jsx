@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import api from "../Landing/api";
 import ConfirmModal from "../../Common/ConfirmModal";
+import { useRealTimeData } from "../../hooks/useRealTimeData";
 import {
   HandleMessageUIError,
   HandleMessageUISuccess,
@@ -14,8 +15,6 @@ const MySchedules = () => {
     new Date().toISOString().split("T")[0],
   );
   const [activeFilter, setActiveFilter] = useState("all");
-  const [bookings, setBookings] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [otpModal, setOtpModal] = useState({ isOpen: false, bookingId: null });
   const [otp, setOtp] = useState("");
   const [otpLoading, setOtpLoading] = useState(false);
@@ -26,22 +25,31 @@ const MySchedules = () => {
   const [confirmPayload, setConfirmPayload] = useState(null);
   const [confirmMessage, setConfirmMessage] = useState("");
 
-  useEffect(() => {
-    fetchBookings();
-  }, []);
-
-  const fetchBookings = async () => {
-    try {
-      setLoading(true);
-      const response = await api.get("/bookings/technician");
-      const bookingsData = response.data.bookings || [];
-      setBookings(bookingsData);
-    } catch (error) {
-      console.error("Error fetching bookings:", error);
-    } finally {
-      setLoading(false);
-    }
+  // Format time helper
+  const formatTime = (date) => {
+    const now = new Date();
+    const diff = Math.floor((now - date) / 1000); // seconds
+    
+    if (diff < 60) return 'just now';
+    if (diff < 3600) return `${Math.floor(diff / 60)} min ago`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)} hours ago`;
+    return date.toLocaleDateString();
   };
+
+  // Real-time data fetching with 15-second interval
+  const fetchBookings = async () => {
+    const response = await api.get("/bookings/technician");
+    return response.data.bookings || [];
+  };
+
+  const { data: bookings, loading, lastUpdated, refresh, updateDataOptimistically } = useRealTimeData(fetchBookings, {
+    interval: 5000, // 5 seconds for ultra-fast real-time
+    showToast: false, // Don't show toast for frequent updates
+    successMessage: "New bookings found!",
+    errorMessage: "Failed to update bookings",
+    optimisticUpdate: true,
+    cacheKey: 'technician-bookings'
+  });
 
   const filters = [
     { key: "all", label: "All", count: bookings.length },
@@ -139,17 +147,26 @@ const MySchedules = () => {
         return;
       }
 
+      // Optimistic Update - Update UI immediately
+      updateDataOptimistically((prevBookings) =>
+        prevBookings.map((b) =>
+          b.bookingId === bookingId
+            ? { ...b, status: newStatus, updatedAt: new Date() }
+            : b
+        )
+      );
+
       if (newStatus === "accepted") {
         await api.patch(`/bookings/${bookingId}/accept`);
         toast.success(
           "Booking accepted successfully!",
-          HandleMessageUISuccess(),
+          HandleMessageUISuccess()
         );
       } else if (newStatus === "cancelled") {
         await api.patch(`/bookings/${bookingId}/cancel`);
         toast.success(
           "Booking cancelled successfully!",
-          HandleMessageUISuccess(),
+          HandleMessageUISuccess()
         );
       } else if (newStatus === "in-progress") {
         await api.patch(`/bookings/${bookingId}/status`, { status: newStatus });
@@ -163,20 +180,23 @@ const MySchedules = () => {
         if (response.data.requiresOTP) {
           setOtpModal({ isOpen: true, bookingId });
           toast.success(
-            "OTP sent to customer! Please ask customer for the OTP.",
-            HandleMessageUISuccess(),
+            "OTP sent to customer! Please ask customer for OTP.",
+            HandleMessageUISuccess()
           );
         }
       }
 
-      await fetchBookings();
+      // No need to call refresh - optimistic update already handled it
+      // Background polling will sync with server if needed
     } catch (error) {
       console.error("Error updating booking status:", error);
       console.error("Error response:", error.response?.data);
       toast.error(
         error.response?.data?.message || "Failed to update booking status",
-        HandleMessageUIError(),
+        HandleMessageUIError()
       );
+      // Revert optimistic update on error
+      refresh();
     }
   };
 
@@ -274,13 +294,43 @@ const MySchedules = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-fixhub-textDark mb-2">
-          My Schedules
-        </h1>
-        <p className="text-fixhub-textMuted">
-          Manage your service appointments and track job progress.
-        </p>
+      <div className="mb-6 flex justify-between items-start">
+        <div>
+          <h1 className="text-3xl font-bold text-fixhub-textDark mb-2">
+            My Schedules
+          </h1>
+          <div className="flex items-center gap-4">
+            <p className="text-fixhub-textMuted">
+              Manage your service appointments and track job progress.
+            </p>
+            {lastUpdated && (
+              <div className="flex items-center gap-2 text-xs text-green-600">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <span>Live • Updated {formatTime(lastUpdated)}</span>
+              </div>
+            )}
+          </div>
+        </div>
+        <button
+          onClick={refresh}
+          disabled={loading}
+          className="bg-fixhub-primary hover:bg-fixhub-dark text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2 transition-colors disabled:opacity-50"
+        >
+          <svg
+            className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+            />
+          </svg>
+          Refresh
+        </button>
       </div>
 
       <div className="mb-6">

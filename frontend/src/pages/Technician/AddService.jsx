@@ -15,16 +15,19 @@ const AddService = ({ onClose, onServiceAdded }) => {
   const [error, setError] = useState(null);
 
   const serviceTypes = [
-    "Smartphone Repair",
-    "Laptop Repair",
-    "TV Repair",
-    "AC Service",
-    "Refrigerator Repair",
-    "Washing Machine Repair",
-    "Microwave Repair",
-    "Home Audio Repair",
+    "AC Repair",
     "Camera Repair",
+    "Fan Repair",
+    "Refrigerator Repair",
     "Gaming Console Repair",
+    "Home Audio Repair",
+    "Laptop Repair",
+    "Microwave Repair",
+    "Mixer Repair",
+    "Smart Watch Repair",
+    "Smartphone Repair",
+    "TV Repair",
+    "Washing Machine Repair",
     "Other"
   ];
 

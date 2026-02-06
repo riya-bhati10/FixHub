@@ -13,6 +13,9 @@ import microwaveImg from '../../assets/categories/microwave.jfif';
 import homeAudioImg from '../../assets/categories/home audio.jpg';
 import cameraImg from '../../assets/categories/camera.jpg';
 import gamingImg from '../../assets/categories/gaming.jfif';
+import fanImg from '../../assets/categories/Fan.jpg';
+import mixerImg from '../../assets/categories/Mixer.jpg';
+import otherImg from '../../assets/categories/other.svg';
 
 const BookService = () => {
   const navigate = useNavigate();
@@ -34,7 +37,10 @@ const BookService = () => {
     { id: 'microwave', label: 'Microwave', icon: 'microwave', image: microwaveImg },
     { id: 'home-audio', label: 'Home Audio', icon: 'speaker', image: homeAudioImg },
     { id: 'camera', label: 'Camera', icon: 'photo_camera', image: cameraImg },
-    { id: 'gaming', label: 'Gaming', icon: 'sports_esports', image: gamingImg }
+    { id: 'gaming', label: 'Gaming', icon: 'sports_esports', image: gamingImg },
+    { id: 'fan', label: 'Fan', icon: 'toys', image: fanImg },
+    { id: 'mixer', label: 'Mixer', icon: 'blender', image: mixerImg },
+    { id: 'other', label: 'Other', icon: 'build', image: otherImg }
   ];
 
   const filteredCategories = categories.filter(cat =>
