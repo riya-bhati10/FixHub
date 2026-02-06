@@ -49,7 +49,6 @@ const MyServices = () => {
           HandleMessageUISuccess(),
         );
       } catch (error) {
-        console.error("Error deleting service:", error);
         toast.error("Failed to delete service", HandleMessageUIError());
       } finally {
         setConfirmLoading(false);
@@ -72,7 +71,6 @@ const MyServices = () => {
         HandleMessageUISuccess(),
       );
     } catch (error) {
-      console.error("Error updating service status:", error);
       toast.error("Failed to update service status", HandleMessageUIError());
     }
   };

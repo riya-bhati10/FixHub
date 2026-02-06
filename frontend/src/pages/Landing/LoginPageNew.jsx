@@ -41,7 +41,6 @@ const LoginPage = () => {
         }
       }
     } catch (error) {
-      console.error("Login failed:", error);
       toast.error(
         error.response?.data?.message || "Login failed",
         HandleMessageUIError(),

@@ -25,10 +25,8 @@ const cancelPendingBookingsForBlockedTechnician = async (technicianId) => {
       });
     }
 
-    console.log(`Cancelled ${pendingBookings.length} pending bookings for blocked technician ${technicianId}`);
     return pendingBookings.length;
   } catch (error) {
-    console.error("Error cancelling bookings for blocked technician:", error);
     throw error;
   }
 };

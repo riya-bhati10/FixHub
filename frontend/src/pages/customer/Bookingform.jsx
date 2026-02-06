@@ -69,8 +69,7 @@ const BookingForm = () => {
         }
       }
     } catch (error) {
-      console.log("API failed");
-    }
+      }
 
     return [];
   };

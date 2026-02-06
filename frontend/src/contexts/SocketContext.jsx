@@ -24,7 +24,6 @@ export const SocketProvider = ({ children }) => {
     });
 
     newSocket.on('connect', () => {
-      console.log('✅ Socket connected:', newSocket.id);
       setConnected(true);
       
       // Join user room
@@ -41,7 +40,6 @@ export const SocketProvider = ({ children }) => {
     });
 
     newSocket.on('disconnect', () => {
-      console.log('❌ Socket disconnected');
       setConnected(false);
     });
 

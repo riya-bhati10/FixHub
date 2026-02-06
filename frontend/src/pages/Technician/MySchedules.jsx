@@ -117,13 +117,7 @@ const MySchedules = () => {
 
   const handleStatusChange = async (bookingId, newStatus) => {
     try {
-      console.log("=== FRONTEND: Status Change Request ===");
-      console.log("Booking ID:", bookingId);
-      console.log("New Status:", newStatus);
-
       const booking = bookings.find((b) => b.bookingId === bookingId);
-      console.log("Current Booking Status:", booking?.status);
-
       if (
         booking?.status === "pending-completion" &&
         newStatus === "pending-completion"
@@ -148,11 +142,9 @@ const MySchedules = () => {
         await api.patch(`/bookings/${bookingId}/status`, { status: newStatus });
         toast.success("Work started successfully!", HandleMessageUISuccess());
       } else if (newStatus === "pending-completion") {
-        console.log("Sending pending-completion request...");
         const response = await api.patch(`/bookings/${bookingId}/status`, {
           status: newStatus,
         });
-        console.log("Response:", response.data);
         if (response.data.requiresOTP) {
           setOtpModal({ isOpen: true, bookingId });
           toast.success(
@@ -164,8 +156,6 @@ const MySchedules = () => {
 
       await refreshBookings();
     } catch (error) {
-      console.error("Error updating booking status:", error);
-      console.error("Error response:", error.response?.data);
       toast.error(
         error.response?.data?.message || "Failed to update booking status",
         HandleMessageUIError(),
@@ -189,7 +179,6 @@ const MySchedules = () => {
       setOtp("");
       await refreshBookings();
     } catch (error) {
-      console.error("OTP verification error:", error);
       toast.error(
         error.response?.data?.message || "Invalid OTP. Please try again.",
         HandleMessageUIError(),
@@ -205,7 +194,6 @@ const MySchedules = () => {
       await api.post(`/bookings/${otpModal.bookingId}/resend-otp`);
       toast.success("New OTP sent to customer!", HandleMessageUISuccess());
     } catch (error) {
-      console.error("Resend OTP error:", error);
       toast.error(
         error.response?.data?.message || "Failed to resend OTP",
         HandleMessageUIError(),
@@ -221,8 +209,7 @@ const MySchedules = () => {
       try {
         window.open(confirmPayload, "_blank");
       } catch (err) {
-        console.error("Failed to open WhatsApp:", err);
-      } finally {
+        } finally {
         setConfirmLoading(false);
         setConfirmOpen(false);
         setConfirmAction("");

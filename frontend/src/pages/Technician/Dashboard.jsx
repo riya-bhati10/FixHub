@@ -30,66 +30,41 @@ const Dashboard = () => {
         return;
       }
 
-      console.log("Token found:", token ? "Yes" : "No");
-      console.log("API URL:", import.meta.env.VITE_API_BASE_URL);
-
       // Test backend connectivity
-      console.log("Testing backend connectivity...");
       try {
         const testResponse = await fetch(
           `${import.meta.env.VITE_API_BASE_URL}/test`,
         );
         const testData = await testResponse.json();
-        console.log("Backend test response:", testData);
-      } catch (error) {
-        console.error("Backend connectivity test failed:", error);
+        } catch (error) {
         setError(
           "Cannot connect to backend server. Please ensure backend is running.",
         );
         return;
       }
 
-      console.log("Fetching user profile...");
       try {
         const userData = await userService.getUserProfile();
-        console.log("User data success:", userData);
         setTechnicianData(userData);
       } catch (error) {
-        console.error(
-          "User profile error:",
-          error.response?.data || error.message,
-        );
         throw error;
       }
 
-      console.log("Fetching technician stats...");
       try {
         const statsData = await technicianService.getTechnicianStats();
-        console.log("=== STATS DATA RECEIVED ===");
-        console.log("Stats:", statsData);
-        console.log("Total Earnings:", statsData.totalEarnings);
         setStats(statsData);
       } catch (error) {
-        console.error("Stats error:", error.response?.data || error.message);
         throw error;
       }
 
-      console.log("Fetching booking requests...");
       try {
         const requestsData =
           await technicianService.getTechnicianBookingRequests();
-        console.log("Requests data success:", requestsData);
         setBookingRequests(requestsData);
       } catch (error) {
-        console.error(
-          "Booking requests error:",
-          error.response?.data || error.message,
-        );
         throw error;
       }
     } catch (error) {
-      console.error("Error fetching dashboard data:", error);
-
       if (error.response?.status === 401) {
         setError("Session expired. Please login again.");
         localStorage.removeItem("token");
@@ -113,7 +88,6 @@ const Dashboard = () => {
       setBookingRequests(updatedRequests);
       setStats(updatedStats);
     } catch (error) {
-      console.error("Error accepting booking:", error);
       toast.error("Failed to accept booking", HandleMessageUIError());
     }
   };
@@ -126,7 +100,6 @@ const Dashboard = () => {
         await technicianService.getTechnicianBookingRequests();
       setBookingRequests(updatedRequests);
     } catch (error) {
-      console.error("Error declining booking:", error);
       toast.error("Failed to decline booking", HandleMessageUIError());
     }
   };
@@ -245,8 +218,6 @@ const Dashboard = () => {
       color: "bg-emerald-500",
     },
   ];
-
-  console.log("Rendering stats cards with data:", stats);
 
   const quickActions = [
     {

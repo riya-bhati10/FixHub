@@ -23,8 +23,7 @@ const TechnicianDashboard = () => {
       const user = JSON.parse(localStorage.getItem('user'));
       setUserData(user);
     } catch (error) {
-      console.error('Error fetching user data:', error);
-    } finally {
+      } finally {
       setLoading(false);
     }
   };

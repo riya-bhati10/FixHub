@@ -28,7 +28,6 @@ const Profile = () => {
       setPhoneNumber(userData.phone);
       setLocation(userData.location || '');
     } catch (error) {
-      console.error('Error fetching profile:', error);
       // Fallback to localStorage data
       const localUser = localStorage.getItem('user');
       if (localUser) {
@@ -47,8 +46,7 @@ const Profile = () => {
       const response = await api.get('/services');
       setServices(response.data.services || []);
     } catch (error) {
-      console.error('Error fetching services:', error);
-    }
+      }
   };
 
   const handleSaveChanges = async () => {
@@ -76,7 +74,6 @@ const Profile = () => {
       
       toast.success('Profile updated successfully!', HandleMessageUISuccess());
     } catch (error) {
-      console.error('Error updating profile:', error);
       toast.error(error.response?.data?.message || 'Failed to update profile. Please try again.', HandleMessageUIError());
     }
   };

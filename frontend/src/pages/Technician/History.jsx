@@ -28,13 +28,11 @@ const History = () => {
           const reviews = await technicianService.getTechnicianReviews();
           reviewsCount = Array.isArray(reviews) ? reviews.length : reviewsCount;
         } catch (err) {
-          console.error('Error fetching reviews for count fallback:', err);
-        }
+          }
       }
 
       setStats({ ...statsData, reviewsCount });
     } catch (error) {
-      console.error('Error fetching history data:', error);
       setError('Failed to load history data');
     } finally {
       setLoading(false);

@@ -31,8 +31,7 @@ const BookService = () => {
       const response = await axiosInstance.get("/api/services");
       setServices(response.data);
     } catch (error) {
-      console.error("Error fetching services:", error);
-    } finally {
+      } finally {
       setLoading(false);
     }
   };
@@ -44,8 +43,7 @@ const BookService = () => {
       );
       setTechnicians(response.data);
     } catch (error) {
-      console.error("Error fetching technicians:", error);
-    }
+      }
   };
 
   const handleServiceSelect = async (service) => {
@@ -84,7 +82,6 @@ const BookService = () => {
       
       navigate("/booking-success", { state: { booking: successBookingData } });
     } catch (error) {
-      console.error("Booking failed:", error);
       toast.error("Booking failed. Please try again.", HandleMessageUIError());
     }
   };

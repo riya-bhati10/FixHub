@@ -11,21 +11,14 @@ exports.createReview = async (req, res) => {
     const { bookingId, rating, review, comment } = req.body;
     const reviewText = review || comment; // Accept both field names
 
-    console.log('Review request - customerId:', customerId);
-    console.log('Review request - bookingId:', bookingId);
-
     const booking = await Booking.findOne({
       _id: bookingId,
       customer: customerId,
       status: "completed",
     });
 
-    console.log('Found booking:', booking);
-
     if (!booking) {
       const anyBooking = await Booking.findOne({ _id: bookingId });
-      console.log('Booking with any status:', anyBooking);
-      
       return res.status(400).json({
         message: "You can review only your completed bookings",
       });
@@ -63,7 +56,6 @@ exports.createReview = async (req, res) => {
       review: newReview,
     });
   } catch (err) {
-    console.error('Review creation error:', err);
     return res.status(500).json({ message: err.message });
   }
 };
@@ -73,14 +65,10 @@ exports.createReview = async (req, res) => {
 exports.getTechnicianReviews = async (req, res) => {
   try {
     const { technicianId } = req.params;
-    console.log('Fetching reviews for technician:', technicianId);
-
     const reviews = await Review.find({ technicianId })
       .populate("customerId", "fullname")
       .populate("bookingId", "serviceType")
       .sort({ createdAt: -1 });
-
-    console.log('Found reviews:', reviews.length);
 
     const formattedReviews = reviews.map((r) => ({
       rating: r.rating,
@@ -99,7 +87,6 @@ exports.getTechnicianReviews = async (req, res) => {
       reviews: formattedReviews,
     });
   } catch (err) {
-    console.error('Error fetching technician reviews:', err);
     res.status(500).json({ message: err.message });
   }
 };

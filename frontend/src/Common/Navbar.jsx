@@ -21,7 +21,6 @@ const Navbar = ({
   const { user, clearUser } = useUser();
 
   useEffect(() => {
-    console.log('Navbar - Current user:', user);
     if (showNotifications && user) {
       fetchNotifications();
       const interval = setInterval(fetchNotifications, 30000);
@@ -51,8 +50,7 @@ const Navbar = ({
       setNotifications(data.slice(0, 5));
       setUnreadCount(data.filter(n => !n.read).length);
     } catch (error) {
-      console.error('Error fetching notifications:', error);
-    }
+      }
   };
 
   const markAsRead = async (notificationId) => {
@@ -64,8 +62,7 @@ const Navbar = ({
       });
       fetchNotifications();
     } catch (error) {
-      console.error('Error marking notification as read:', error);
-    }
+      }
   };
 
   const clearAllNotifications = async () => {
@@ -78,8 +75,7 @@ const Navbar = ({
       setNotifications([]);
       setUnreadCount(0);
     } catch (error) {
-      console.error('Error clearing notifications:', error);
-    }
+      }
   };
 
   const isLanding = userType === 'landing';
@@ -126,10 +122,8 @@ const Navbar = ({
   };
 
   const getUserInitial = () => {
-    console.log('Getting user initial for:', user);
     if (user?.fullname?.firstname) {
       const initial = user.fullname.firstname.charAt(0).toUpperCase();
-      console.log('User initial:', initial);
       return initial;
     }
     // Fallback to localStorage if user context not loaded yet
@@ -141,8 +135,7 @@ const Navbar = ({
           return parsedUser.fullname.firstname.charAt(0).toUpperCase();
         }
       } catch (e) {
-        console.error('Error parsing stored user:', e);
-      }
+        }
     }
     // Final fallback based on userType
     if (userType === 'technician') return 'T';
@@ -164,8 +157,7 @@ const Navbar = ({
           return `${parsedUser.fullname.firstname} ${parsedUser.fullname.lastname || ''}`;
         }
       } catch (e) {
-        console.error('Error parsing stored user:', e);
-      }
+        }
     }
     return 'User';
   };

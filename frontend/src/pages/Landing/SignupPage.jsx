@@ -59,8 +59,7 @@ const SignupPage = () => {
         }
       }
     } catch (error) {
-      console.log('API failed');
-    }
+      }
     
     return [];
   };
@@ -77,7 +76,6 @@ const SignupPage = () => {
         const results = await searchLocations(value);
         setSuggestions(results);
       } catch (error) {
-        console.error('Error fetching location suggestions:', error);
         setSuggestions([]);
       }
     } else {
@@ -105,7 +103,6 @@ const SignupPage = () => {
             const data = await response.json();
             setFormData((prev) => ({ ...prev, location: data.display_name }));
           } catch (error) {
-            console.error('Error fetching address:', error);
             setFormData((prev) => ({ ...prev, location: `${latitude}, ${longitude}` }));
           }
           setSuggestions([]);
@@ -173,7 +170,6 @@ const SignupPage = () => {
         }
       }
     } catch (error) {
-      console.error('Signup failed:', error.response?.data?.message || error.message);
       toast.error(error.response?.data?.message || 'Signup failed', {
         duration: 4000,
         style: { 

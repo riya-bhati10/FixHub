@@ -12,8 +12,7 @@ const ExampleComponent = () => {
       const response = await serviceAPI.getAllServices();
       setServices(response.data);
     } catch (error) {
-      console.error('Error fetching services:', error);
-    } finally {
+      } finally {
       setLoading(false);
     }
   };
@@ -23,10 +22,8 @@ const ExampleComponent = () => {
     try {
       const response = await authAPI.login({ email, password });
       localStorage.setItem('token', response.data.token);
-      console.log('Login successful');
-    } catch (error) {
-      console.error('Login failed:', error.response?.data?.message);
-    }
+      } catch (error) {
+      }
   };
 
   useEffect(() => {

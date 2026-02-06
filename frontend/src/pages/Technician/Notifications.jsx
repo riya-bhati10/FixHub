@@ -17,7 +17,6 @@ const Notifications = () => {
       const response = await axiosInstance.get('/notifications/technician');
       setNotifications(response.data);
     } catch (error) {
-      console.error('Error fetching notifications:', error);
       setError('Failed to load notifications');
     } finally {
       setLoading(false);
@@ -35,8 +34,7 @@ const Notifications = () => {
         )
       );
     } catch (error) {
-      console.error('Error marking notification as read:', error);
-    }
+      }
   };
 
   const getNotificationIcon = (type) => {
@@ -171,8 +169,7 @@ const Notifications = () => {
                 await axiosInstance.patch('/notifications/mark-all-read');
                 setNotifications(prev => prev.map(notif => ({ ...notif, read: true })));
               } catch (error) {
-                console.error('Error marking all as read:', error);
-              }
+                }
             }}
             className="bg-fixhub-primary hover:bg-fixhub-dark text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
           >

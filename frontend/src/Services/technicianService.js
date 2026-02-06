@@ -43,18 +43,12 @@ const updateBookingStatus = async (bookingId, status) => {
 };
 
 const getMyServices = async () => {
-  console.log('Fetching my services...');
-  console.log('API URL:', `${API_URL}/my-services`);
   const response = await axiosInstance.get(`${API_URL}/my-services`);
-  console.log('My services response:', response.data);
   return response.data;
 };
 
 const createService = async (serviceData) => {
-  console.log('Creating service with data:', serviceData);
-  console.log('API URL:', `${API_URL}/services`);
   const response = await axiosInstance.post(`${API_URL}/services`, serviceData);
-  console.log('Service creation response:', response.data);
   return response.data;
 };
 

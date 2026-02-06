@@ -48,11 +48,7 @@ const ReviewPage = () => {
     setError("");
 
     try {
-      console.log("Submitting review with data:", {
-        bookingId: booking._id,
-        technicianId: booking.technician?._id,
-        rating: rating,
-        comment: comment.trim(),
+      ,
       });
 
       await api.post("/reviews", {
@@ -65,9 +61,6 @@ const ReviewPage = () => {
       toast.success("Thank you for your review!", HandleMessageUISuccess());
       navigate("/customer/my-bookings");
     } catch (error) {
-      console.error("Error submitting review:", error);
-      console.error("Error response:", error.response?.data);
-
       if (error.response?.data?.isDuplicate) {
         toast.error(
           "You have already reviewed this service! Only one review is allowed.",

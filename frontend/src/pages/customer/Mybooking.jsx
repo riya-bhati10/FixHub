@@ -62,7 +62,6 @@ const MyBooking = () => {
       refresh();
       toast.success("Booking cancelled successfully", HandleMessageUISuccess());
     } catch (error) {
-      console.error("Error cancelling booking:", error);
       toast.error("Failed to cancel booking", HandleMessageUIError());
     }
   };
@@ -362,10 +361,6 @@ const MyBooking = () => {
                               <button
                                 className="px-4 py-2 bg-amber-500 text-white font-bold hover:bg-amber-600 transition-colors flex items-center gap-2 text-sm"
                                 onClick={() => {
-                                  console.log(
-                                    "Passing booking to review:",
-                                    booking,
-                                  );
                                   navigate("/customer/review", {
                                     state: { booking },
                                   });

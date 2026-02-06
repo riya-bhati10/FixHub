@@ -27,7 +27,6 @@ const BookServicePage = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("Service booking:", formData);
     toast.success(
       "Service booked successfully! We will contact you soon.",
       HandleMessageUISuccess(),

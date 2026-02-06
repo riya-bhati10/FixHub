@@ -54,10 +54,7 @@ const AddService = ({ onClose, onServiceAdded }) => {
         experience: parseInt(formData.experience)
       };
       
-      console.log('Sending service data:', serviceData);
       const response = await api.post('/services', serviceData);
-      console.log('Service created:', response.data);
-      
       toast.success("Service Added Successfully ✅", HandleMessageUISuccess());
       
       if (onServiceAdded) {
@@ -68,8 +65,6 @@ const AddService = ({ onClose, onServiceAdded }) => {
         onClose();
       }
     } catch (error) {
-      console.error('Error adding service:', error);
-      console.error('Error response:', error.response?.data);
       const errorMessage = error.response?.data?.message || 'Failed to add service. Please try again.';
       toast.error(errorMessage, HandleMessageUIError());
     } finally {

@@ -10,14 +10,11 @@ export const UserProvider = ({ children }) => {
   useEffect(() => {
     const loadUser = async () => {
       const token = localStorage.getItem('token');
-      console.log('Token from localStorage:', token);
       if (token) {
         try {
           const response = await axiosInstance.get('/auth/me');
-          console.log('User loaded:', response.data.user);
           setUser(response.data.user);
         } catch (error) {
-          console.error('Failed to load user:', error);
           localStorage.removeItem('token');
           localStorage.removeItem('role');
         }
@@ -39,8 +36,7 @@ export const UserProvider = ({ children }) => {
         await axiosInstance.get('/auth/logout');
       }
     } catch (error) {
-      console.error('Logout API error:', error);
-    } finally {
+      } finally {
       // Clear user data regardless of API success/failure
       setUser(null);
       localStorage.removeItem('token');

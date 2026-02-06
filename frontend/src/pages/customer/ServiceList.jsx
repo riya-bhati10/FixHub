@@ -28,8 +28,7 @@ const ServiceList = () => {
       const response = await api.get(`/services/category/${categoryId}`);
       setServices(response.data);
     } catch (error) {
-      console.error("Error fetching services:", error);
-    } finally {
+      } finally {
       setLoading(false);
     }
   };
@@ -69,7 +68,6 @@ const ServiceList = () => {
       }
       navigate("/customer/booking-form", { state: { service } });
     } catch (error) {
-      console.error("Error checking user status:", error);
       // If error checking status, still allow navigation (fallback)
       navigate("/customer/booking-form", { state: { service } });
     }

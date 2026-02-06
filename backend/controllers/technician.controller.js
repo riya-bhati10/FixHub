@@ -18,8 +18,6 @@ exports.getTechnicianProfile = async (req, res) => {
 exports.getTechnicianStats = async (req, res) => {
   try {
     const technicianId = req.user.userId;
-    console.log('Getting stats for technician:', technicianId);
-    
     // Get technician data with earnings
     const technician = await User.findById(technicianId).select('totalEarnings');
     
@@ -54,10 +52,8 @@ exports.getTechnicianStats = async (req, res) => {
       averageRating: parseFloat(averageRating)
     };
     
-    console.log('Stats result:', stats);
     res.json(stats);
   } catch (error) {
-    console.error('Error in getTechnicianStats:', error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -65,8 +61,6 @@ exports.getTechnicianStats = async (req, res) => {
 exports.getBookingRequests = async (req, res) => {
   try {
     const technicianId = req.user.userId;
-    console.log('Getting booking requests for technician:', technicianId);
-    
     const bookingRequests = await Booking.find({ 
       technician: technicianId, 
       status: 'pending' 
@@ -74,10 +68,8 @@ exports.getBookingRequests = async (req, res) => {
     .populate('customer', 'fullname phone email')
     .sort({ createdAt: -1 });
 
-    console.log('Found booking requests:', bookingRequests.length);
     res.json(bookingRequests);
   } catch (error) {
-    console.error('Error in getBookingRequests:', error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -181,16 +173,11 @@ exports.declineBooking = async (req, res) => {
 exports.getMyServices = async (req, res) => {
   try {
     const technicianId = req.user.userId;
-    console.log('Fetching services for technician:', technicianId);
-    
     const services = await Service.find({ technicianId: technicianId })
       .sort({ createdAt: -1 });
 
-    console.log('Found services:', services.length);
-    console.log('Services data:', services);
     res.json(services);
   } catch (error) {
-    console.error('Error fetching technician services:', error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -198,9 +185,6 @@ exports.getMyServices = async (req, res) => {
 exports.createService = async (req, res) => {
   try {
     const technicianId = req.user.userId;
-    console.log('Creating service for technician:', technicianId);
-    console.log('Request body:', req.body);
-    
     // Validate required fields
     const { serviceName, serviceCharge, experience, description } = req.body;
     if (!serviceName || !serviceCharge) {
@@ -215,16 +199,10 @@ exports.createService = async (req, res) => {
       description: description || "",
       isActive: true
     };
-    console.log('Service data to save:', serviceData);
-    
     const service = new Service(serviceData);
     const savedService = await service.save();
-    console.log('Service saved successfully:', savedService);
-
     res.status(201).json(savedService);
   } catch (error) {
-    console.error('Error creating service:', error);
-    console.error('Error details:', error.message);
     if (error.name === 'ValidationError') {
       return res.status(400).json({ message: 'Validation error: ' + error.message });
     }
@@ -249,7 +227,6 @@ exports.updateService = async (req, res) => {
 
     res.json(service);
   } catch (error) {
-    console.error('Error updating service:', error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -270,7 +247,6 @@ exports.deleteService = async (req, res) => {
 
     res.json({ message: "Service deleted successfully" });
   } catch (error) {
-    console.error('Error deleting service:', error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -295,7 +271,6 @@ exports.updateServiceStatus = async (req, res) => {
 
     res.json(service);
   } catch (error) {
-    console.error('Error updating service status:', error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -349,7 +324,6 @@ exports.migrateMyEarnings = async (req, res) => {
       totalEarnings: totalEarnings.toFixed(2)
     });
   } catch (error) {
-    console.error('Error migrating earnings:', error);
     res.status(500).json({ message: error.message });
   }
 };

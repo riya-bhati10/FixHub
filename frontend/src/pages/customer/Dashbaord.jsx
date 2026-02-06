@@ -46,8 +46,7 @@ const Dashboard = () => {
       };
       setStats(newStats);
     } catch (error) {
-      console.error('Error fetching bookings:', error);
-    }
+      }
   };
 
   const getStatusStyles = (status) => {

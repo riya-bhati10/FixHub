@@ -33,7 +33,6 @@ const ProfileSettings = () => {
       setPhoneNumber(userData.phone);
       setLocation(userData.location || '');
     } catch (error) {
-      console.error('Error fetching profile:', error);
       const localUser = localStorage.getItem('user');
       if (localUser) {
         const userData = JSON.parse(localUser);
@@ -68,7 +67,6 @@ const ProfileSettings = () => {
       
       toast.success('Profile updated successfully!', HandleMessageUISuccess());
     } catch (error) {
-      console.error('Error updating profile:', error);
       toast.error(error.response?.data?.message || 'Failed to update profile.', HandleMessageUIError());
     }
   };

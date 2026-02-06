@@ -7,27 +7,13 @@ exports.createService = async (req, res) => {
   try {
     const technicianId = req.user.userId;
     const { serviceName, description, serviceCharge, experience } = req.body;
-    console.log("Received data:", req.body);
-    console.log("Technician ID:", technicianId);
-    console.log("User object:", req.user);
-    console.log("User ID type:", typeof technicianId);
-
     if (!serviceName || !serviceCharge) {
       return res.status(400).json({ message: "Required fields missing" });
     }
 
     if (!technicianId) {
-      console.log("ERROR: Technician ID is missing!");
       return res.status(400).json({ message: "Technician ID missing" });
     }
-
-    console.log("About to create service with data:", {
-      technicianId,
-      serviceName,
-      description,
-      serviceCharge,
-      experience,
-    });
 
     const service = await Service.create({
       technicianId,
@@ -37,15 +23,11 @@ exports.createService = async (req, res) => {
       experience,
     });
 
-    console.log("Service created successfully:", service);
-
     res.status(201).json({
       message: "Service created successfully",
       service,
     });
   } catch (err) {
-    console.error("Service creation error:", err);
-    console.error("Error details:", err.message);
     res.status(500).json({ message: err.message });
   }
 };
@@ -161,13 +143,10 @@ exports.getAllServices = async (req, res) => {
       select: "fullname phone location isBlocked"
     });
 
-    console.log('Total services found:', services.length);
-    console.log('Service names in DB:', services.map(s => s.serviceName));
+    );
 
     // Filter out services with blocked technicians
     const activeServices = services.filter(s => s.technicianId && !s.technicianId.isBlocked);
-    console.log('Active services after filtering:', activeServices.length);
-
     const formattedServices = activeServices.map(service => ({
       id: service._id,
       title: service.serviceName,
@@ -188,7 +167,6 @@ exports.getAllServices = async (req, res) => {
       services: formattedServices,
     });
   } catch (err) {
-    console.error('Get all services error:', err);
     res.status(500).json({ message: err.message });
   }
 };
@@ -197,8 +175,6 @@ exports.getAllServices = async (req, res) => {
 exports.getTechniciansByService = async (req, res) => {
   try {
     const { serviceName } = req.params;
-    console.log('Searching for service:', serviceName);
-
     const services = await Service.find({
       serviceName: new RegExp(serviceName, 'i'), // Case insensitive search
       isActive: true,
@@ -207,8 +183,6 @@ exports.getTechniciansByService = async (req, res) => {
       match: { isBlocked: false },
       select: "fullname phone location isBlocked"
     });
-
-    console.log('Found services for technician search:', services.length);
 
     // Filter out services with blocked technicians
     const activeServices = services.filter(s => s.technicianId && !s.technicianId.isBlocked);
@@ -236,7 +210,6 @@ exports.getTechniciansByService = async (req, res) => {
       technicians,
     });
   } catch (err) {
-    console.error('Get technicians by service error:', err);
     res.status(500).json({ message: err.message });
   }
 };
@@ -314,7 +287,6 @@ exports.getServicesByCategory = async (req, res) => {
     
     res.json(formattedServices);
   } catch (err) {
-    console.error('Category search error:', err);
     res.status(500).json({ message: err.message });
   }
 };

@@ -18,8 +18,7 @@ const logout = async () => {
   try {
     await API.get('/auth/logout');
   } catch (error) {
-    console.error("Logout failed", error);
-  }
+    }
   localStorage.removeItem('token');
   localStorage.removeItem('role');
 };

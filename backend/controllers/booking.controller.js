@@ -17,10 +17,6 @@ exports.createBooking = async (req, res) => {
       serviceLocation, 
     } = req.body;
 
-    console.log("Booking data:", req.body);
-    console.log("Customer ID:", customerId);
-    console.log("User object:", req.user);
-
     if (!serviceId || !technicianId || !issue || !serviceDate || !timeSlot) {
       return res.status(400).json({
         message: "All required booking fields must be provided",
@@ -73,8 +69,6 @@ exports.createBooking = async (req, res) => {
       status: "pending"
     });
 
-    console.log("Booking created successfully:", booking);
-
     res.status(201).json({
       message: "Booking created successfully",
       bookingId: booking._id,
@@ -96,8 +90,6 @@ exports.createBooking = async (req, res) => {
     });
 
   } catch (err) {
-    console.error("Booking creation error:", err);
-    console.error("Error details:", err.message);
     res.status(500).json({ message: err.message });
   }
 };
@@ -300,12 +292,6 @@ exports.updateBookingStatus = async (req, res) => {
       booking.status = status;
       await booking.save();
 
-      console.log('=== OTP GENERATION ===');
-      console.log('Booking ID:', booking._id);
-      console.log('OTP Generated:', otp);
-      console.log('Customer ID:', booking.customer);
-      console.log('Customer ID Type:', typeof booking.customer);
-
       try {
         // Send OTP to customer
         const notification = await Notification.create({
@@ -317,14 +303,9 @@ exports.updateBookingStatus = async (req, res) => {
           data: { bookingId: booking._id, otp }
         });
 
-        console.log('=== NOTIFICATION CREATED ===');
-        console.log('Notification ID:', notification._id);
-        console.log('Notification:', JSON.stringify(notification, null, 2));
+        );
       } catch (notifError) {
-        console.error('=== NOTIFICATION ERROR ===');
-        console.error('Error creating notification:', notifError);
-        console.error('Error details:', notifError.message);
-      }
+        }
 
       return res.json({
         message: "OTP sent to customer. Please enter the OTP to complete the service.",
@@ -385,10 +366,6 @@ exports.resendCompletionOTP = async (req, res) => {
     booking.otpGeneratedAt = new Date();
     await booking.save();
 
-    console.log('=== RESEND OTP ===');
-    console.log('New OTP Generated:', otp);
-    console.log('Customer ID:', booking.customer);
-
     try {
       // Send new OTP to customer
       const notification = await Notification.create({
@@ -400,17 +377,14 @@ exports.resendCompletionOTP = async (req, res) => {
         data: { bookingId: booking._id, otp }
       });
 
-      console.log('Resend Notification Created:', notification._id);
-    } catch (notifError) {
-      console.error('Error creating resend notification:', notifError);
-    }
+      } catch (notifError) {
+      }
 
     res.json({
       message: "New OTP sent to customer successfully",
       bookingId: booking._id,
     });
   } catch (err) {
-    console.error('Resend OTP error:', err);
     res.status(500).json({ message: err.message });
   }
 };
@@ -469,8 +443,6 @@ exports.verifyCompletionOTP = async (req, res) => {
       technicianId,
       { $inc: { totalEarnings: earning.technicianAmount } }
     );
-
-    console.log(`Earning created: $${earning.technicianAmount} for technician ${technicianId}`);
 
     // Notify customer
     await Notification.create({

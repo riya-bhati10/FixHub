@@ -86,13 +86,10 @@ const Earnings = () => {
   const fetchEarnings = async () => {
     try {
       setLoading(true);
-      console.log('Fetching earnings...');
       const data = await getCompletedBookings();
-      console.log('Earnings data:', data);
       setEarnings(data);
       setError(null);
     } catch (err) {
-      console.error('Earnings error:', err);
       const errorMsg = err.response?.data?.message || err.message || "Failed to load earnings data";
       setError(errorMsg);
     } finally {

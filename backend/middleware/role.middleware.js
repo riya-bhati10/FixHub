@@ -1,10 +1,6 @@
 
 exports.checkRole = (...allowedRoles) => {
   return (req, res, next) => {
-    console.log("Role check - User:", req.user);
-    console.log("Role check - Allowed roles:", allowedRoles);
-    console.log("Role check - User role:", req.user?.role);
-   
     if (!req.user || !req.user.role) {
       return res.status(401).json({
         message: "Unauthorized: user data not found",
@@ -17,7 +13,6 @@ exports.checkRole = (...allowedRoles) => {
       });
     }
 
-    console.log("Role check passed!");
     next();
   };
 };

@@ -26,8 +26,7 @@ export const useRealTimeData = (fetchFunction, options = {}) => {
         setLastUpdated(new Date());
       }
     } catch (err) {
-      console.error('Error fetching data:', err);
-    } finally {
+      } finally {
       if (mountedRef.current && showLoading && !isBackground) {
         setLoading(false);
       }

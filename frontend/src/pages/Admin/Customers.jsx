@@ -233,11 +233,9 @@ const Customers = () => {
     try {
       setLoading(true);
       const data = await getAllCustomers();
-      console.log('Customers data:', data);
       setCustomers(data.customers || []);
       setFilteredData(data.customers || []);
     } catch (err) {
-      console.error('Error:', err);
       setError(err.response?.data?.message || "Failed to load customers");
     } finally {
       setLoading(false);

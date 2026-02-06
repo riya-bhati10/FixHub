@@ -233,11 +233,9 @@ const Technicians = () => {
     try {
       setLoading(true);
       const data = await getAllTechnicians();
-      console.log('Technicians data:', data);
       setTechnicians(data.technicians || []);
       setFilteredData(data.technicians || []);
     } catch (err) {
-      console.error('Error:', err);
       setError(err.response?.data?.message || "Failed to load technicians");
     } finally {
       setLoading(false);
