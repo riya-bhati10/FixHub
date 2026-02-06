@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import api from "../Landing/api";
 import ConfirmModal from "../../Common/ConfirmModal";
+import { useRealTimeData } from "../../hooks/useRealTimeData";
 import {
   HandleMessageUIError,
   HandleMessageUISuccess,
@@ -14,8 +15,6 @@ const MySchedules = () => {
     new Date().toISOString().split("T")[0],
   );
   const [activeFilter, setActiveFilter] = useState("all");
-  const [bookings, setBookings] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [otpModal, setOtpModal] = useState({ isOpen: false, bookingId: null });
   const [otp, setOtp] = useState("");
   const [otpLoading, setOtpLoading] = useState(false);
@@ -26,32 +25,16 @@ const MySchedules = () => {
   const [confirmPayload, setConfirmPayload] = useState(null);
   const [confirmMessage, setConfirmMessage] = useState("");
 
-  const fetchBookings = async () => {
-    try {
-      setLoading(true);
-      const response = await api.get("/bookings/technician");
-      const bookingsData = response.data.bookings || [];
-      setBookings(bookingsData);
-    } catch (error) {
-      console.error("Error fetching bookings:", error);
-    } finally {
-      setLoading(false);
-    }
+  const fetchBookingsData = async () => {
+    const response = await api.get("/bookings/technician");
+    return response.data.bookings || [];
   };
 
-  const refreshBookings = async () => {
-    try {
-      const response = await api.get("/bookings/technician");
-      const bookingsData = response.data.bookings || [];
-      setBookings(bookingsData);
-    } catch (error) {
-      console.error("Error refreshing bookings:", error);
-    }
-  };
-
-  useEffect(() => {
-    fetchBookings();
-  }, []);
+  const { data: bookings, loading, refresh } = useRealTimeData(fetchBookingsData, {
+    interval: 5000,
+    immediate: true,
+    dependencies: [],
+  });
 
   const filters = [
     { key: "all", label: "All", count: bookings.length },
@@ -188,6 +171,10 @@ const MySchedules = () => {
         HandleMessageUIError(),
       );
     }
+  };
+
+  const refreshBookings = () => {
+    refresh();
   };
 
   const handleVerifyOTP = async () => {
@@ -380,11 +367,11 @@ const MySchedules = () => {
                     location_on
                   </span>
                   <span className="text-slate-700 text-xs flex-1">
-                    {booking.customer.location || 'Location not provided'}
+                    {booking.location || 'Location not provided'}
                   </span>
-                  {booking.customer.location && (
+                  {booking.location && booking.location !== 'Address not provided' && booking.location !== 'Location not provided' && (
                     <button
-                      onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(booking.customer.location)}`, '_blank')}
+                      onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(booking.location)}`, '_blank')}
                       className="bg-[#1F7F85] hover:bg-[#0F4C5C] text-white px-2 py-1 rounded text-xs font-medium transition-all"
                     >
                       Open Map

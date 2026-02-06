@@ -120,6 +120,7 @@ exports.getTechnicianBookings = async (req, res) => {
       .populate("customer", "fullname phone location")
       .sort({ createdAt: -1 });
 
+  
     const formattedBookings = bookings.map((b) => ({
       _id: b._id,
       bookingId: b._id,
@@ -137,7 +138,7 @@ exports.getTechnicianBookings = async (req, res) => {
         phone: b.customer?.phone || "N/A",
         location: b.customer?.location || b.location || "Address not provided",
       },
-
+   
       service: {
         name: b.serviceType || "N/A",
         type: b.serviceType || "N/A",

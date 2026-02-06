@@ -4,43 +4,33 @@ import { toast } from "sonner";
 import technicianService from "../../Services/technicianService";
 import AddService from "./AddService";
 import ConfirmModal from "../../Common/ConfirmModal";
+import { useRealTimeData } from "../../hooks/useRealTimeData";
 import {
   HandleMessageUIError,
   HandleMessageUISuccess,
 } from "../../utils/toastConfig";
 
 const MyServices = () => {
-  const [services, setServices] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [showAddService, setShowAddService] = useState(false);
-  // Confirm modal state
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
   const [confirmAction, setConfirmAction] = useState("");
   const [confirmPayload, setConfirmPayload] = useState(null);
 
-  const fetchMyServices = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      console.log("Fetching my services...");
-      const servicesData = await technicianService.getMyServices();
-      console.log("Services fetched:", servicesData);
-      console.log("Services array length:", servicesData?.length || 0);
-      setServices(servicesData || []);
-    } catch (error) {
-      console.error("Error fetching services:", error);
-      console.error("Error response:", error.response);
-      setError("Failed to load services");
-    } finally {
-      setLoading(false);
-    }
+  const fetchServicesData = async () => {
+    const servicesData = await technicianService.getMyServices();
+    return servicesData || [];
   };
 
-  useEffect(() => {
-    fetchMyServices();
-  }, []);
+  const { data: services, loading, error, refresh } = useRealTimeData(fetchServicesData, {
+    interval: 5000,
+    immediate: true,
+    dependencies: [],
+  });
+
+  const fetchMyServices = () => {
+    refresh();
+  };
 
   const handleDeleteService = (serviceId) => {
     setConfirmAction("deleteService");
@@ -53,9 +43,7 @@ const MyServices = () => {
       setConfirmLoading(true);
       try {
         await technicianService.deleteService(confirmPayload);
-        setServices(
-          services.filter((service) => service._id !== confirmPayload),
-        );
+        refresh();
         toast.success(
           "Service deleted successfully!",
           HandleMessageUISuccess(),
@@ -78,13 +66,7 @@ const MyServices = () => {
     try {
       const newStatus = currentStatus ? "inactive" : "active";
       await technicianService.updateServiceStatus(serviceId, newStatus);
-      setServices(
-        services.map((service) =>
-          service._id === serviceId
-            ? { ...service, isActive: !currentStatus }
-            : service,
-        ),
-      );
+      refresh();
       toast.success(
         `Service ${currentStatus ? "deactivated" : "activated"} successfully!`,
         HandleMessageUISuccess(),
@@ -94,15 +76,6 @@ const MyServices = () => {
       toast.error("Failed to update service status", HandleMessageUIError());
     }
   };
-
-  console.log(
-    "Rendering MyServices, loading:",
-    loading,
-    "error:",
-    error,
-    "services count:",
-    services.length,
-  );
 
   if (loading) {
     return (
@@ -118,7 +91,7 @@ const MyServices = () => {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="text-center">
-          <p className="text-fixhub-danger">{error}</p>
+          <p className="text-fixhub-danger">Failed to load services</p>
           <button
             onClick={fetchMyServices}
             className="mt-4 bg-fixhub-primary text-white px-4 py-2 rounded-lg"

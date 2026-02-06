@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import Navbar from "../../Common/Navbar";
 import api from "../Landing/api";
+import { useRealTimeData } from "../../hooks/useRealTimeData";
 import {
   HandleMessageUISuccess,
   HandleMessageUIError,
@@ -12,7 +13,6 @@ const MyBooking = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
-  const [bookings, setBookings] = useState([]);
   const [stats, setStats] = useState({
     total: 0,
     active: 0,
@@ -22,7 +22,6 @@ const MyBooking = () => {
     totalSpent: 0,
   });
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
 
   const customerNavLinks = [
     { path: "/customer/dashboard", label: "Dashboard" },
@@ -30,42 +29,37 @@ const MyBooking = () => {
     { path: "/customer/my-bookings", label: "My Bookings" },
   ];
 
-  const fetchBookings = async () => {
-    try {
-      const response = await api.get("/bookings/customer");
-      const bookingsData = response.data.bookings || [];
-      setBookings(bookingsData);
-
-      const newStats = {
-        total: bookingsData.length,
-        active: bookingsData.filter(
-          (b) => b.status === "accepted" || b.status === "in_progress",
-        ).length,
-        pending: bookingsData.filter((b) => b.status === "pending").length,
-        completed: bookingsData.filter((b) => b.status === "completed").length,
-        cancelled: bookingsData.filter((b) => b.status === "cancelled").length,
-        totalSpent: bookingsData
-          .filter((b) => b.status === "completed")
-          .reduce((sum, b) => sum + (b.service?.charge || 0), 0),
-      };
-      setStats(newStats);
-
-      console.log("Customer bookings:", bookingsData);
-    } catch (error) {
-      console.error("Error fetching bookings:", error);
-    } finally {
-      setLoading(false);
-    }
+  const fetchBookingsData = async () => {
+    const response = await api.get("/bookings/customer");
+    const bookingsData = response.data.bookings || [];
+    
+    const newStats = {
+      total: bookingsData.length,
+      active: bookingsData.filter(
+        (b) => b.status === "accepted" || b.status === "in-progress" || b.status === "in_progress",
+      ).length,
+      pending: bookingsData.filter((b) => b.status === "pending").length,
+      completed: bookingsData.filter((b) => b.status === "completed").length,
+      cancelled: bookingsData.filter((b) => b.status === "cancelled").length,
+      totalSpent: bookingsData
+        .filter((b) => b.status === "completed")
+        .reduce((sum, b) => sum + (b.service?.charge || 0), 0),
+    };
+    setStats(newStats);
+    
+    return bookingsData;
   };
 
-  useEffect(() => {
-    fetchBookings();
-  }, []);
+  const { data: bookings, loading, refresh } = useRealTimeData(fetchBookingsData, {
+    interval: 5000,
+    immediate: true,
+    dependencies: [],
+  });
 
   const handleCancelBooking = async (bookingId) => {
     try {
       await api.patch(`/bookings/${bookingId}/cancel`);
-      fetchBookings(); // Refresh bookings
+      refresh();
       toast.success("Booking cancelled successfully", HandleMessageUISuccess());
     } catch (error) {
       console.error("Error cancelling booking:", error);
@@ -81,12 +75,12 @@ const MyBooking = () => {
   ];
 
   const getStatusForTab = (booking) => {
-    if (booking.status === "accepted" || booking.status === "in_progress")
+    if (booking.status === "accepted" || booking.status === "in-progress" || booking.status === "in_progress")
       return "active";
     return booking.status;
   };
 
-  const filteredBookings = bookings.filter((booking) => {
+  const filteredBookings = (bookings || []).filter((booking) => {
     const bookingIdStr = String(booking._id || booking.bookingId);
     const serviceName = booking.service?.name || "";
     return (
@@ -112,6 +106,7 @@ const MyBooking = () => {
         color: "bg-blue-500",
         icon: "home_repair_service",
       },
+      "in-progress": { text: "In Progress", color: "bg-blue-600", icon: "build" },
       in_progress: { text: "In Progress", color: "bg-blue-600", icon: "build" },
       completed: {
         text: "Completed",
