@@ -21,8 +21,6 @@ const MyServices = () => {
   const [confirmAction, setConfirmAction] = useState("");
   const [confirmPayload, setConfirmPayload] = useState(null);
 
-  useAutoRefresh(fetchMyServices, 5000);
-
   const fetchMyServices = async () => {
     try {
       setLoading(true);
@@ -40,6 +38,8 @@ const MyServices = () => {
       setLoading(false);
     }
   };
+
+  useAutoRefresh(fetchMyServices, 5000);
 
   const handleDeleteService = (serviceId) => {
     setConfirmAction("deleteService");

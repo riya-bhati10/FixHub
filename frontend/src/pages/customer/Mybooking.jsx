@@ -31,8 +31,6 @@ const MyBooking = () => {
     { path: "/customer/my-bookings", label: "My Bookings" },
   ];
 
-  useAutoRefresh(fetchBookings, 5000);
-
   const fetchBookings = async () => {
     try {
       const response = await api.get("/bookings/customer");
@@ -61,6 +59,8 @@ const MyBooking = () => {
       setLoading(false);
     }
   };
+
+  useAutoRefresh(fetchBookings, 5000);
 
   const handleCancelBooking = async (bookingId) => {
     try {

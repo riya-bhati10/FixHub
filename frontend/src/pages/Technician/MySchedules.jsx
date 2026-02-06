@@ -27,8 +27,6 @@ const MySchedules = () => {
   const [confirmPayload, setConfirmPayload] = useState(null);
   const [confirmMessage, setConfirmMessage] = useState("");
 
-  useAutoRefresh(fetchBookings, 5000);
-
   const fetchBookings = async () => {
     try {
       setLoading(true);
@@ -52,6 +50,8 @@ const MySchedules = () => {
       console.error("Error refreshing bookings:", error);
     }
   };
+
+  useAutoRefresh(fetchBookings, 5000);
 
   const filters = [
     { key: "all", label: "All", count: bookings.length },
