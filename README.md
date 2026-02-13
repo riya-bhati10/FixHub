@@ -2,18 +2,6 @@
 
 A full-stack web application connecting customers with skilled technicians for home appliance repair services. Built with React, Node.js, Express, and MongoDB.
 
-## 📋 Table of Contents
-- [Overview](#overview)
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Project Structure](#project-structure)
-- [Installation](#installation)
-- [Environment Variables](#environment-variables)
-- [API Documentation](#api-documentation)
-- [User Roles](#user-roles)
-- [Database Models](#database-models)
-- [Real-time Features](#real-time-features)
-
 ## 🎯 Overview
 
 FixHub is a comprehensive service marketplace platform that enables:
