@@ -77,12 +77,7 @@ npm install
 ```
 
 3. Create `.env` file:
-```env
-PORT=5000
-MONGODB_URI=your_mongodb_connection_string
-JWT_SECRET=your_jwt_secret_key
-NODE_ENV=development
-```
+
 
 4. Start the server:
 ```bash
